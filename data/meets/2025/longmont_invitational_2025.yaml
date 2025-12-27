@@ -1,0 +1,13 @@
+meet:
+  name: "Longmont Invitational"
+  date: "2025-04-25"
+  location: "Longmont High School, Longmont, CO"
+  season: "outdoor"
+  level: "varsity"
+
+# This is a combined boys and girls multi-event file from MileSplit
+# The parser will automatically detect and separate events by gender
+sources:
+  - file: "pages/2025/Longmont Invitational 2025.html"
+    parser: "milesplit_multi"
+    # Note: gender not specified - parser will auto-detect from event names

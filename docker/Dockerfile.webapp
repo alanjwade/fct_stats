@@ -1,0 +1,27 @@
+# FCT Stats Web Application
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY webapp/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY webapp/ .
+COPY config/ /app/config/
+
+# Create data directory for database
+RUN mkdir -p /app/data
+
+# Set environment variables
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=production
+ENV DATABASE_PATH=/app/data/fct_stats.db
+ENV CONFIG_PATH=/app/config
+
+# Expose port
+EXPOSE 5000
+
+# Run with gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "app:app"]

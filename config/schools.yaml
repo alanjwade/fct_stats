@@ -1,0 +1,44 @@
+target_school:
+  canonical_name: "Fort Collins High School"
+  short_name: "Fort Collins"
+  aliases:
+    - "Fort Collins"
+    - "Fort Collins HS"
+    - "FCHS"
+    - "Ft. Collins"
+    - "Ft Collins"
+    - "Fort Collins High"
+    - "Fort Collins High School"
+  city: "Fort Collins"
+  state: "CO"
+  # Minimum fuzzy match score (0-100) to consider a match
+  match_threshold: 80
+
+exclude_schools:
+  # Schools with similar names that should NOT match
+  - name: "Fossil Ridge High School"
+    aliases:
+      - "Fossil Ridge"
+      - "Fossil"
+      - "FRHS"
+      - "Fossil Ridge HS"
+
+  - name: "Poudre High School"
+    aliases:
+      - "Poudre"
+      - "PHS"
+      - "Poudre HS"
+      - "Poudre High"
+
+  - name: "Rocky Mountain High School"
+    aliases:
+      - "Rocky Mountain"
+      - "Rocky"
+      - "RMHS"
+      - "Rocky Mountain HS"
+
+  - name: "Fort Collins Christian"
+    aliases:
+      - "FC Christian"
+      - "Fort Collins Christian"
+      - "FCC"

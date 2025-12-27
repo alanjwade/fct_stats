@@ -1,0 +1,23 @@
+# FCT Stats Scraper (Development Only)
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY scraper/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy scraper code and config
+COPY scraper/ .
+COPY config/ /app/config/
+
+# Create data directories
+RUN mkdir -p /app/data /app/meets
+
+# Set environment variables
+ENV DATABASE_PATH=/app/data/fct_stats.db
+ENV CONFIG_PATH=/app/config
+ENV MEETS_PATH=/app/meets
+
+# Default command
+CMD ["python", "scraper.py", "--meets-dir", "/app/meets"]

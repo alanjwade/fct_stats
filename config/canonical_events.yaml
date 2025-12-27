@@ -1,0 +1,149 @@
+events:
+  # Sprints
+  - name: "100m"
+    aliases: ["100 Meters", "100M", "100m Dash", "100", "100 Meter Dash"]
+    distance_meters: 100
+    category: "sprint"
+    timed: true
+    lower_is_better: true
+
+  - name: "200m"
+    aliases: ["200 Meters", "200M", "200m Dash", "200", "200 Meter Dash"]
+    distance_meters: 200
+    category: "sprint"
+    timed: true
+    lower_is_better: true
+
+  - name: "400m"
+    aliases: ["400 Meters", "400M", "400m Dash", "400", "400 Meter Dash"]
+    distance_meters: 400
+    category: "sprint"
+    timed: true
+    lower_is_better: true
+
+  # Middle Distance
+  - name: "800m"
+    aliases: ["800 Meters", "800M", "800", "800 Meter Run"]
+    distance_meters: 800
+    category: "middle_distance"
+    timed: true
+    lower_is_better: true
+
+  - name: "1600m"
+    aliases: ["1600 Meters", "1600M", "1600", "Mile", "1 Mile", "One Mile", "1600 Meter Run"]
+    distance_meters: 1600
+    category: "distance"
+    timed: true
+    lower_is_better: true
+
+  - name: "3200m"
+    aliases: ["3200 Meters", "3200M", "3200", "2 Mile", "2 Miles", "Two Mile", "3200 Meter Run"]
+    distance_meters: 3200
+    category: "distance"
+    timed: true
+    lower_is_better: true
+
+  # Hurdles - Gender Specific
+  - name: "110m Hurdles"
+    aliases: ["110mH", "110H", "110 Hurdles", "110m H", "110 Meter Hurdles", "110m Hurdles 39\""]
+    distance_meters: 110
+    category: "hurdles"
+    gender_specific: "M"
+    timed: true
+    lower_is_better: true
+
+  - name: "100m Hurdles"
+    aliases: ["100mH", "100H", "100 Hurdles", "100m H", "100 Meter Hurdles", "100m Hurdles 33\""]
+    distance_meters: 100
+    category: "hurdles"
+    gender_specific: "F"
+    timed: true
+    lower_is_better: true
+
+  - name: "300m Hurdles"
+    aliases: ["300mH", "300H", "300 Hurdles", "300m H", "300 Meter Hurdles"]
+    distance_meters: 300
+    category: "hurdles"
+    timed: true
+    lower_is_better: true
+
+  # Relays
+  - name: "4x100m Relay"
+    aliases: ["4x100", "4x100m", "400m Relay", "4 x 100", "4x100 Relay", "4x100m R"]
+    category: "relay"
+    timed: true
+    lower_is_better: true
+    is_relay: true
+
+  - name: "4x200m Relay"
+    aliases: ["4x200", "4x200m", "800m Relay", "4 x 200", "4x200 Relay", "4x200m R"]
+    category: "relay"
+    timed: true
+    lower_is_better: true
+    is_relay: true
+
+  - name: "4x400m Relay"
+    aliases: ["4x400", "4x400m", "1600m Relay", "4 x 400", "4x400 Relay", "4x400m R"]
+    category: "relay"
+    timed: true
+    lower_is_better: true
+    is_relay: true
+
+  - name: "4x800m Relay"
+    aliases: ["4x800", "4x800m", "3200m Relay", "4 x 800", "4x800 Relay", "4x800m R"]
+    category: "relay"
+    timed: true
+    lower_is_better: true
+    is_relay: true
+
+  - name: "Sprint Medley Relay"
+    aliases: ["SMR", "Sprint Medley", "200-200-400-800"]
+    category: "relay"
+    timed: true
+    lower_is_better: true
+    is_relay: true
+
+  - name: "Distance Medley Relay"
+    aliases: ["DMR", "Distance Medley", "1200-400-800-1600"]
+    category: "relay"
+    timed: true
+    lower_is_better: true
+    is_relay: true
+
+  # Field Events - Throws
+  - name: "Shot Put"
+    aliases: ["SP", "Shot", "Shot Put - 12lb", "Shot Put - 4kg"]
+    category: "throw"
+    timed: false
+    lower_is_better: false
+
+  - name: "Discus"
+    aliases: ["Disc", "Discus Throw", "Discus - 1.6kg", "Discus - 1kg"]
+    category: "throw"
+    timed: false
+    lower_is_better: false
+
+  # Field Events - Jumps
+  - name: "High Jump"
+    aliases: ["HJ"]
+    category: "jump"
+    timed: false
+    lower_is_better: false
+
+  - name: "Pole Vault"
+    aliases: ["PV", "Vault"]
+    category: "jump"
+    timed: false
+    lower_is_better: false
+
+  - name: "Long Jump"
+    aliases: ["LJ"]
+    category: "jump"
+    timed: false
+    lower_is_better: false
+
+  - name: "Triple Jump"
+    aliases: ["TJ"]
+    category: "jump"
+    timed: false
+    lower_is_better: false

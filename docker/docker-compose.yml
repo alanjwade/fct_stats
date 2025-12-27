@@ -1,0 +1,26 @@
+# FCT Stats - Production Docker Compose
+# This runs only the web server with nginx reverse proxy
+
+services:
+  webapp:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.webapp
+    container_name: fct_stats_webapp
+    restart: unless-stopped
+    volumes:
+      # Mount database from host (updated via scraper on dev machine)
+      - ../data:/app/data:ro
+    environment:
+      - DATABASE_PATH=/app/data/fct_stats.db
+      - CONFIG_PATH=/app/config
+      - VIRTUAL_HOST=fct-stats.duckdns.org
+      - LETSENCRYPT_HOST=fct-stats.duckdns.org
+    networks:
+      - proxy-network
+    expose:
+      - "5000"
+
+networks:
+  proxy-network:
+    external: true

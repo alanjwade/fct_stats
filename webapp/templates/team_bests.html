@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Team Bests - FCT Stats{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4"><i class="bi bi-star-fill text-gold"></i> Team Bests</h1>
+    
+    <p class="text-muted mb-4">The best performance by any Fort Collins athlete in each event.</p>
+    
+    <!-- Gender Filter -->
+    <div class="mb-4">
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('team_bests') }}" class="btn btn-{% if not gender %}primary{% else %}outline-primary{% endif %}">
+                All
+            </a>
+            <a href="{{ url_for('team_bests', gender='M') }}" class="btn btn-{% if gender == 'M' %}primary{% else %}outline-primary{% endif %}">
+                Boys
+            </a>
+            <a href="{{ url_for('team_bests', gender='F') }}" class="btn btn-{% if gender == 'F' %}primary{% else %}outline-primary{% endif %}">
+                Girls
+            </a>
+        </div>
+    </div>
+    
+    {% if team_bests %}
+    <div class="row">
+        <!-- Running Events -->
+        {% set running_events = team_bests | selectattr('category', 'in', ['sprint', 'middle_distance', 'distance', 'hurdles']) | list %}
+        {% if running_events %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-stopwatch"></i> Running Events
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Time</th>
+                                    <th>Athlete</th>
+                                    {% if not gender %}<th>Gender</th>{% endif %}
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for best in running_events %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('event_records', event_name=best.event_name) }}">
+                                            {{ best.event_name }}
+                                        </a>
+                                    </td>
+                                    <td><strong>{{ best.mark|format_time }}</strong></td>
+                                    <td>
+                                        <a href="{{ url_for('athlete_stats', athlete_id=best.athlete_id) }}">
+                                            {{ best.athlete_name }}
+                                        </a>
+                                    </td>
+                                    {% if not gender %}
+                                    <td>
+                                        {% if best.gender == 'M' %}<span class="badge bg-primary">Boys</span>
+                                        {% elif best.gender == 'F' %}<span class="badge bg-danger">Girls</span>
+                                        {% endif %}
+                                    </td>
+                                    {% endif %}
+                                    <td class="small text-muted">{{ best.meet_date }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Field Events -->
+        {% set field_events = team_bests | selectattr('category', 'in', ['jump', 'throw']) | list %}
+        {% if field_events %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-arrow-up-right"></i> Field Events
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Mark</th>
+                                    <th>Athlete</th>
+                                    {% if not gender %}<th>Gender</th>{% endif %}
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for best in field_events %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('event_records', event_name=best.event_name) }}">
+                                            {{ best.event_name }}
+                                        </a>
+                                    </td>
+                                    <td><strong>{{ best.mark|format_mark(False, best.event_name) }}</strong></td>
+                                    <td>
+                                        <a href="{{ url_for('athlete_stats', athlete_id=best.athlete_id) }}">
+                                            {{ best.athlete_name }}
+                                        </a>
+                                    </td>
+                                    {% if not gender %}
+                                    <td>
+                                        {% if best.gender == 'M' %}<span class="badge bg-primary">Boys</span>
+                                        {% elif best.gender == 'F' %}<span class="badge bg-danger">Girls</span>
+                                        {% endif %}
+                                    </td>
+                                    {% endif %}
+                                    <td class="small text-muted">{{ best.meet_date }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Relay Events -->
+        {% set relay_events = team_bests | selectattr('category', 'equalto', 'relay') | list %}
+        {% if relay_events %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-people-fill"></i> Relay Events
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Time</th>
+                                    {% if not gender %}<th>Gender</th>{% endif %}
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for best in relay_events %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('event_records', event_name=best.event_name) }}">
+                                            {{ best.event_name }}
+                                        </a>
+                                    </td>
+                                    <td><strong>{{ best.mark|format_time }}</strong></td>
+                                    {% if not gender %}
+                                    <td>
+                                        {% if best.gender == 'M' %}<span class="badge bg-primary">Boys</span>
+                                        {% elif best.gender == 'F' %}<span class="badge bg-danger">Girls</span>
+                                        {% endif %}
+                                    </td>
+                                    {% endif %}
+                                    <td class="small text-muted">{{ best.meet_date }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Combined Events -->
+        {% set combined_events = team_bests | selectattr('category', 'equalto', 'combined') | list %}
+        {% if combined_events %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-stack"></i> Combined Events
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Points</th>
+                                    <th>Athlete</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for best in combined_events %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('event_records', event_name=best.event_name) }}">
+                                            {{ best.event_name }}
+                                        </a>
+                                    </td>
+                                    <td><strong>{{ best.mark | int }}</strong></td>
+                                    <td>
+                                        <a href="{{ url_for('athlete_stats', athlete_id=best.athlete_id) }}">
+                                            {{ best.athlete_name }}
+                                        </a>
+                                    </td>
+                                    <td class="small text-muted">{{ best.meet_date }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No results recorded yet. Import some meet data to get started!
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

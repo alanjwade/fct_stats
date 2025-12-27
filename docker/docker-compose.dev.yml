@@ -1,0 +1,47 @@
+# FCT Stats - Development Docker Compose
+# Includes scraper service for local development
+
+services:
+  webapp:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.webapp
+    container_name: fct_stats_webapp_dev
+    volumes:
+      - ../data:/app/data
+      - ../webapp:/app
+      - ../config:/app/config
+    environment:
+      - DATABASE_PATH=/app/data/fct_stats.db
+      - CONFIG_PATH=/app/config
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+    ports:
+      - "5000:5000"
+    command: ["flask", "run", "--host=0.0.0.0", "--reload"]
+    networks:
+      - fct_network_dev
+
+  scraper:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.scraper
+    container_name: fct_stats_scraper
+    volumes:
+      - ../data:/app/data
+      - ../scraper:/app
+      - ../config:/app/config
+      - ../data/meets:/app/meets
+    environment:
+      - DATABASE_PATH=/app/data/fct_stats.db
+      - CONFIG_PATH=/app/config
+      - MEETS_PATH=/app/meets
+    networks:
+      - fct_network_dev
+    # Run scraper manually: docker-compose -f docker-compose.dev.yml run scraper
+    profiles:
+      - scraper
+
+networks:
+  fct_network_dev:
+    driver: bridge

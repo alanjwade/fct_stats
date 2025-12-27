@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.name }} - Event Records - FCT Stats {% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="bi bi-trophy"></i> {{ event.name }} - Event Records</h1>
+            {% if event %}
+            <span class="event-category">{{ event.category }}</span>
+            {% endif %}
+        </div>
+        <a href="{{ url_for('events_list') }}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i> All Events
+        </a>
+    </div>
+    
+    <!-- Men's Records -->
+    {% if men_records %}
+    <h2 class="mt-4 mb-3"><i class="bi bi-person"></i> Men's Records</h2>
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-list-ol"></i> All-Time Rankings
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Athlete</th>
+                            <th>PR</th>
+                            <th>Meet</th>
+                            <th>Date</th>
+                            <th>Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in men_records %}
+                        <tr>
+                            <td>
+                                {% if loop.index <= 3 %}
+                                <span class="badge {% if loop.index == 1 %}badge-pr{% elif loop.index == 2 %}bg-secondary{% else %}bg-warning text-dark{% endif %}">
+                                    {{ loop.index }}
+                                </span>
+                                {% else %}
+                                {{ loop.index }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">
+                                    {{ result.athlete_name }}
+                                </a>
+                            </td>
+                            <td>
+                                <strong>
+                                {% if event.timed %}
+                                    {{ result.mark|format_time }}
+                                {% else %}
+                                    {{ result.mark|format_mark(False, result.event_name) }}
+                                {% endif %}
+                                </strong>
+                            </td>
+                            <td>{{ result.meet_name }}</td>
+                            <td>{{ result.meet_date }}</td>
+                            <td>
+                                {% if result.level == 'varsity' %}
+                                <span class="badge badge-varsity">Varsity</span>
+                                {% elif result.level == 'jv' %}
+                                <span class="badge badge-jv">JV</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ result.level|capitalize }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Women's Records -->
+    {% if women_records %}
+    <h2 class="mt-4 mb-3"><i class="bi bi-person"></i> Women's Records</h2>
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-list-ol"></i> All-Time Rankings
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Athlete</th>
+                            <th>PR</th>
+                            <th>Meet</th>
+                            <th>Date</th>
+                            <th>Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in women_records %}
+                        <tr>
+                            <td>
+                                {% if loop.index <= 3 %}
+                                <span class="badge {% if loop.index == 1 %}badge-pr{% elif loop.index == 2 %}bg-secondary{% else %}bg-warning text-dark{% endif %}">
+                                    {{ loop.index }}
+                                </span>
+                                {% else %}
+                                {{ loop.index }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">
+                                    {{ result.athlete_name }}
+                                </a>
+                            </td>
+                            <td>
+                                <strong>
+                                {% if event.timed %}
+                                    {{ result.mark|format_time }}
+                                {% else %}
+                                    {{ result.mark|format_mark(False, result.event_name) }}
+                                {% endif %}
+                                </strong>
+                            </td>
+                            <td>{{ result.meet_name }}</td>
+                            <td>{{ result.meet_date }}</td>
+                            <td>
+                                {% if result.level == 'varsity' %}
+                                <span class="badge badge-varsity">Varsity</span>
+                                {% elif result.level == 'jv' %}
+                                <span class="badge badge-jv">JV</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ result.level|capitalize }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if not men_records and not women_records %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No results recorded for this event yet.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

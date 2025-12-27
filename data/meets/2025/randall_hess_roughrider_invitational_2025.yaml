@@ -1,0 +1,15 @@
+meet:
+  name: "Randall Hess Roughrider Invitational"
+  date: "2025-04-19"
+  season: "2025"
+  level: "varsity"
+  venue: "Roosevelt High School Roughrider Stadium"
+  location: "Johnstown, CO"
+sources:
+  - file: "pages/2025/Randall Hess Roughrider Invitational 2025.txt"
+    parser: "hytek_text"
+
+# Name mappings for truncated names in source data
+name_mappings:
+  "Fi Conway Reiser": "Finn Conway Reiser"
+  "Matte Costanigro": "Matteo Costanigro"  # Verify full name if different
