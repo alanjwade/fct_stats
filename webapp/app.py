@@ -133,14 +133,84 @@ app.jinja_env.filters['format_time'] = format_time
 app.jinja_env.filters['format_mark'] = format_mark
 
 
+def get_available_years():
+    """Get all years that have records, ordered with newest first."""
+    with get_db_connection() as conn:
+        years = conn.execute("""
+            SELECT DISTINCT strftime('%Y', meet_date) as year
+            FROM meets
+            WHERE meet_date IS NOT NULL
+            ORDER BY year DESC
+        """).fetchall()
+    return [int(y['year']) for y in years if y['year']]
+
+
+def get_current_year_filter():
+    """Get the current year filter from request args, defaulting to newest year."""
+    year_param = request.args.get('year', '')
+    if year_param == 'all':
+        return 'all'
+    elif year_param:
+        try:
+            return int(year_param)
+        except ValueError:
+            pass
+    # Default to newest year
+    years = get_available_years()
+    return years[0] if years else None
+
+
+def get_ordered_years():
+    """Get years in the order: newest, 'all', then rest descending."""
+    years = get_available_years()
+    if not years:
+        return []
+    newest = years[0]
+    rest = years[1:] if len(years) > 1 else []
+    # Return as list of tuples: (value, display_text)
+    result = [(str(newest), str(newest))]
+    result.append(('all', 'All Records'))
+    for y in rest:
+        result.append((str(y), str(y)))
+    return result
+
+
+def add_year_filter_to_query(base_query, year_filter, meet_alias='m', params=None):
+    """Add year filter clause to a query if needed."""
+    if params is None:
+        params = []
+    if year_filter and year_filter != 'all':
+        base_query += f" AND strftime('%Y', {meet_alias}.meet_date) = ?"
+        params.append(str(year_filter))
+    return base_query, params
+
+
+@app.context_processor
+def inject_year_filter():
+    """Make year filter data available to all templates."""
+    return {
+        'available_years': get_ordered_years(),
+        'current_year': request.args.get('year', str(get_available_years()[0]) if get_available_years() else ''),
+    }
+
+
 # Routes
 @app.route('/')
 def index():
     """Dashboard / home page."""
     record_page_view('home')
+    year_filter = get_current_year_filter()
+    
     with get_db_connection() as conn:
-        # Get recent meets
-        recent_meets = conn.execute("""
+        # Build year filter clause
+        year_clause = ""
+        year_params = []
+        if year_filter and year_filter != 'all':
+            year_clause = "WHERE strftime('%Y', m.meet_date) = ?"
+            year_params = [str(year_filter)]
+        
+        # Get recent meets (filtered by year)
+        meets_query = """
             SELECT 
                 m.id,
                 m.name,
@@ -152,19 +222,41 @@ def index():
                 COUNT(DISTINCT r.athlete_id) as athlete_count
             FROM meets m
             LEFT JOIN results r ON m.id = r.meet_id
+        """ + year_clause + """
             GROUP BY m.id, m.name, m.meet_date, m.venue, m.location, m.level
             ORDER BY m.meet_date DESC
             LIMIT 10
-        """).fetchall()
+        """
+        recent_meets = conn.execute(meets_query, year_params).fetchall()
         
-        # Get athlete count
-        athlete_count = conn.execute("SELECT COUNT(*) FROM athletes").fetchone()[0]
+        # Get athlete count (for the year)
+        if year_filter and year_filter != 'all':
+            athlete_count = conn.execute("""
+                SELECT COUNT(DISTINCT r.athlete_id) FROM results r
+                JOIN meets m ON r.meet_id = m.id
+                WHERE strftime('%Y', m.meet_date) = ?
+            """, [str(year_filter)]).fetchone()[0]
+        else:
+            athlete_count = conn.execute("SELECT COUNT(*) FROM athletes").fetchone()[0]
         
-        # Get result count
-        result_count = conn.execute("SELECT COUNT(*) FROM results").fetchone()[0]
+        # Get result count (for the year)
+        if year_filter and year_filter != 'all':
+            result_count = conn.execute("""
+                SELECT COUNT(*) FROM results r
+                JOIN meets m ON r.meet_id = m.id
+                WHERE strftime('%Y', m.meet_date) = ?
+            """, [str(year_filter)]).fetchone()[0]
+        else:
+            result_count = conn.execute("SELECT COUNT(*) FROM results").fetchone()[0]
         
-        # Get meet count
-        meet_count = conn.execute("SELECT COUNT(*) FROM meets").fetchone()[0]
+        # Get meet count (for the year)
+        if year_filter and year_filter != 'all':
+            meet_count = conn.execute("""
+                SELECT COUNT(*) FROM meets
+                WHERE strftime('%Y', meet_date) = ?
+            """, [str(year_filter)]).fetchone()[0]
+        else:
+            meet_count = conn.execute("SELECT COUNT(*) FROM meets").fetchone()[0]
         
         # Get seasons
         seasons = conn.execute("""
@@ -173,18 +265,37 @@ def index():
             ORDER BY season DESC
         """).fetchall()
         
-        # Get event count
-        event_count = conn.execute("SELECT COUNT(DISTINCT event_id) FROM results").fetchone()[0]
+        # Get event count (for the year)
+        if year_filter and year_filter != 'all':
+            event_count = conn.execute("""
+                SELECT COUNT(DISTINCT r.event_id) FROM results r
+                JOIN meets m ON r.meet_id = m.id
+                WHERE strftime('%Y', m.meet_date) = ?
+            """, [str(year_filter)]).fetchone()[0]
+        else:
+            event_count = conn.execute("SELECT COUNT(DISTINCT event_id) FROM results").fetchone()[0]
         
-        # Get top events by result count
-        top_events = conn.execute("""
-            SELECT e.name, COUNT(*) as result_count
-            FROM results r
-            JOIN events e ON r.event_id = e.id
-            GROUP BY e.id, e.name
-            ORDER BY result_count DESC
-            LIMIT 5
-        """).fetchall()
+        # Get top events by result count (for the year)
+        if year_filter and year_filter != 'all':
+            top_events = conn.execute("""
+                SELECT e.name, COUNT(*) as result_count
+                FROM results r
+                JOIN events e ON r.event_id = e.id
+                JOIN meets m ON r.meet_id = m.id
+                WHERE strftime('%Y', m.meet_date) = ?
+                GROUP BY e.id, e.name
+                ORDER BY result_count DESC
+                LIMIT 5
+            """, [str(year_filter)]).fetchall()
+        else:
+            top_events = conn.execute("""
+                SELECT e.name, COUNT(*) as result_count
+                FROM results r
+                JOIN events e ON r.event_id = e.id
+                GROUP BY e.id, e.name
+                ORDER BY result_count DESC
+                LIMIT 5
+            """).fetchall()
     
     return render_template('index.html',
         stats={
@@ -203,34 +314,66 @@ def athletes_list():
     """List all athletes."""
     record_page_view('athletes_list')
     gender_filter = request.args.get('gender', '')
+    year_filter = get_current_year_filter()
     
     with get_db_connection() as conn:
-        query = """
-            SELECT 
-                a.id,
-                a.first_name || ' ' || a.last_name as name,
-                a.gender,
-                a.graduation_year,
-                CASE 
-                    WHEN a.graduation_year >= 2026 THEN '9th'
-                    WHEN a.graduation_year >= 2027 THEN '10th'
-                    WHEN a.graduation_year >= 2028 THEN '11th'
-                    WHEN a.graduation_year >= 2029 THEN '12th'
-                    ELSE NULL
-                END as grade,
-                COUNT(DISTINCT r.event_id) as pr_count,
-                COUNT(r.id) as result_count
-            FROM athletes a
-            LEFT JOIN results r ON a.id = r.athlete_id
-        """
-        
-        if gender_filter:
-            query += " WHERE a.gender = ?"
+        # Build the base query with year filter
+        if year_filter and year_filter != 'all':
+            query = """
+                SELECT 
+                    a.id,
+                    a.first_name || ' ' || a.last_name as name,
+                    a.gender,
+                    a.graduation_year,
+                    CASE 
+                        WHEN a.graduation_year = 2026 THEN '12th'
+                        WHEN a.graduation_year = 2027 THEN '11th'
+                        WHEN a.graduation_year = 2028 THEN '10th'
+                        WHEN a.graduation_year = 2029 THEN '9th'
+                        ELSE NULL
+                    END as grade,
+                    COUNT(DISTINCT r.event_id) as pr_count,
+                    COUNT(r.id) as result_count
+                FROM athletes a
+                INNER JOIN results r ON a.id = r.athlete_id
+                INNER JOIN meets m ON r.meet_id = m.id
+                WHERE strftime('%Y', m.meet_date) = ?
+            """
+            params = [str(year_filter)]
+            
+            if gender_filter:
+                query += " AND a.gender = ?"
+                params.append(gender_filter)
+            
             query += " GROUP BY a.id ORDER BY a.last_name, a.first_name"
-            athletes = conn.execute(query, (gender_filter,)).fetchall()
+            athletes = conn.execute(query, params).fetchall()
         else:
-            query += " GROUP BY a.id ORDER BY a.last_name, a.first_name"
-            athletes = conn.execute(query).fetchall()
+            query = """
+                SELECT 
+                    a.id,
+                    a.first_name || ' ' || a.last_name as name,
+                    a.gender,
+                    a.graduation_year,
+                    CASE 
+                        WHEN a.graduation_year = 2026 THEN '12th'
+                        WHEN a.graduation_year = 2027 THEN '11th'
+                        WHEN a.graduation_year = 2028 THEN '10th'
+                        WHEN a.graduation_year = 2029 THEN '9th'
+                        ELSE NULL
+                    END as grade,
+                    COUNT(DISTINCT r.event_id) as pr_count,
+                    COUNT(r.id) as result_count
+                FROM athletes a
+                LEFT JOIN results r ON a.id = r.athlete_id
+            """
+            
+            if gender_filter:
+                query += " WHERE a.gender = ?"
+                query += " GROUP BY a.id ORDER BY a.last_name, a.first_name"
+                athletes = conn.execute(query, (gender_filter,)).fetchall()
+            else:
+                query += " GROUP BY a.id ORDER BY a.last_name, a.first_name"
+                athletes = conn.execute(query).fetchall()
     
     return render_template('athletes_list.html', 
         athletes=athletes,
@@ -339,61 +482,43 @@ def athlete_stats(athlete_id):
 @app.route('/team-bests')
 def team_bests():
     """Team bests by event."""
-    season = request.args.get('season', '')
     gender = request.args.get('gender', '')
-    record_page_view('team_bests', page_detail=f"{season or 'all'}_{gender or 'all'}")
+    year_filter = get_current_year_filter()
+    record_page_view('team_bests', page_detail=f"{year_filter or 'all'}_{gender or 'all'}")
     
     with get_db_connection() as conn:
-        # Get available seasons
-        seasons = conn.execute("""
-            SELECT DISTINCT season FROM meets 
-            WHERE season IS NOT NULL 
-            ORDER BY season DESC
+        # Get available years (for reference, though we use the global year filter)
+        years = conn.execute("""
+            SELECT DISTINCT strftime('%Y', meet_date) as year FROM meets 
+            WHERE meet_date IS NOT NULL 
+            ORDER BY year DESC
         """).fetchall()
         
-        # Build query for team bests
-        if season:
-            query = """
-                SELECT 
-                    e.id as event_id,
-                    e.name as event_name,
-                    e.category,
-                    e.timed,
-                    a.gender,
-                    r.mark,
-                    r.mark_display,
-                    a.first_name || ' ' || a.last_name as athlete_name,
-                    a.id as athlete_id,
-                    m.meet_date,
-                    m.name as meet_name
-                FROM results r
-                JOIN athletes a ON r.athlete_id = a.id
-                JOIN events e ON r.event_id = e.id
-                JOIN meets m ON r.meet_id = m.id
-                WHERE m.season = ?
-            """
-            params = [season]
-        else:
-            query = """
-                SELECT 
-                    e.id as event_id,
-                    e.name as event_name,
-                    e.category,
-                    e.timed,
-                    a.gender,
-                    r.mark,
-                    r.mark_display,
-                    a.first_name || ' ' || a.last_name as athlete_name,
-                    a.id as athlete_id,
-                    m.meet_date,
-                    m.name as meet_name
-                FROM results r
-                JOIN athletes a ON r.athlete_id = a.id
-                JOIN events e ON r.event_id = e.id
-                JOIN meets m ON r.meet_id = m.id
-                WHERE 1=1
-            """
-            params = []
+        # Build query for team bests with year filter
+        query = """
+            SELECT 
+                e.id as event_id,
+                e.name as event_name,
+                e.category,
+                e.timed,
+                a.gender,
+                r.mark,
+                r.mark_display,
+                a.first_name || ' ' || a.last_name as athlete_name,
+                a.id as athlete_id,
+                m.meet_date,
+                m.name as meet_name
+            FROM results r
+            JOIN athletes a ON r.athlete_id = a.id
+            JOIN events e ON r.event_id = e.id
+            JOIN meets m ON r.meet_id = m.id
+            WHERE 1=1
+        """
+        params = []
+        
+        if year_filter and year_filter != 'all':
+            query += " AND strftime('%Y', m.meet_date) = ?"
+            params.append(str(year_filter))
         
         if gender:
             query += " AND a.gender = ?"
@@ -412,9 +537,9 @@ def team_bests():
                 AND a2.gender = a.gender
         """
         
-        if season:
-            query += " AND m2.season = ?"
-            params.append(season)
+        if year_filter and year_filter != 'all':
+            query += " AND strftime('%Y', m2.meet_date) = ?"
+            params.append(str(year_filter))
         
         query += """
             )
@@ -422,18 +547,18 @@ def team_bests():
             ORDER BY a.gender, e.category, e.name
         """
         
-        team_bests = conn.execute(query, params).fetchall()
+        team_bests_results = conn.execute(query, params).fetchall()
         
         # Group by gender
-        boys_bests = [tb for tb in team_bests if tb['gender'] == 'M']
-        girls_bests = [tb for tb in team_bests if tb['gender'] == 'F']
+        boys_bests = [tb for tb in team_bests_results if tb['gender'] == 'M']
+        girls_bests = [tb for tb in team_bests_results if tb['gender'] == 'F']
     
     return render_template('team_bests.html',
         boys_bests=boys_bests,
         girls_bests=girls_bests,
-        team_bests=team_bests,
-        seasons=[s['season'] for s in seasons],
-        current_season=season,
+        team_bests=team_bests_results,
+        seasons=[],  # Deprecated, kept for template compatibility
+        current_season='',  # Deprecated
         current_gender=gender,
         gender=gender
     )
@@ -443,7 +568,7 @@ def team_bests():
 def event_records(event_name):
     """Event records - PR list for an event."""
     record_page_view('event', page_detail=event_name)
-    season = request.args.get('season', '')
+    year_filter = get_current_year_filter()
     
     with get_db_connection() as conn:
         # Get event info
@@ -454,16 +579,14 @@ def event_records(event_name):
         if not event:
             return render_template('error.html', error="Event not found"), 404
         
-        # Get available seasons
-        seasons = conn.execute("""
-            SELECT DISTINCT season FROM meets 
-            WHERE season IS NOT NULL 
-            ORDER BY season DESC
-        """).fetchall()
-        
         # Build PR query - one entry per athlete (their best)
         # Use a CTE to get the best mark for each athlete in this event
         agg_func = 'MIN(r.mark)' if event['lower_is_better'] else 'MAX(r.mark)'
+        
+        # Year filter clause for CTE
+        year_cte_clause = ""
+        if year_filter and year_filter != 'all':
+            year_cte_clause = f" AND strftime('%Y', m.meet_date) = '{year_filter}'"
         
         # Query for men's records
         men_query = f"""
@@ -473,7 +596,8 @@ def event_records(event_name):
                     {agg_func} as best_mark
                 FROM results r
                 JOIN athletes a ON r.athlete_id = a.id
-                WHERE r.event_id = ? AND a.gender = 'M'
+                JOIN meets m ON r.meet_id = m.id
+                WHERE r.event_id = ? AND a.gender = 'M'{year_cte_clause}
         """
         
         men_params = [event['id']]
@@ -500,9 +624,9 @@ def event_records(event_name):
         
         men_params.append(event['id'])
         
-        if season:
-            men_query += " AND m.season = ?"
-            men_params.append(season)
+        if year_filter and year_filter != 'all':
+            men_query += " AND strftime('%Y', m.meet_date) = ?"
+            men_params.append(str(year_filter))
         
         men_query += " ORDER BY "
         if event['lower_is_better']:
@@ -520,7 +644,8 @@ def event_records(event_name):
                     {agg_func} as best_mark
                 FROM results r
                 JOIN athletes a ON r.athlete_id = a.id
-                WHERE r.event_id = ? AND a.gender = 'F'
+                JOIN meets m ON r.meet_id = m.id
+                WHERE r.event_id = ? AND a.gender = 'F'{year_cte_clause}
         """
         
         women_params = [event['id']]
@@ -547,9 +672,9 @@ def event_records(event_name):
         
         women_params.append(event['id'])
         
-        if season:
-            women_query += " AND m.season = ?"
-            women_params.append(season)
+        if year_filter and year_filter != 'all':
+            women_query += " AND strftime('%Y', m.meet_date) = ?"
+            women_params.append(str(year_filter))
         
         women_query += " ORDER BY "
         if event['lower_is_better']:
@@ -565,8 +690,8 @@ def event_records(event_name):
         event=event,
         men_records=men_records,
         women_records=women_records,
-        seasons=[s['season'] for s in seasons],
-        current_season=season
+        seasons=[],  # Deprecated
+        current_season=''  # Deprecated
     )
 
 
@@ -574,19 +699,37 @@ def event_records(event_name):
 def events_list():
     """List all events."""
     record_page_view('events_list')
+    year_filter = get_current_year_filter()
+    
     with get_db_connection() as conn:
-        events = conn.execute("""
-            SELECT 
-                e.*,
-                COUNT(CASE WHEN a.gender = 'M' THEN r.id END) as men_count,
-                COUNT(CASE WHEN a.gender = 'F' THEN r.id END) as women_count,
-                COUNT(r.id) as result_count
-            FROM events e
-            LEFT JOIN results r ON e.id = r.event_id
-            LEFT JOIN athletes a ON r.athlete_id = a.id
-            GROUP BY e.id
-            ORDER BY e.category, e.name
-        """).fetchall()
+        if year_filter and year_filter != 'all':
+            events = conn.execute("""
+                SELECT 
+                    e.*,
+                    COUNT(CASE WHEN a.gender = 'M' THEN r.id END) as men_count,
+                    COUNT(CASE WHEN a.gender = 'F' THEN r.id END) as women_count,
+                    COUNT(r.id) as result_count
+                FROM events e
+                LEFT JOIN results r ON e.id = r.event_id
+                LEFT JOIN athletes a ON r.athlete_id = a.id
+                LEFT JOIN meets m ON r.meet_id = m.id
+                WHERE strftime('%Y', m.meet_date) = ? OR m.meet_date IS NULL
+                GROUP BY e.id
+                ORDER BY e.category, e.name
+            """, [str(year_filter)]).fetchall()
+        else:
+            events = conn.execute("""
+                SELECT 
+                    e.*,
+                    COUNT(CASE WHEN a.gender = 'M' THEN r.id END) as men_count,
+                    COUNT(CASE WHEN a.gender = 'F' THEN r.id END) as women_count,
+                    COUNT(r.id) as result_count
+                FROM events e
+                LEFT JOIN results r ON e.id = r.event_id
+                LEFT JOIN athletes a ON r.athlete_id = a.id
+                GROUP BY e.id
+                ORDER BY e.category, e.name
+            """).fetchall()
     
     # Group events by category
     events_by_category = {}

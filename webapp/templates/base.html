@@ -229,26 +229,41 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}{% if current_year %}?year={{ current_year }}{% endif %}">
                             <i class="bi bi-house-door"></i> Home
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'athletes_list' %}active{% endif %}" href="{{ url_for('athletes_list') }}">
+                        <a class="nav-link {% if request.endpoint == 'athletes_list' %}active{% endif %}" href="{{ url_for('athletes_list') }}{% if current_year %}?year={{ current_year }}{% endif %}">
                             <i class="bi bi-people"></i> Athletes
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'events_list' %}active{% endif %}" href="{{ url_for('events_list') }}">
+                        <a class="nav-link {% if request.endpoint == 'events_list' %}active{% endif %}" href="{{ url_for('events_list') }}{% if current_year %}?year={{ current_year }}{% endif %}">
                             <i class="bi bi-trophy"></i> Events
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'team_bests' %}active{% endif %}" href="{{ url_for('team_bests') }}">
+                        <a class="nav-link {% if request.endpoint == 'team_bests' %}active{% endif %}" href="{{ url_for('team_bests') }}{% if current_year %}?year={{ current_year }}{% endif %}">
                             <i class="bi bi-star"></i> Team Bests
                         </a>
                     </li>
                 </ul>
+                {% if available_years %}
+                <form class="d-flex" method="GET" id="yearFilterForm">
+                    <!-- Preserve other query params -->
+                    {% for key, value in request.args.items() %}
+                        {% if key != 'year' %}
+                        <input type="hidden" name="{{ key }}" value="{{ value }}">
+                        {% endif %}
+                    {% endfor %}
+                    <select class="form-select form-select-sm" name="year" onchange="this.form.submit()" style="background-color: rgba(255,255,255,0.1); color: white; border-color: rgba(255,255,255,0.3); min-width: 130px;">
+                        {% for value, label in available_years %}
+                        <option value="{{ value }}" {% if current_year == value %}selected{% endif %} style="color: black;">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                {% endif %}
             </div>
         </div>
     </nav>
