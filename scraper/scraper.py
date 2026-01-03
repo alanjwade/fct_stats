@@ -466,6 +466,7 @@ def main():
     parser.add_argument('--clear-results', action='store_true', help='Clear all results before scraping')
     parser.add_argument('--clear-meets', action='store_true', help='Clear all meets and results before scraping')
     parser.add_argument('--clear-all', action='store_true', help='Clear entire database before scraping')
+    parser.add_argument('--no-historical', action='store_true', help='Skip importing historical school records')
     
     args = parser.parse_args()
     
@@ -481,6 +482,19 @@ def main():
     elif args.clear_results:
         logger.warning("Clearing all results...")
         scraper.db.clear_results()
+    
+    # Import historical records first (unless disabled)
+    if not args.no_historical:
+        try:
+            from pathlib import Path
+            import sys
+            # Import the historical records module
+            scripts_path = Path(__file__).parent.parent / 'scripts'
+            sys.path.insert(0, str(scripts_path))
+            from import_historical_records import import_historical_records
+            import_historical_records(args.db)
+        except Exception as e:
+            logger.warning(f"Could not import historical records: {e}")
     
     if args.meet:
         scraper.scrape_meet(args.meet)

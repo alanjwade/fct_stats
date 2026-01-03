@@ -309,6 +309,13 @@ def index():
     )
 
 
+@app.route('/communications')
+def communications():
+    """Team communications page with schedule, staff, and Band app link."""
+    record_page_view('communications')
+    return render_template('communications.html')
+
+
 @app.route('/athletes')
 def athletes_list():
     """List all athletes."""
@@ -579,110 +586,17 @@ def event_records(event_name):
         if not event:
             return render_template('error.html', error="Event not found"), 404
         
-        # Build PR query - one entry per athlete (their best)
-        # Use a CTE to get the best mark for each athlete in this event
-        agg_func = 'MIN(r.mark)' if event['lower_is_better'] else 'MAX(r.mark)'
+        # Check if this is a relay event
+        is_relay = event['is_relay'] or 'relay' in event_name.lower()
         
-        # Year filter clause for CTE
-        year_cte_clause = ""
-        if year_filter and year_filter != 'all':
-            year_cte_clause = f" AND strftime('%Y', m.meet_date) = '{year_filter}'"
-        
-        # Query for men's records
-        men_query = f"""
-            WITH athlete_bests AS (
-                SELECT 
-                    a.id,
-                    {agg_func} as best_mark
-                FROM results r
-                JOIN athletes a ON r.athlete_id = a.id
-                JOIN meets m ON r.meet_id = m.id
-                WHERE r.event_id = ? AND a.gender = 'M'{year_cte_clause}
-        """
-        
-        men_params = [event['id']]
-        
-        men_query += " GROUP BY a.id)"
-        
-        men_query += """
-            SELECT 
-                a.id as athlete_id,
-                a.first_name || ' ' || a.last_name as athlete_name,
-                a.gender,
-                a.graduation_year,
-                r.mark,
-                r.mark_display,
-                r.level,
-                m.meet_date,
-                m.name as meet_name
-            FROM results r
-            JOIN athletes a ON r.athlete_id = a.id
-            JOIN athlete_bests ab ON a.id = ab.id AND r.mark = ab.best_mark
-            JOIN meets m ON r.meet_id = m.id
-            WHERE r.event_id = ?
-        """
-        
-        men_params.append(event['id'])
-        
-        if year_filter and year_filter != 'all':
-            men_query += " AND strftime('%Y', m.meet_date) = ?"
-            men_params.append(str(year_filter))
-        
-        men_query += " ORDER BY "
-        if event['lower_is_better']:
-            men_query += "r.mark ASC"
+        if is_relay:
+            # For relay events, get unique results with all team members
+            men_records = get_relay_records(conn, event['id'], 'M', year_filter, event['lower_is_better'])
+            women_records = get_relay_records(conn, event['id'], 'F', year_filter, event['lower_is_better'])
         else:
-            men_query += "r.mark DESC"
-        
-        men_records = conn.execute(men_query, men_params).fetchall()
-        
-        # Query for women's records
-        women_query = f"""
-            WITH athlete_bests AS (
-                SELECT 
-                    a.id,
-                    {agg_func} as best_mark
-                FROM results r
-                JOIN athletes a ON r.athlete_id = a.id
-                JOIN meets m ON r.meet_id = m.id
-                WHERE r.event_id = ? AND a.gender = 'F'{year_cte_clause}
-        """
-        
-        women_params = [event['id']]
-        
-        women_query += " GROUP BY a.id)"
-        
-        women_query += """
-            SELECT 
-                a.id as athlete_id,
-                a.first_name || ' ' || a.last_name as athlete_name,
-                a.gender,
-                a.graduation_year,
-                r.mark,
-                r.mark_display,
-                r.level,
-                m.meet_date,
-                m.name as meet_name
-            FROM results r
-            JOIN athletes a ON r.athlete_id = a.id
-            JOIN athlete_bests ab ON a.id = ab.id AND r.mark = ab.best_mark
-            JOIN meets m ON r.meet_id = m.id
-            WHERE r.event_id = ?
-        """
-        
-        women_params.append(event['id'])
-        
-        if year_filter and year_filter != 'all':
-            women_query += " AND strftime('%Y', m.meet_date) = ?"
-            women_params.append(str(year_filter))
-        
-        women_query += " ORDER BY "
-        if event['lower_is_better']:
-            women_query += "r.mark ASC"
-        else:
-            women_query += "r.mark DESC"
-        
-        women_records = conn.execute(women_query, women_params).fetchall()
+            # For individual events, get best mark per athlete
+            men_records = get_individual_records(conn, event['id'], 'M', year_filter, event['lower_is_better'])
+            women_records = get_individual_records(conn, event['id'], 'F', year_filter, event['lower_is_better'])
         
         logger.info(f"Event: {event['name']}, Men's records: {len(men_records)}, Women's records: {len(women_records)}")
     
@@ -690,9 +604,121 @@ def event_records(event_name):
         event=event,
         men_records=men_records,
         women_records=women_records,
+        is_relay=is_relay,
         seasons=[],  # Deprecated
         current_season=''  # Deprecated
     )
+
+
+def get_individual_records(conn, event_id, gender, year_filter, lower_is_better):
+    """Get individual event records - one entry per athlete (their best)."""
+    agg_func = 'MIN(r.mark)' if lower_is_better else 'MAX(r.mark)'
+    
+    # Year filter clause for CTE
+    year_cte_clause = ""
+    if year_filter and year_filter != 'all':
+        year_cte_clause = f" AND strftime('%Y', m.meet_date) = '{year_filter}'"
+    
+    query = f"""
+        WITH athlete_bests AS (
+            SELECT 
+                a.id,
+                {agg_func} as best_mark
+            FROM results r
+            JOIN athletes a ON r.athlete_id = a.id
+            JOIN meets m ON r.meet_id = m.id
+            WHERE r.event_id = ? AND a.gender = ?{year_cte_clause}
+            GROUP BY a.id
+        )
+        SELECT 
+            a.id as athlete_id,
+            a.first_name || ' ' || a.last_name as athlete_name,
+            a.gender,
+            a.graduation_year,
+            r.mark,
+            r.mark_display,
+            r.level,
+            m.meet_date,
+            m.name as meet_name,
+            NULL as relay_members
+        FROM results r
+        JOIN athletes a ON r.athlete_id = a.id
+        JOIN athlete_bests ab ON a.id = ab.id AND r.mark = ab.best_mark
+        JOIN meets m ON r.meet_id = m.id
+        WHERE r.event_id = ?
+    """
+    
+    params = [event_id, gender, event_id]
+    
+    if year_filter and year_filter != 'all':
+        query += " AND strftime('%Y', m.meet_date) = ?"
+        params.append(str(year_filter))
+    
+    query += " ORDER BY "
+    if lower_is_better:
+        query += "r.mark ASC"
+    else:
+        query += "r.mark DESC"
+    
+    return conn.execute(query, params).fetchall()
+
+
+def get_relay_records(conn, event_id, gender, year_filter, lower_is_better):
+    """Get relay event records - show all team members for each result."""
+    # Year filter clause
+    year_clause = ""
+    params = [event_id, gender]
+    if year_filter and year_filter != 'all':
+        year_clause = " AND strftime('%Y', m.meet_date) = ?"
+        params.append(str(year_filter))
+    
+    # Get all results for this relay event
+    query = f"""
+        SELECT 
+            r.id as result_id,
+            a.id as athlete_id,
+            a.first_name || ' ' || a.last_name as athlete_name,
+            a.gender,
+            a.graduation_year,
+            r.mark,
+            r.mark_display,
+            r.level,
+            m.meet_date,
+            m.name as meet_name
+        FROM results r
+        JOIN athletes a ON r.athlete_id = a.id
+        JOIN meets m ON r.meet_id = m.id
+        WHERE r.event_id = ? AND a.gender = ?{year_clause}
+        ORDER BY {"r.mark ASC" if lower_is_better else "r.mark DESC"}
+    """
+    
+    results = conn.execute(query, params).fetchall()
+    
+    # For each result, get the relay team members
+    enriched_results = []
+    for result in results:
+        # Get relay members for this result
+        members_query = """
+            SELECT 
+                a.first_name || ' ' || a.last_name as name,
+                rm.leg_order
+            FROM relay_members rm
+            JOIN athletes a ON rm.athlete_id = a.id
+            WHERE rm.result_id = ?
+            ORDER BY rm.leg_order
+        """
+        members = conn.execute(members_query, (result['result_id'],)).fetchall()
+        
+        # Convert to dict and add relay_members
+        result_dict = dict(result)
+        if members:
+            result_dict['relay_members'] = ', '.join([m['name'] for m in members])
+        else:
+            result_dict['relay_members'] = None
+        
+        enriched_results.append(result_dict)
+    
+    return enriched_results
 
 
 @app.route('/events')

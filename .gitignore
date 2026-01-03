@@ -72,3 +72,6 @@ logs/
 # Docker
 .dockerignore
 docker-compose.override.yml
+data/meets/2025/randall_hess_roughrider_invitational_2025.yaml
+tmp/FCHS Boys Track & Field Records.docx.md
+tmp/FCHS Girls Track & Field Records.docx.md

@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Team Communications - FCT Stats{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <h1><i class="bi bi-chat-dots-fill"></i> Team Communications</h1>
+        <p class="lead mb-0">Stay connected with the Fort Collins Track & Field team</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Band App Call-to-Action -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-success text-white border-0">
+                <div class="card-body text-center py-4">
+                    <h3 class="card-title mb-3">
+                        <i class="bi bi-chat-dots-fill"></i> Join Our Team Band App
+                    </h3>
+                    <p class="card-text mb-4">
+                        Get instant notifications for meet updates, schedule changes, team announcements, and important communications. Stay in the loop with your teammates and coaches!
+                    </p>
+                    <a href="https://band.us/n/a2afbeUbC5j2G" target="_blank" class="btn btn-light btn-lg">
+                        <i class="bi bi-chat-dots"></i> Join FC Track Band App
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Coaching Staff -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-people-fill"></i> Coaching Staff
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">Coach Sarah Johnson</h5>
+                                <small class="text-muted">Head Coach</small>
+                            </div>
+                            <p class="mb-1">
+                                <i class="bi bi-envelope"></i> <a href="mailto:sarah.johnson@example.com">sarah.johnson@example.com</a>
+                            </p>
+                            <small class="text-muted">Sprints & Hurdles</small>
+                        </div>
+                        
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">Coach Mike Thompson</h5>
+                                <small class="text-muted">Assistant Coach</small>
+                            </div>
+                            <p class="mb-1">
+                                <i class="bi bi-envelope"></i> <a href="mailto:mike.thompson@example.com">mike.thompson@example.com</a>
+                            </p>
+                            <small class="text-muted">Distance & Middle Distance</small>
+                        </div>
+                        
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">Coach Emily Rodriguez</h5>
+                                <small class="text-muted">Assistant Coach</small>
+                            </div>
+                            <p class="mb-1">
+                                <i class="bi bi-envelope"></i> <a href="mailto:emily.rodriguez@example.com">emily.rodriguez@example.com</a>
+                            </p>
+                            <small class="text-muted">Jumps & Pole Vault</small>
+                        </div>
+                        
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">Coach David Chen</h5>
+                                <small class="text-muted">Assistant Coach</small>
+                            </div>
+                            <p class="mb-1">
+                                <i class="bi bi-envelope"></i> <a href="mailto:david.chen@example.com">david.chen@example.com</a>
+                            </p>
+                            <small class="text-muted">Throws</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Schedule & Calendar -->
+        <div class="col-lg-6 mb-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-calendar-event"></i> 2025 Meet Schedule
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Meet</th>
+                                    <th>Location</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Jan 18</td>
+                                    <td>Randall Hess Roughrider Invitational</td>
+                                    <td>Boulder, CO</td>
+                                </tr>
+                                <tr>
+                                    <td>Jan 25</td>
+                                    <td>Longmont Invitational</td>
+                                    <td>Longmont, CO</td>
+                                </tr>
+                                <tr>
+                                    <td>Feb 1</td>
+                                    <td>Conference Championship</td>
+                                    <td>Fort Collins, CO</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">
+                                        <em>More meets will be added as they are scheduled</em>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-calendar3"></i> Practice Schedule
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Monday - Friday</h6>
+                                <small>3:30 PM - 5:30 PM</small>
+                            </div>
+                            <small class="text-muted">Regular Practice</small>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Saturday</h6>
+                                <small>9:00 AM - 11:00 AM</small>
+                            </div>
+                            <small class="text-muted">Optional Workout (Meet Weeks)</small>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Sunday</h6>
+                                <small>Rest Day</small>
+                            </div>
+                            <small class="text-muted">Recovery & Rest</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Important Links -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-link-45deg"></i> Important Links
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <a href="https://band.us/n/a2afbeUbC5j2G" target="_blank" class="btn btn-success w-100">
+                                <i class="bi bi-chat-dots"></i> Team Band App
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="#" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-calendar-check"></i> Team Calendar
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="#" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-file-earmark-text"></i> Forms & Documents
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

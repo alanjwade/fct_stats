@@ -1,0 +1,491 @@
+{
+  "boys": [
+    {
+      "event": "200m",
+      "athlete": "Raymond Bozmans",
+      "mark": 20.84,
+      "mark_display": "20.84",
+      "location": "Liberty Bell 2012",
+      "year": 2012,
+      "gender": "M",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "400m",
+      "athlete": "Chad Barlow",
+      "mark": 47.14,
+      "mark_display": "47.14",
+      "location": "State 2006",
+      "year": 2006,
+      "gender": "M",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "800m",
+      "athlete": "Cadel Ruthven",
+      "mark": 114.18,
+      "mark_display": "1:54.18",
+      "location": "Teddy\u2019s Last Chance 2024",
+      "year": 2024,
+      "gender": "M",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "1600m",
+      "athlete": "Cadel Ruthven",
+      "mark": 251.32,
+      "mark_display": "4:11.32",
+      "location": "HOKA St. Vrain 2025",
+      "year": 2025,
+      "gender": "M",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "3200m",
+      "athlete": "Christian Groendyk",
+      "mark": 555.58,
+      "mark_display": "9:15.58",
+      "location": "Altitude 2023",
+      "year": 2023,
+      "gender": "M",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "110m High Hurdles",
+      "athlete": "Fritz Fulton",
+      "mark": 14.21,
+      "mark_display": "14.21",
+      "location": "State 1984",
+      "year": 1984,
+      "gender": "M",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "300m Int. Hurdles",
+      "athlete": "Chad Glasgow",
+      "mark": 37.85,
+      "mark_display": "37.85",
+      "location": "State 1990",
+      "year": 1990,
+      "gender": "M",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "Pole Vault",
+      "athlete": "Nate Zwisler",
+      "mark": 4.4196,
+      "mark_display": "14\u20196\u201d",
+      "location": "State 2023",
+      "year": 2023,
+      "gender": "M",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "Long Jump",
+      "athlete": "Micaylon Moore",
+      "mark": 7.3215,
+      "mark_display": "24\u20190.25\u201d",
+      "location": "State 2019",
+      "year": 2019,
+      "gender": "M",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "High Jump",
+      "athlete": "David Walden",
+      "mark": 2.0447,
+      "mark_display": "6\u20198.5\u201d",
+      "location": "Fort Collins 2004",
+      "year": 2004,
+      "gender": "M",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "Triple Jump",
+      "athlete": "Allam Bushara",
+      "mark": 15.1701,
+      "mark_display": "49\u20199.25\u201d",
+      "location": "State 2018",
+      "year": 2018,
+      "gender": "M",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "Discus",
+      "athlete": "Doug Cross",
+      "mark": 53.2384,
+      "mark_display": "174\u20198",
+      "location": "Conference 1977",
+      "year": 1977,
+      "gender": "M",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "Shot Put",
+      "athlete": "Jacob Hanks",
+      "mark": 18.4023,
+      "mark_display": "60\u20194.5\u201d",
+      "location": "John Martin 2013",
+      "year": 2013,
+      "gender": "M",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "400m Relay",
+      "athlete": "R. Bozmans",
+      "mark": 41.81,
+      "mark_display": "41.81",
+      "location": "State 2011",
+      "year": 2011,
+      "gender": "M",
+      "is_relay": true,
+      "relay_members": [
+        "R. Bozmans",
+        "M. McDonald",
+        "J. Lybarger",
+        "S. Severin"
+      ]
+    },
+    {
+      "event": "800m Relay",
+      "athlete": "G. Yeh",
+      "mark": 87.09,
+      "mark_display": "1.27.09",
+      "location": "State 2007",
+      "year": 2007,
+      "gender": "M",
+      "is_relay": true,
+      "relay_members": [
+        "G. Yeh",
+        "C. Hall",
+        "B. Edwards",
+        "C. Gingery"
+      ]
+    },
+    {
+      "event": "1600m Relay",
+      "athlete": "A. Merrill",
+      "mark": 195.38,
+      "mark_display": "3:15.38",
+      "location": "State 2004",
+      "year": 2004,
+      "gender": "M",
+      "is_relay": true,
+      "relay_members": [
+        "A. Merrill",
+        "B. Palacios",
+        "P. Ringenburg",
+        "N. Shannon"
+      ]
+    },
+    {
+      "event": "3200m Relay",
+      "athlete": "A. Mauk",
+      "mark": 473.81,
+      "mark_display": "7:53.81",
+      "location": "State 2005",
+      "year": 2005,
+      "gender": "M",
+      "is_relay": true,
+      "relay_members": [
+        "A. Mauk",
+        "C. Barlow",
+        "C. Tobin",
+        "C. Gingery"
+      ]
+    },
+    {
+      "event": "800m Medley Relay",
+      "athlete": "R. Marin",
+      "mark": 95.44,
+      "mark_display": "1:35.44",
+      "location": "Gutowsky Relays 2003",
+      "year": 2003,
+      "gender": "M",
+      "is_relay": true,
+      "relay_members": [
+        "R. Marin",
+        "R. Cochran",
+        "M. Yemm",
+        "B. Fox"
+      ]
+    },
+    {
+      "event": "Distance medley relay",
+      "athlete": "R. King",
+      "mark": 644.46,
+      "mark_display": "10:44.46",
+      "location": "League Relays 1994",
+      "year": 1994,
+      "gender": "M",
+      "is_relay": true,
+      "relay_members": [
+        "R. King",
+        "J. Ariaz",
+        "B. Marum",
+        "M. Hughes"
+      ]
+    }
+  ],
+  "girls": [
+    {
+      "event": "100m",
+      "athlete": "Laurie Fox",
+      "mark": 11.91,
+      "mark_display": "11.91",
+      "location": "State 1998",
+      "year": 1998,
+      "gender": "F",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "200m",
+      "athlete": "Laurie Fox",
+      "mark": 24.13,
+      "mark_display": "24.13",
+      "location": "Conference 1998",
+      "year": 1998,
+      "gender": "F",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "400m",
+      "athlete": "Rebecca Schulte",
+      "mark": 53.64,
+      "mark_display": "53.64",
+      "location": "State 2015",
+      "year": 2015,
+      "gender": "F",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "800m",
+      "athlete": "Lauren Gregory",
+      "mark": 130.94,
+      "mark_display": "2:10.94",
+      "location": "State 2017",
+      "year": 2017,
+      "gender": "F",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "1600m",
+      "athlete": "Lauren Gregory",
+      "mark": 290.77,
+      "mark_display": "4:50.77",
+      "location": "State 2017",
+      "year": 2017,
+      "gender": "F",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "3200m",
+      "athlete": "Lauren Gregory",
+      "mark": 616.43,
+      "mark_display": "10:16.43",
+      "location": "State 2017",
+      "year": 2017,
+      "gender": "F",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "100M High Hurdles",
+      "athlete": "Kailey Paterson",
+      "mark": 15.07,
+      "mark_display": "15.07",
+      "location": "John Martin 2018",
+      "year": 2018,
+      "gender": "F",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "300M Low Hurdles",
+      "athlete": "Katie Weber",
+      "mark": 42.91,
+      "mark_display": "42.91",
+      "location": "State 2012",
+      "year": 2012,
+      "gender": "F",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "Pole Vault",
+      "athlete": "Chloe Dodd",
+      "mark": 3.1496,
+      "mark_display": "10\u20194\u201d",
+      "location": "HOKA St. Vrain 2025",
+      "year": 2025,
+      "gender": "F",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "Long Jump",
+      "athlete": "Audra Koopman",
+      "mark": 6.0071,
+      "mark_display": "19\u20198.5\u201d",
+      "location": "Conference 2016",
+      "year": 2016,
+      "gender": "F",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "High Jump",
+      "athlete": "Brooke Naughton",
+      "mark": 1.7272,
+      "mark_display": "5\u20198\u201d",
+      "location": "Stutler 2019",
+      "year": 2019,
+      "gender": "F",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "Triple Jump",
+      "athlete": "Taryn Burkett",
+      "mark": 11.7348,
+      "mark_display": "38\u2019 6\u201c",
+      "location": "Runners Roost 2019",
+      "year": 2019,
+      "gender": "F",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "Discus",
+      "athlete": "Sarah Stevens",
+      "mark": 49.0982,
+      "mark_display": "161\u20191\u201d",
+      "location": "Regionals 2004",
+      "year": 2004,
+      "gender": "F",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "Shot Put",
+      "athlete": "Sarah Stevens",
+      "mark": 15.3543,
+      "mark_display": "50\u2019 4.5\u201d",
+      "location": "Mullen 2004",
+      "year": 2004,
+      "gender": "F",
+      "is_relay": false,
+      "relay_members": []
+    },
+    {
+      "event": "400m Relay",
+      "athlete": "Maddi Bollig",
+      "mark": 47.97,
+      "mark_display": "47.97",
+      "location": "Conference 2015",
+      "year": 2015,
+      "gender": "F",
+      "is_relay": true,
+      "relay_members": [
+        "Maddi Bollig",
+        "Devynn Miller",
+        "Michelle Kramer",
+        "Lauren Gregory"
+      ]
+    },
+    {
+      "event": "800m Relay",
+      "athlete": "Rebecca Schulte",
+      "mark": 100.2,
+      "mark_display": "1:40.20",
+      "location": "State 2013",
+      "year": 2013,
+      "gender": "F",
+      "is_relay": true,
+      "relay_members": [
+        "Rebecca Schulte",
+        "Maddi Bollig",
+        "Vendela Olsson",
+        "Rebecca Schulte"
+      ]
+    },
+    {
+      "event": "1600m Relay",
+      "athlete": "Jasmine Chesson",
+      "mark": 229.52,
+      "mark_display": "3:49.52",
+      "location": "State 2015",
+      "year": 2015,
+      "gender": "F",
+      "is_relay": true,
+      "relay_members": [
+        "Jasmine Chesson",
+        "Devynn Miller",
+        "Lauren Gregory",
+        "Rebecca Schulte"
+      ]
+    },
+    {
+      "event": "800m Medley Relay",
+      "athlete": "Audra Koopman",
+      "mark": 103.97,
+      "mark_display": "1:43.97",
+      "location": "State 2015",
+      "year": 2015,
+      "gender": "F",
+      "is_relay": true,
+      "relay_members": [
+        "Audra Koopman",
+        "Alexandra Suppes",
+        "Jordyn Siemens",
+        "Josephine Petruska"
+      ]
+    },
+    {
+      "event": "3200m Relay",
+      "athlete": "Abbey Ervin",
+      "mark": 546.06,
+      "mark_display": "9.06.06",
+      "location": "State 2014",
+      "year": 2014,
+      "gender": "F",
+      "is_relay": true,
+      "relay_members": [
+        "Abbey Ervin",
+        "Audra Koopman",
+        "Ava Wald",
+        "Jasmine Chesson"
+      ]
+    },
+    {
+      "event": "Distance Medley",
+      "athlete": "Taleah McClintock",
+      "mark": 763.15,
+      "mark_display": "12:43.15",
+      "location": "John Martin 2010",
+      "year": 2010,
+      "gender": "F",
+      "is_relay": false,
+      "relay_members": []
+    }
+  ],
+  "total_count": 39
+}

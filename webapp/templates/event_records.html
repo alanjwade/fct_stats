@@ -29,7 +29,7 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Athlete</th>
+                            <th>{% if is_relay %}Team{% else %}Athlete{% endif %}</th>
                             <th>PR</th>
                             <th>Meet</th>
                             <th>Date</th>
@@ -49,9 +49,13 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">
-                                    {{ result.athlete_name }}
-                                </a>
+                                {% if is_relay and result.relay_members %}
+                                    <strong>{{ result.relay_members }}</strong>
+                                {% else %}
+                                    <a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">
+                                        {{ result.athlete_name }}
+                                    </a>
+                                {% endif %}
                             </td>
                             <td>
                                 <strong>
@@ -95,7 +99,7 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Athlete</th>
+                            <th>{% if is_relay %}Team{% else %}Athlete{% endif %}</th>
                             <th>PR</th>
                             <th>Meet</th>
                             <th>Date</th>
@@ -115,9 +119,13 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">
-                                    {{ result.athlete_name }}
-                                </a>
+                                {% if is_relay and result.relay_members %}
+                                    <strong>{{ result.relay_members }}</strong>
+                                {% else %}
+                                    <a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">
+                                        {{ result.athlete_name }}
+                                    </a>
+                                {% endif %}
                             </td>
                             <td>
                                 <strong>

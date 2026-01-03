@@ -248,6 +248,11 @@
                             <i class="bi bi-star"></i> Team Bests
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'communications' %}active{% endif %}" href="{{ url_for('communications') }}">
+                            <i class="bi bi-chat-dots"></i> Communications
+                        </a>
+                    </li>
                 </ul>
                 {% if available_years %}
                 <form class="d-flex" method="GET" id="yearFilterForm">
