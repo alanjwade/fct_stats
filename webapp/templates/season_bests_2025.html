@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}2025 Season Bests{% endblock %}
+
+{% block content %}
+<style>
+#genderTabs .nav-link {
+    color: #4B286D !important;
+    border-color: #4B286D #4B286D #dee2e6 !important;
+    background-color: #f8f9fa !important;
+    font-weight: 500;
+}
+#genderTabs .nav-link:hover {
+    color: #C4A000 !important;
+    border-color: #C4A000 #C4A000 #dee2e6 !important;
+}
+#genderTabs .nav-link.active {
+    color: #C4A000 !important;
+    background-color: #4B286D !important;
+    border-color: #4B286D #4B286D #4B286D !important;
+}
+</style>
+
+<div class="container mt-4">
+    <h1 class="mb-4">2025 Season Bests</h1>
+    
+    <!-- Tabs for Boys/Girls -->
+    <ul class="nav nav-tabs" id="genderTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="boys-tab" data-bs-toggle="tab" data-bs-target="#boys" type="button" role="tab" aria-controls="boys" aria-selected="true">
+                Boys
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="girls-tab" data-bs-toggle="tab" data-bs-target="#girls" type="button" role="tab" aria-controls="girls" aria-selected="false">
+                Girls
+            </button>
+        </li>
+    </ul>
+    
+    <div class="tab-content mt-3" id="genderTabContent">
+        <!-- Boys Tab -->
+        <div class="tab-pane fade show active" id="boys" role="tabpanel" aria-labelledby="boys-tab">
+            <!-- Track Events -->
+            <h3 class="mt-4">Track</h3>
+            <div class="accordion" id="boysTrackAccordion">
+                {% for event_name in event_order_track %}
+                    {% if event_name in boys_track %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="boysTrack{{ loop.index }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#boysTrackCollapse{{ loop.index }}" aria-expanded="false" aria-controls="boysTrackCollapse{{ loop.index }}">
+                                {{ event_name }} ({{ boys_track[event_name]|length }})
+                            </button>
+                        </h2>
+                        <div id="boysTrackCollapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="boysTrack{{ loop.index }}" data-bs-parent="#boysTrackAccordion">
+                            <div class="accordion-body">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Athlete</th>
+                                            <th>Mark</th>
+                                            <th>Meet</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in boys_track[event_name] %}
+                                        <tr>
+                                            <td><a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">{{ result.athlete_name }}</a></td>
+                                            <td>{{ result.mark_display }}</td>
+                                            <td>{{ result.meet_name }}</td>
+                                            <td>{{ result.meet_date }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            
+            <!-- Field Events -->
+            <h3 class="mt-4">Field</h3>
+            <div class="accordion" id="boysFieldAccordion">
+                {% for event_name in event_order_field %}
+                    {% if event_name in boys_field %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="boysField{{ loop.index }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#boysFieldCollapse{{ loop.index }}" aria-expanded="false" aria-controls="boysFieldCollapse{{ loop.index }}">
+                                {{ event_name }} ({{ boys_field[event_name]|length }})
+                            </button>
+                        </h2>
+                        <div id="boysFieldCollapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="boysField{{ loop.index }}" data-bs-parent="#boysFieldAccordion">
+                            <div class="accordion-body">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Athlete</th>
+                                            <th>Mark</th>
+                                            <th>Meet</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in boys_field[event_name] %}
+                                        <tr>
+                                            <td><a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">{{ result.athlete_name }}</a></td>
+                                            <td>{{ result.mark_display }}</td>
+                                            <td>{{ result.meet_name }}</td>
+                                            <td>{{ result.meet_date }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            
+            <!-- Relay Events -->
+            {% if boys_relays %}
+            <h3 class="mt-4">Relays</h3>
+            <div class="accordion" id="boysRelaysAccordion">
+                {% for event_name in event_order_relays %}
+                    {% if event_name in boys_relays %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="boysRelays{{ loop.index }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#boysRelaysCollapse{{ loop.index }}" aria-expanded="false" aria-controls="boysRelaysCollapse{{ loop.index }}">
+                                {{ event_name }} ({{ boys_relays[event_name]|length }})
+                            </button>
+                        </h2>
+                        <div id="boysRelaysCollapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="boysRelays{{ loop.index }}" data-bs-parent="#boysRelaysAccordion">
+                            <div class="accordion-body">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Mark</th>
+                                            <th>Meet</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in boys_relays[event_name] %}
+                                        <tr>
+                                            <td>{{ result.mark_display }}</td>
+                                            <td>{{ result.meet_name }}</td>
+                                            <td>{{ result.meet_date }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Girls Tab -->
+        <div class="tab-pane fade" id="girls" role="tabpanel" aria-labelledby="girls-tab">
+            <!-- Track Events -->
+            <h3 class="mt-4">Track</h3>
+            <div class="accordion" id="girlsTrackAccordion">
+                {% for event_name in event_order_track %}
+                    {% if event_name in girls_track %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="girlsTrack{{ loop.index }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#girlsTrackCollapse{{ loop.index }}" aria-expanded="false" aria-controls="girlsTrackCollapse{{ loop.index }}">
+                                {{ event_name }} ({{ girls_track[event_name]|length }})
+                            </button>
+                        </h2>
+                        <div id="girlsTrackCollapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="girlsTrack{{ loop.index }}" data-bs-parent="#girlsTrackAccordion">
+                            <div class="accordion-body">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Athlete</th>
+                                            <th>Mark</th>
+                                            <th>Meet</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in girls_track[event_name] %}
+                                        <tr>
+                                            <td><a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">{{ result.athlete_name }}</a></td>
+                                            <td>{{ result.mark_display }}</td>
+                                            <td>{{ result.meet_name }}</td>
+                                            <td>{{ result.meet_date }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            
+            <!-- Field Events -->
+            <h3 class="mt-4">Field</h3>
+            <div class="accordion" id="girlsFieldAccordion">
+                {% for event_name in event_order_field %}
+                    {% if event_name in girls_field %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="girlsField{{ loop.index }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#girlsFieldCollapse{{ loop.index }}" aria-expanded="false" aria-controls="girlsFieldCollapse{{ loop.index }}">
+                                {{ event_name }} ({{ girls_field[event_name]|length }})
+                            </button>
+                        </h2>
+                        <div id="girlsFieldCollapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="girlsField{{ loop.index }}" data-bs-parent="#girlsFieldAccordion">
+                            <div class="accordion-body">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Athlete</th>
+                                            <th>Mark</th>
+                                            <th>Meet</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in girls_field[event_name] %}
+                                        <tr>
+                                            <td><a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">{{ result.athlete_name }}</a></td>
+                                            <td>{{ result.mark_display }}</td>
+                                            <td>{{ result.meet_name }}</td>
+                                            <td>{{ result.meet_date }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            
+            <!-- Relay Events -->
+            {% if girls_relays %}
+            <h3 class="mt-4">Relays</h3>
+            <div class="accordion" id="girlsRelaysAccordion">
+                {% for event_name in event_order_relays %}
+                    {% if event_name in girls_relays %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="girlsRelays{{ loop.index }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#girlsRelaysCollapse{{ loop.index }}" aria-expanded="false" aria-controls="girlsRelaysCollapse{{ loop.index }}">
+                                {{ event_name }} ({{ girls_relays[event_name]|length }})
+                            </button>
+                        </h2>
+                        <div id="girlsRelaysCollapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="girlsRelays{{ loop.index }}" data-bs-parent="#girlsRelaysAccordion">
+                            <div class="accordion-body">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Mark</th>
+                                            <th>Meet</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in girls_relays[event_name] %}
+                                        <tr>
+                                            <td>{{ result.mark_display }}</td>
+                                            <td>{{ result.meet_name }}</td>
+                                            <td>{{ result.meet_date }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

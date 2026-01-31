@@ -105,16 +105,34 @@ def parse_boys_records():
         
         # Parse individual events
         # Pattern: EVENT    ATHLETE    MARK    LOCATION
+        # Note: some lines may have extra whitespace/tabs
         parts = re.split(r'\t+', line)
         if len(parts) < 4:
             continue
         
         event = parts[0].strip()
         athlete = parts[1].strip()
-        mark_str = parts[2].strip()
-        location = parts[3].strip()
         
-        if not event or not athlete or not mark_str:
+        # Handle variable formatting - find first non-empty part after athlete that looks like a mark
+        mark_str = None
+        location = None
+        
+        for i in range(2, len(parts)):
+            part = parts[i].strip()
+            if not part:
+                continue
+            # Skip single characters (likely whitespace placeholders)
+            if len(part) <= 1:
+                continue
+            # First non-empty part is the mark
+            if mark_str is None:
+                mark_str = part
+            else:
+                # Second non-empty part is the location
+                location = part
+                break
+        
+        if not event or not athlete or not mark_str or not location:
             continue
         
         # Check if this is a relay event
@@ -315,26 +333,87 @@ def main():
     boys_records = parse_boys_records()
     girls_records = parse_girls_records()
     
-    all_records = {
-        'boys': boys_records,
-        'girls': girls_records,
-        'total_count': len(boys_records) + len(girls_records)
-    }
+    # Convert to common format: list of individual results
+    all_results = []
     
-    # Save to JSON
+    # Process boys records
+    for record in boys_records:
+        # Split athlete name
+        first_name, last_name = "", ""
+        if record['athlete']:
+            parts = record['athlete'].strip().split()
+            if len(parts) >= 2:
+                first_name = parts[0]
+                last_name = ' '.join(parts[1:])
+            elif len(parts) == 1:
+                first_name = parts[0]
+        
+        result = {
+            'event': record['event'],
+            'athlete_first': first_name,
+            'athlete_last': last_name,
+            'gender': 'M',
+            'meet': record['location'],
+            'mark': record['mark'],
+            'mark_display': record['mark_display'],
+            'year': record['year'],
+            'level': 'varsity'
+        }
+        
+        # Add relay information if applicable
+        if record['is_relay']:
+            result['is_relay'] = True
+            result['relay_members'] = record['relay_members']
+        
+        all_results.append(result)
+    
+    # Process girls records
+    for record in girls_records:
+        # Split athlete name
+        first_name, last_name = "", ""
+        if record['athlete']:
+            parts = record['athlete'].strip().split()
+            if len(parts) >= 2:
+                first_name = parts[0]
+                last_name = ' '.join(parts[1:])
+            elif len(parts) == 1:
+                first_name = parts[0]
+        
+        result = {
+            'event': record['event'],
+            'athlete_first': first_name,
+            'athlete_last': last_name,
+            'gender': 'F',
+            'meet': record['location'],
+            'mark': record['mark'],
+            'mark_display': record['mark_display'],
+            'year': record['year'],
+            'level': 'varsity'
+        }
+        
+        # Add relay information if applicable
+        if record['is_relay']:
+            result['is_relay'] = True
+            result['relay_members'] = record['relay_members']
+        
+        all_results.append(result)
+    
+    # Save to JSON in common format
     output_path = Path(__file__).parent.parent / 'data' / 'historical_records.json'
     with open(output_path, 'w') as f:
-        json.dump(all_records, f, indent=2)
+        json.dump(all_results, f, indent=2)
     
     print(f"Parsed {len(boys_records)} boys records")
     print(f"Parsed {len(girls_records)} girls records")
-    print(f"Total: {all_records['total_count']} records")
+    print(f"Total: {len(all_results)} records")
     print(f"Saved to: {output_path}")
     
     # Print summary
+    boys_relays = sum(1 for r in boys_records if r['is_relay'])
+    girls_relays = sum(1 for r in girls_records if r['is_relay'])
     print("\nSummary:")
-    print(f"Boys relays: {sum(1 for r in boys_records if r['is_relay'])}")
-    print(f"Girls relays: {sum(1 for r in girls_records if r['is_relay'])}")
+    print(f"Boys relays: {boys_relays}")
+    print(f"Girls relays: {girls_relays}")
 
 
 if __name__ == '__main__':

@@ -1,141 +1,190 @@
 {% extends "base.html" %}
 
-{% block title %}FCT Stats - Fort Collins Track Statistics{% endblock %}
+{% block title %}Home - FC Track & Field{% endblock %}
 
 {% block content %}
 <div class="hero-section">
     <div class="container">
-        <h1><i class="bi bi-lightning-fill"></i> Fort Collins Track</h1>
-        <p class="lead mb-0">Track & Field Performance Statistics</p>
+        <h1><i class="bi bi-lightning-fill"></i> Fort Collins Track & Field</h1>
+        <p class="lead mb-0">Welcome to the Lambkin Track & Field Team</p>
     </div>
 </div>
 
-<div class="container">
-    <!-- Stats Overview -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="stat-card">
-                <div class="stat-value">{{ stats.athletes }}</div>
-                <div class="stat-label">Athletes</div>
+<div class="container py-5">
+    <!-- Band App CTA Banner -->
+    <div class="alert alert-success alert-dismissible fade show" role="alert" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); border: none; color: white;">
+        <div class="row align-items-center">
+            <div class="col">
+                <h4 class="alert-heading mb-2">
+                    <i class="bi bi-megaphone"></i> Team Communications
+                </h4>
+                <p class="mb-0">Join our Band community for real-time updates, schedule changes, and team announcements.</p>
+            </div>
+            <div class="col-auto">
+                <a href="#" class="btn btn-light btn-lg">
+                    <i class="bi bi-download"></i> Get the Band App
+                </a>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="stat-card">
-                <div class="stat-value">{{ stats.results }}</div>
-                <div class="stat-label">Results</div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="stat-card">
-                <div class="stat-value">{{ stats.meets }}</div>
-                <div class="stat-label">Meets</div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="stat-card">
-                <div class="stat-value">{{ stats.events }}</div>
-                <div class="stat-label">Events</div>
-            </div>
-        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
     </div>
-    
-    <!-- Team Communications CTA -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card bg-success text-white border-0">
-                <div class="card-body text-center py-4">
-                    <h3 class="card-title mb-3">
-                        <i class="bi bi-chat-dots-fill"></i> Stay Connected with the Team
-                    </h3>
-                    <p class="card-text mb-3">
-                        View the team schedule, meet our coaching staff, and join the Band app for instant updates and communications.
-                    </p>
-                    <a href="{{ url_for('communications') }}" class="btn btn-light btn-lg">
-                        <i class="bi bi-chat-dots"></i> Go to Team Communications
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    
+
     <div class="row">
-        <!-- Recent Meets -->
-        <div class="col-lg-8 mb-4">
+        <!-- Upcoming Schedule -->
+        <div class="col-lg-6 mb-4">
             <div class="card">
                 <div class="card-header">
-                    <i class="bi bi-calendar-event"></i> Recent Meets
+                    <i class="bi bi-calendar-event"></i> Upcoming Events
                 </div>
                 <div class="card-body">
-                    {% if recent_meets %}
+                    {% if calendar_events %}
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0">
+                        <table class="table table-hover mb-0">
                             <thead>
                                 <tr>
-                                    <th>Meet</th>
                                     <th>Date</th>
-                                    <th>Level</th>
-                                    <th>Athletes</th>
-                                    <th>Results</th>
+                                    <th>Event</th>
+                                    <th class="d-none d-md-table-cell">Time</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for meet in recent_meets %}
+                                {% for event in calendar_events[:10] %}
                                 <tr>
                                     <td>
-                                        <strong>{{ meet.name }}</strong>
-                                        {% if meet.venue or meet.location %}
-                                        <br>
-                                        <small class="text-muted">
-                                            {% if meet.venue %}{{ meet.venue }}{% endif %}
-                                            {% if meet.venue and meet.location %}, {% endif %}
-                                            {% if meet.location %}{{ meet.location }}{% endif %}
-                                        </small>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ meet.meet_date }}</td>
-                                    <td>
-                                        {% if meet.level == 'varsity' %}
-                                        <span class="badge bg-primary">Varsity</span>
-                                        {% elif meet.level == 'jv' %}
-                                        <span class="badge bg-info">JV</span>
+                                        {% if event.date %}
+                                        <small class="text-muted">{{ event.date.split('/')[0] }}/{{ event.date.split('/')[1] }}</small><br>
+                                        <strong>{{ event.day_name[:3] }}</strong>
                                         {% else %}
-                                        <span class="badge bg-secondary">{{ meet.level|title }}</span>
+                                        <small class="text-muted">{{ event.day_name[:3] }}</small><br>
+                                        <strong>{{ event.day }}</strong>
                                         {% endif %}
                                     </td>
-                                    <td>{{ meet.athlete_count }}</td>
-                                    <td>{{ meet.result_count }}</td>
+                                    <td>
+                                        <div><strong>{{ event.title }}</strong></div>
+                                        {% if event.location %}
+                                        <small class="text-muted d-md-none">{{ event.location }}</small>
+                                        {% endif %}
+                                        {% if event.time and event.time != 'N/A' %}
+                                        <small class="text-muted d-md-none">{{ event.time }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
+                                        {% if event.time and event.time != 'N/A' %}
+                                        <small>{{ event.time }}</small>
+                                        {% if event.location %}
+                                        <br><small class="text-muted">{{ event.location }}</small>
+                                        {% endif %}
+                                        {% else %}
+                                        {% if event.location %}
+                                        <small class="text-muted">{{ event.location }}</small>
+                                        {% else %}
+                                        <small class="text-muted">-</small>
+                                        {% endif %}
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
                     {% else %}
-                    <p class="text-muted text-center mb-0">No meets yet. Import some meet data to get started!</p>
+                    <p class="text-muted text-center mb-0">
+                        <i class="bi bi-calendar-x"></i> No upcoming events scheduled
+                    </p>
                     {% endif %}
+                    <div class="mt-3 text-center">
+                        <small class="text-muted">Check Band app for schedule updates and details</small>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Quick Links -->
-        <div class="col-lg-4 mb-4">
-            <div class="card mb-4">
+
+        <!-- Coaching Staff -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
                 <div class="card-header">
-                    <i class="bi bi-lightning"></i> Quick Links
+                    <i class="bi bi-people-fill"></i> Coaching Staff
                 </div>
                 <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('athletes_list') }}" class="btn btn-outline-primary">
-                            <i class="bi bi-people"></i> View All Athletes
-                        </a>
-                        <a href="{{ url_for('events_list') }}" class="btn btn-outline-primary">
-                            <i class="bi bi-trophy"></i> Event Records
-                        </a>
-                        <a href="{{ url_for('team_bests') }}" class="btn btn-outline-primary">
-                            <i class="bi bi-star"></i> Team Bests
-                        </a>
-                        <a href="{{ url_for('communications') }}" class="btn btn-outline-success">
-                            <i class="bi bi-chat-dots"></i> Team Communications
-                        </a>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between flex-wrap">
+                                <h5 class="mb-1">Coach Sarah Johnson</h5>
+                                <small class="text-muted">Head Coach</small>
+                            </div>
+                            <p class="mb-1 small">
+                                <i class="bi bi-envelope"></i> <a href="mailto:sarah.johnson@example.com">sarah.johnson@example.com</a>
+                            </p>
+                            <small class="text-muted">Sprints & Hurdles</small>
+                        </div>
+                        
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between flex-wrap">
+                                <h5 class="mb-1">Coach Mike Thompson</h5>
+                                <small class="text-muted">Assistant Coach</small>
+                            </div>
+                            <p class="mb-1 small">
+                                <i class="bi bi-envelope"></i> <a href="mailto:mike.thompson@example.com">mike.thompson@example.com</a>
+                            </p>
+                            <small class="text-muted">Distance & Middle Distance</small>
+                        </div>
+                        
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between flex-wrap">
+                                <h5 class="mb-1">Coach Emily Rodriguez</h5>
+                                <small class="text-muted">Assistant Coach</small>
+                            </div>
+                            <p class="mb-1 small">
+                                <i class="bi bi-envelope"></i> <a href="mailto:emily.rodriguez@example.com">emily.rodriguez@example.com</a>
+                            </p>
+                            <small class="text-muted">Jumps & Pole Vault</small>
+                        </div>
+                        
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between flex-wrap">
+                                <h5 class="mb-1">Coach David Chen</h5>
+                                <small class="text-muted">Assistant Coach</small>
+                            </div>
+                            <p class="mb-1 small">
+                                <i class="bi bi-envelope"></i> <a href="mailto:david.chen@example.com">david.chen@example.com</a>
+                            </p>
+                            <small class="text-muted">Throws</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links to Stats -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-graph-up"></i> Performance & Records
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 col-6 mb-3">
+                            <a href="{{ url_for('stats') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-bar-chart"></i> View Statistics
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <a href="{{ url_for('athletes_list') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-people"></i> Athletes
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <a href="{{ url_for('events_list') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-trophy"></i> Event Records
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <a href="{{ url_for('team_bests') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-star"></i> Team Records
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -197,8 +197,41 @@ def inject_year_filter():
 # Routes
 @app.route('/')
 def index():
-    """Dashboard / home page."""
+    """Home page - team communications and information."""
     record_page_view('home')
+    
+    # Load calendar events
+    calendar_events = []
+    calendar_path = Path(__file__).parent / 'config' / 'calendar_events.json'
+    if calendar_path.exists():
+        import json
+        from datetime import datetime
+        with open(calendar_path, 'r') as f:
+            all_events = json.load(f)
+        
+        # Filter for upcoming events only (today or future)
+        today = datetime.now().date()
+        for event in all_events:
+            if event.get('date'):
+                try:
+                    # Parse date in MM/DD/YYYY format
+                    event_date = datetime.strptime(event['date'], '%m/%d/%Y').date()
+                    if event_date >= today:
+                        calendar_events.append(event)
+                except ValueError:
+                    # If date parsing fails, include the event anyway
+                    calendar_events.append(event)
+            else:
+                # No date available, include it
+                calendar_events.append(event)
+    
+    return render_template('index.html', calendar_events=calendar_events)
+
+
+@app.route('/stats')
+def stats():
+    """Performance statistics dashboard."""
+    record_page_view('stats')
     year_filter = get_current_year_filter()
     
     with get_db_connection() as conn:
@@ -297,7 +330,7 @@ def index():
                 LIMIT 5
             """).fetchall()
     
-    return render_template('index.html',
+    return render_template('stats.html',
         stats={
             'athletes': athlete_count,
             'results': result_count,
@@ -307,13 +340,6 @@ def index():
         recent_meets=recent_meets,
         top_events=top_events
     )
-
-
-@app.route('/communications')
-def communications():
-    """Team communications page with schedule, staff, and Band app link."""
-    record_page_view('communications')
-    return render_template('communications.html')
 
 
 @app.route('/athletes')
@@ -568,6 +594,129 @@ def team_bests():
         current_season='',  # Deprecated
         current_gender=gender,
         gender=gender
+    )
+
+
+@app.route('/season-bests-2025')
+def season_bests_2025():
+    """2025 Season Bests - best result per athlete per event in 2025."""
+    record_page_view('season_bests_2025')
+    
+    with get_db_connection() as conn:
+        # Get all 2025 results with best mark per athlete per event
+        query = """
+            WITH RankedResults AS (
+                SELECT 
+                    e.id as event_id,
+                    e.name as event_name,
+                    e.category,
+                    e.timed,
+                    e.lower_is_better,
+                    e.is_relay,
+                    a.gender,
+                    a.id as athlete_id,
+                    a.first_name || ' ' || a.last_name as athlete_name,
+                    r.mark,
+                    r.mark_display,
+                    m.name as meet_name,
+                    m.meet_date,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY e.id, a.id, a.gender
+                        ORDER BY 
+                            CASE WHEN e.lower_is_better THEN r.mark END ASC,
+                            CASE WHEN NOT e.lower_is_better THEN r.mark END DESC
+                    ) as rn
+                FROM results r
+                JOIN athletes a ON r.athlete_id = a.id
+                JOIN events e ON r.event_id = e.id
+                JOIN meets m ON r.meet_id = m.id
+                WHERE strftime('%Y', m.meet_date) = '2025'
+            )
+            SELECT *
+            FROM RankedResults
+            WHERE rn = 1
+            ORDER BY gender, category, event_name, 
+                CASE WHEN lower_is_better THEN mark END ASC,
+                CASE WHEN NOT lower_is_better THEN mark END DESC
+        """
+        
+        all_results = conn.execute(query).fetchall()
+        
+        # Organize results by gender and category
+        boys_track = []
+        boys_field = []
+        boys_relays = []
+        girls_track = []
+        girls_field = []
+        girls_relays = []
+        
+        for result in all_results:
+            category = result['category']
+            gender = result['gender']
+            
+            if gender == 'M':
+                if result['is_relay']:
+                    boys_relays.append(result)
+                elif category in ['sprint', 'middle_distance', 'distance', 'hurdles']:
+                    boys_track.append(result)
+                else:
+                    boys_field.append(result)
+            else:  # F
+                if result['is_relay']:
+                    girls_relays.append(result)
+                elif category in ['sprint', 'middle_distance', 'distance', 'hurdles']:
+                    girls_track.append(result)
+                else:
+                    girls_field.append(result)
+        
+        # Get event ordering for proper sorting
+        event_order_track = ['100m', '200m', '400m', '800m', '1600m', '3200m', '100m Hurdles', '110m Hurdles', '300m Hurdles']
+        event_order_field = ['High Jump', 'Pole Vault', 'Long Jump', 'Triple Jump', 'Shot Put', 'Discus']
+        event_order_relays = ['4x100m Relay', '4x200m Relay', '4x400m Relay', '4x800m Relay']
+        
+        # Sort by event order
+        def sort_by_event_order(results, event_order):
+            def get_order(result):
+                try:
+                    return event_order.index(result['event_name'])
+                except ValueError:
+                    return 999
+            return sorted(results, key=get_order)
+        
+        boys_track = sort_by_event_order(boys_track, event_order_track)
+        girls_track = sort_by_event_order(girls_track, event_order_track)
+        boys_field = sort_by_event_order(boys_field, event_order_field)
+        girls_field = sort_by_event_order(girls_field, event_order_field)
+        boys_relays = sort_by_event_order(boys_relays, event_order_relays)
+        girls_relays = sort_by_event_order(girls_relays, event_order_relays)
+        
+        # Group results by event
+        def group_by_event(results):
+            events = {}
+            for result in results:
+                event_name = result['event_name']
+                if event_name not in events:
+                    events[event_name] = []
+                events[event_name].append(result)
+            return events
+        
+        boys_track_by_event = group_by_event(boys_track)
+        girls_track_by_event = group_by_event(girls_track)
+        boys_field_by_event = group_by_event(boys_field)
+        girls_field_by_event = group_by_event(girls_field)
+        boys_relays_by_event = group_by_event(boys_relays)
+        girls_relays_by_event = group_by_event(girls_relays)
+    
+    return render_template('season_bests_2025.html',
+        boys_track=boys_track_by_event,
+        girls_track=girls_track_by_event,
+        boys_field=boys_field_by_event,
+        girls_field=girls_field_by_event,
+        boys_relays=boys_relays_by_event,
+        girls_relays=girls_relays_by_event,
+        event_order_track=event_order_track,
+        event_order_field=event_order_field,
+        event_order_relays=event_order_relays
     )
 
 

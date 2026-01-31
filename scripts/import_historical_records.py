@@ -18,28 +18,6 @@ from scraper.event_matcher import get_event_matcher
 logger = logging.getLogger(__name__)
 
 
-def split_name(full_name: str) -> tuple[str, str]:
-    """Split a full name into first and last name."""
-    if not full_name:
-        return "", ""
-    
-    full_name = full_name.strip()
-    
-    # Handle "First Last" format
-    parts = full_name.split()
-    if len(parts) >= 2:
-        first_name = parts[0]
-        last_name = ' '.join(parts[1:])
-    elif len(parts) == 1:
-        first_name = parts[0]
-        last_name = ""
-    else:
-        first_name = ""
-        last_name = ""
-    
-    return first_name, last_name
-
-
 def import_historical_records(db_path: str = None):
     """Import historical records from JSON into the database."""
     logger.info("Importing historical school records...")
@@ -52,30 +30,30 @@ def import_historical_records(db_path: str = None):
         return
     
     with open(json_path, 'r') as f:
-        data = json.load(f)
+        records = json.load(f)
     
     db = get_database(db_path)
     event_matcher = get_event_matcher()
     
-    # Import boys records
-    boys_count = import_gender_records(db, event_matcher, data['boys'], 'M')
+    # Import all records (now in common format)
+    logger.info(f"Processing records from {json_path}...")
+    count = import_records(db, event_matcher, records)
     
-    # Import girls records
-    girls_count = import_gender_records(db, event_matcher, data['girls'], 'F')
+    logger.info(f"Total NEW historical records imported: {count}")
+    logger.info(f"(Existing records were skipped - run with --debug to see details)")
     
-    total = boys_count + girls_count
-    logger.info(f"Imported {boys_count} boys records, {girls_count} girls records")
-    logger.info(f"Total historical records imported: {total}")
-    
-    return total
+    return count
 
 
-def import_gender_records(db, event_matcher, records, gender):
-    """Import records for a specific gender."""
+def import_records(db, event_matcher, records):
+    """Import records in the common format."""
     count = 0
+    skipped = 0
     
     for record in records:
         try:
+            gender = record['gender']
+            
             # Match to canonical event
             canonical_event = event_matcher.match(record['event'], gender)
             if not canonical_event:
@@ -86,21 +64,21 @@ def import_gender_records(db, event_matcher, records, gender):
             event_id = db.get_or_create_event(canonical_event, event_info)
             
             # Create a virtual meet for this historical record
-            # Use the location as the meet name
-            meet_name = record['location']
-            meet_date = f"{record['year']}-01-01" if record['year'] else None
+            # Use the meet name from the record
+            meet_name = record['meet']
+            meet_date = f"{record['year']}-01-01" if record.get('year') else None
             
             meet_id = db.get_or_create_meet(
                 name=meet_name,
                 meet_date=meet_date,
-                venue=record['location'],
-                location=record['location'],
-                season=str(record['year']) if record['year'] else None,
-                level='varsity'
+                venue=record['meet'],
+                location=record['meet'],
+                season=str(record['year']) if record.get('year') else None,
+                level=record.get('level', 'varsity')
             )
             
             # Handle relay vs individual
-            if record['is_relay'] and record['relay_members']:
+            if record.get('is_relay') and record.get('relay_members'):
                 # For relays, create a result for the first team member
                 # and link the others via relay_members table
                 if not record['relay_members']:
@@ -109,7 +87,16 @@ def import_gender_records(db, event_matcher, records, gender):
                 
                 # Use first member as the primary athlete for the result
                 first_member = record['relay_members'][0]
-                first_name, last_name = split_name(first_member)
+                mem_parts = first_member.strip().split()
+                if len(mem_parts) >= 2:
+                    first_name = mem_parts[0]
+                    last_name = ' '.join(mem_parts[1:])
+                elif len(mem_parts) == 1:
+                    first_name = mem_parts[0]
+                    last_name = ""
+                else:
+                    first_name = ""
+                    last_name = ""
                 
                 athlete_id = db.get_or_create_athlete(
                     first_name=first_name,
@@ -126,14 +113,23 @@ def import_gender_records(db, event_matcher, records, gender):
                     mark=record['mark'],
                     mark_display=record['mark_display'],
                     place=1,  # All historical records are #1
-                    level='varsity',
-                    notes=f"School Record as of {record['year']}"
+                    level=record.get('level', 'varsity'),
+                    notes=f"School Record as of {record.get('year', 'Unknown')}"
                 )
                 
                 if result_id:
                     # Add all relay members (including the first one)
                     for i, member_name in enumerate(record['relay_members'], start=1):
-                        mem_first, mem_last = split_name(member_name)
+                        mem_parts = member_name.strip().split()
+                        if len(mem_parts) >= 2:
+                            mem_first = mem_parts[0]
+                            mem_last = ' '.join(mem_parts[1:])
+                        elif len(mem_parts) == 1:
+                            mem_first = mem_parts[0]
+                            mem_last = ""
+                        else:
+                            continue
+                        
                         mem_athlete_id = db.get_or_create_athlete(
                             first_name=mem_first,
                             last_name=mem_last,
@@ -148,10 +144,14 @@ def import_gender_records(db, event_matcher, records, gender):
                     
                     count += 1
                     logger.info(f"  Added relay: {record['event']} - {record['relay_members']}")
+                else:
+                    skipped += 1
+                    logger.debug(f"  Skipped relay (already exists): {record['event']} - {record['relay_members']}")
             
             else:
                 # Individual event
-                first_name, last_name = split_name(record['athlete'])
+                first_name = record.get('athlete_first', '')
+                last_name = record.get('athlete_last', '')
                 
                 athlete_id = db.get_or_create_athlete(
                     first_name=first_name,
@@ -168,17 +168,21 @@ def import_gender_records(db, event_matcher, records, gender):
                     mark=record['mark'],
                     mark_display=record['mark_display'],
                     place=1,  # All historical records are #1
-                    level='varsity',
-                    notes=f"School Record as of {record['year']}"
+                    level=record.get('level', 'varsity'),
+                    notes=f"School Record as of {record.get('year', 'Unknown')}"
                 )
                 
                 if result_id:
                     count += 1
-                    logger.info(f"  Added: {record['event']} - {record['athlete']} - {record['mark_display']}")
+                    logger.info(f"  Added: {record['event']} - {first_name} {last_name} - {record['mark_display']}")
+                else:
+                    skipped += 1
+                    logger.debug(f"  Skipped (already exists): {record['event']} - {first_name} {last_name} - {record['mark_display']}")
         
         except Exception as e:
             logger.error(f"Error importing record {record.get('event')}: {e}")
     
+    logger.info(f"  Summary: {count} added, {skipped} skipped")
     return count
 
 

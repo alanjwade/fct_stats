@@ -1,0 +1,117 @@
+[
+  {
+    "date": "01/01/2026",
+    "day": "1",
+    "day_name": "Thursday",
+    "title": "Winter Break",
+    "time": "All-day",
+    "location": "New Year's Day"
+  },
+  {
+    "date": "01/02/2026",
+    "day": "2",
+    "day_name": "Friday",
+    "title": "Winter Break",
+    "time": "All-day"
+  },
+  {
+    "date": "01/03/2026",
+    "day": "3",
+    "day_name": "Saturday",
+    "title": "Winter Break",
+    "time": "All-day"
+  },
+  {
+    "date": "01/04/2026",
+    "day": "4",
+    "day_name": "Sunday",
+    "title": "Winter Break",
+    "time": "All-day"
+  },
+  {
+    "date": "01/05/2026",
+    "day": "5",
+    "day_name": "Monday",
+    "title": "Winter Break",
+    "time": "All-day"
+  },
+  {
+    "date": "01/10/2026",
+    "day": "10",
+    "day_name": "Saturday",
+    "title": "Indoor HS Meet @ CO School of Mines",
+    "time": "9:00 AM - 3:00 PM",
+    "location": "Colorado School of Mines"
+  },
+  {
+    "date": "01/12/2026",
+    "day": "12",
+    "day_name": "Monday",
+    "title": "Preseason Training",
+    "time": "4:20 PM - 5:45 PM"
+  },
+  {
+    "date": "01/13/2026",
+    "day": "13",
+    "day_name": "Tuesday",
+    "title": "Preseason Training",
+    "time": "4:20 PM - 5:45 PM"
+  },
+  {
+    "date": "01/15/2026",
+    "day": "15",
+    "day_name": "Thursday",
+    "title": "Preseason Training",
+    "time": "4:20 PM - 5:45 PM"
+  },
+  {
+    "date": "01/17/2026",
+    "day": "17",
+    "day_name": "Saturday",
+    "title": "Indoor HS Meet @ CO School of Mines",
+    "time": "9:00 AM - 4:00 PM",
+    "location": "Colorado School of Mines"
+  },
+  {
+    "date": "01/19/2026",
+    "day": "19",
+    "day_name": "Monday",
+    "title": "No School 10:00 AM #8367EB Group Calendar \u00b7\u00a0Jeff Brennan Martin Luther King Jr. Day"
+  },
+  {
+    "date": "01/20/2026",
+    "day": "20",
+    "day_name": "Tuesday",
+    "title": "Preseason Training",
+    "time": "4:20 PM - 5:45 PM"
+  },
+  {
+    "date": "01/22/2026",
+    "day": "22",
+    "day_name": "Thursday",
+    "title": "Preseason Training",
+    "time": "4:20 PM - 5:00 PM"
+  },
+  {
+    "date": "01/26/2026",
+    "day": "26",
+    "day_name": "Monday",
+    "title": "Preseason Training",
+    "time": "4:20 PM - 5:45 PM"
+  },
+  {
+    "date": "01/27/2026",
+    "day": "27",
+    "day_name": "Tuesday",
+    "title": "Preseason Training",
+    "time": "4:20 PM - 5:45 PM"
+  },
+  {
+    "date": "01/29/2026",
+    "day": "29",
+    "day_name": "Thursday",
+    "title": "Preseason Training",
+    "time": "4:20 PM - 5:45 PM",
+    "location": "Indoor HS Meet @ CO School of Mines 6:00 PM - 10:00 PM Colorado School of Mines"
+  }
+]

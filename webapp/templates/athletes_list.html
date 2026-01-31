@@ -1,14 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Athletes - FCT Stats{% endblock %}
+{% block title %}Athletes - FC Track & Field{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1><i class="bi bi-people"></i> Athletes</h1>
-        <div class="search-box">
-            <input type="text" class="form-control" id="athleteSearch" placeholder="Search athletes...">
-        </div>
+    <h1 class="mb-3"><i class="bi bi-people"></i> Athletes</h1>
+    <div class="mb-4">
+        <input type="text" class="form-control" id="athleteSearch" placeholder="Search athletes...">
     </div>
     
     {% if athletes %}
@@ -19,10 +17,10 @@
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Gender</th>
-                            <th>Grade</th>
+                            <th class="d-none d-sm-table-cell">Gender</th>
+                            <th class="d-none d-md-table-cell">Grade</th>
                             <th>Results</th>
-                            <th>PRs</th>
+                            <th class="d-none d-md-table-cell">PRs</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -33,8 +31,17 @@
                                 <a href="{{ url_for('athlete_stats', athlete_id=athlete.id) }}">
                                     <strong>{{ athlete.name }}</strong>
                                 </a>
+                                <br class="d-sm-none">
+                                <small class="d-sm-none">
+                                    {% if athlete.gender == 'M' %}
+                                    <span class="badge bg-primary">M</span>
+                                    {% elif athlete.gender == 'F' %}
+                                    <span class="badge bg-danger">F</span>
+                                    {% endif %}
+                                    Grade {{ athlete.grade or '-' }}
+                                </small>
                             </td>
-                            <td>
+                            <td class="d-none d-sm-table-cell">
                                 {% if athlete.gender == 'M' %}
                                 <span class="badge bg-primary">M</span>
                                 {% elif athlete.gender == 'F' %}
@@ -43,12 +50,14 @@
                                 <span class="badge bg-secondary">-</span>
                                 {% endif %}
                             </td>
-                            <td>{{ athlete.grade or '-' }}</td>
+                            <td class="d-none d-md-table-cell">{{ athlete.grade or '-' }}</td>
                             <td>{{ athlete.result_count }}</td>
-                            <td>{{ athlete.pr_count }}</td>
+                            <td class="d-none d-md-table-cell">{{ athlete.pr_count }}</td>
                             <td>
                                 <a href="{{ url_for('athlete_stats', athlete_id=athlete.id) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-graph-up"></i> Stats
+                                    <i class="bi bi-graph-up d-none d-sm-inline"></i>
+                                    <span class="d-none d-sm-inline">Stats</span>
+                                    <i class="bi bi-arrow-right d-sm-none"></i>
                                 </a>
                             </td>
                         </tr>

@@ -75,3 +75,12 @@ docker-compose.override.yml
 data/meets/2025/randall_hess_roughrider_invitational_2025.yaml
 tmp/FCHS Boys Track & Field Records.docx.md
 tmp/FCHS Girls Track & Field Records.docx.md
+debug_column_mapping.py
+debug_ods.py
+find_100m.py
+find_addyson.py
+quick_debug.py
+show_addyson_raw.py
+test_parse.py
+tmp/2025 Track & Field Performance List.xlsx
+tmp/2025 Track & Field Performance List.xlsx.ods

@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Team Bests - FCT Stats{% endblock %}
+{% block title %}Team Records - FC Track & Field{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h1 class="mb-4"><i class="bi bi-star-fill text-gold"></i> Team Bests</h1>
+    <h1 class="mb-4"><i class="bi bi-star-fill text-gold"></i> Team Records</h1>
     
     <p class="text-muted mb-4">The best performance by any Fort Collins athlete in each event.</p>
     
@@ -40,9 +40,9 @@
                                 <tr>
                                     <th>Event</th>
                                     <th>Time</th>
-                                    <th>Athlete</th>
-                                    {% if not gender %}<th>Gender</th>{% endif %}
-                                    <th>Date</th>
+                                    <th class="d-none d-md-table-cell">Athlete</th>
+                                    {% if not gender %}<th class="d-none d-sm-table-cell">Gender</th>{% endif %}
+                                    <th class="d-none d-lg-table-cell">Date</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -52,21 +52,27 @@
                                         <a href="{{ url_for('event_records', event_name=best.event_name) }}">
                                             {{ best.event_name }}
                                         </a>
+                                        <br class="d-md-none">
+                                        <small class="text-muted d-md-none">
+                                            <a href="{{ url_for('athlete_stats', athlete_id=best.athlete_id) }}">
+                                                {{ best.athlete_name }}
+                                            </a>
+                                        </small>
                                     </td>
                                     <td><strong>{{ best.mark|format_time }}</strong></td>
-                                    <td>
+                                    <td class="d-none d-md-table-cell">
                                         <a href="{{ url_for('athlete_stats', athlete_id=best.athlete_id) }}">
                                             {{ best.athlete_name }}
                                         </a>
                                     </td>
                                     {% if not gender %}
-                                    <td>
+                                    <td class="d-none d-sm-table-cell">
                                         {% if best.gender == 'M' %}<span class="badge bg-primary">Boys</span>
                                         {% elif best.gender == 'F' %}<span class="badge bg-danger">Girls</span>
                                         {% endif %}
                                     </td>
                                     {% endif %}
-                                    <td class="small text-muted">{{ best.meet_date }}</td>
+                                    <td class="small text-muted d-none d-lg-table-cell">{{ best.meet_date }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -92,9 +98,9 @@
                                 <tr>
                                     <th>Event</th>
                                     <th>Mark</th>
-                                    <th>Athlete</th>
-                                    {% if not gender %}<th>Gender</th>{% endif %}
-                                    <th>Date</th>
+                                    <th class="d-none d-md-table-cell">Athlete</th>
+                                    {% if not gender %}<th class="d-none d-sm-table-cell">Gender</th>{% endif %}
+                                    <th class="d-none d-lg-table-cell">Date</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -104,21 +110,27 @@
                                         <a href="{{ url_for('event_records', event_name=best.event_name) }}">
                                             {{ best.event_name }}
                                         </a>
+                                        <br class="d-md-none">
+                                        <small class="text-muted d-md-none">
+                                            <a href="{{ url_for('athlete_stats', athlete_id=best.athlete_id) }}">
+                                                {{ best.athlete_name }}
+                                            </a>
+                                        </small>
                                     </td>
                                     <td><strong>{{ best.mark|format_mark(False, best.event_name) }}</strong></td>
-                                    <td>
+                                    <td class="d-none d-md-table-cell">
                                         <a href="{{ url_for('athlete_stats', athlete_id=best.athlete_id) }}">
                                             {{ best.athlete_name }}
                                         </a>
                                     </td>
                                     {% if not gender %}
-                                    <td>
+                                    <td class="d-none d-sm-table-cell">
                                         {% if best.gender == 'M' %}<span class="badge bg-primary">Boys</span>
                                         {% elif best.gender == 'F' %}<span class="badge bg-danger">Girls</span>
                                         {% endif %}
                                     </td>
                                     {% endif %}
-                                    <td class="small text-muted">{{ best.meet_date }}</td>
+                                    <td class="small text-muted d-none d-lg-table-cell">{{ best.meet_date }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
