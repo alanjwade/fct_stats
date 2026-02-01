@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 def load_meet_config():
     """Load meet dates and levels from config file."""
-    meets_config_path = Path(__file__).parent.parent / 'data' / '2025' / 'meets_2025.json'
+    meets_config_path = Path(__file__).parent.parent / 'data' / 'sources' / 'current' / '2025' / 'meets_2025.json'
     meet_info = {}
     
     if meets_config_path.exists():
