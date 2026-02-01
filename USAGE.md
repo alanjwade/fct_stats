@@ -5,7 +5,7 @@ Track statistics website for the Fort Collins High School track team.
 ## Architecture Overview
 
 - **Scraper**: Python scripts that parse meet results from HTML pages and populate the SQLite database
-- **Database**: SQLite database (`data/fct_stats.db`) storing athletes, meets, events, and results
+- **Database**: SQLite database (`data/generated/db/fct_stats.db`) storing athletes, meets, events, and results
 - **Webapp**: Flask web application displaying statistics and records
 - **Deployment**: Docker containers with nginx reverse proxy for production
 
@@ -32,15 +32,15 @@ cd ..
 
 #### Add a New Meet
 
-1. **Save the HTML page**: Download the meet results page and save to `data/pages/YYYY/`
+1. **Save the HTML page**: Download the meet results page and save to `data/sources/current/pages/YYYY/`
    ```bash
-   mkdir -p data/pages/2025
+   mkdir -p data/sources/current/pages/2025
    # Save HTML file, e.g., "Longmont Invitational 2025.html"
    ```
 
-2. **Create meet configuration**: Create a YAML file in `data/meets/YYYY/`
+2. **Create meet configuration**: Create a YAML file in `data/sources/current/meets/YYYY/`
    ```bash
-   cd data/meets/2025
+   cd data/sources/current/meets/2025
    nano longmont_invitational_2025.yaml
    ```
 
@@ -62,7 +62,7 @@ Always start from the project root directory:
 ```bash
 cd /home/alan/Documents/code/fct_stats
 source scraper/venv/bin/activate
-python -m scraper.scraper data/meets/2025/longmont_invitational_2025.yaml
+python -m scraper.scraper data/sources/current/meets/2025/longmont_invitational_2025.yaml
 deactivate  # Exit venv when done
 ```
 
@@ -72,13 +72,13 @@ Clear database before scraping:
 
 ```bash
 # Clear only results (keeps athletes, events, meets)
-python -m scraper.scraper --clear-results data/meets/2025/meet.yaml
+python -m scraper.scraper --clear-results data/sources/current/meets/2025/meet.yaml
 
 # Clear all meets and results (keeps athletes and events)
-python -m scraper.scraper --clear-meets data/meets/2025/meet.yaml
+python -m scraper.scraper --clear-meets data/sources/current/meets/2025/meet.yaml
 
 # Clear entire database (fresh start)
-python -m scraper.scraper --clear-all data/meets/2025/meet.yaml
+python -m scraper.scraper --clear-all data/sources/current/meets/2025/meet.yaml
 ```
 
 Scraping modes:
@@ -88,13 +88,13 @@ Scraping modes:
 python -m scraper.scraper data/meets/2025/meet.yaml
 
 # Scrape all meets in a directory (searches recursively)
-python -m scraper.scraper --meet-dir data/meets/2025
+python -m scraper.scraper --meet-dir data/sources/current/meets/2025
 
-# Scrape all meets in default data/meets/ directory
+# Scrape all meets in default data/sources/current/meets/ directory
 python -m scraper.scraper
 
 # Use custom database path
-python -m scraper.scraper --db /path/to/database.db data/meets/2025/meet.yaml
+python -m scraper.scraper --db /path/to/database.db data/sources/current/meets/2025/meet.yaml
 ```
 
 Combined examples:
@@ -104,10 +104,10 @@ Combined examples:
 python -m scraper.scraper --clear-results data/meets/2025/meet.yaml
 
 # Clear results and scrape entire year
-python -m scraper.scraper --meet-dir data/meets/2025 --clear-results
+python -m scraper.scraper --meet-dir data/sources/current/meets/2025 --clear-results
 
 # Clear all data and rebuild from scratch
-python -m scraper.scraper --meet-dir data/meets/2025 --clear-all
+python -m scraper.scraper --meet-dir data/sources/current/meets/2025 --clear-all
 ```
 
 **Important**: Always activate the virtual environment first:
@@ -350,7 +350,7 @@ The database is updated separately from the webapp deployment.
 1. **After scraping new meets on your local machine**:
    ```bash
    # Verify database locally
-   sqlite3 data/fct_stats.db "SELECT COUNT(*) FROM results;"
+   sqlite3 data/generated/db/fct_stats.db "SELECT COUNT(*) FROM results;"
    ```
 
 2. **Copy database to production server**:
@@ -390,13 +390,13 @@ sqlite3 /opt/fct_stats/data/fct_stats.db ".backup '/opt/fct_stats/backups/fct_st
 
 ```bash
 # Verify database integrity
-sqlite3 data/fct_stats.db "PRAGMA integrity_check;"
+sqlite3 data/generated/db/fct_stats.db "PRAGMA integrity_check;"
 
 # Optimize database
-sqlite3 data/fct_stats.db "VACUUM;"
+sqlite3 data/generated/db/fct_stats.db "VACUUM;"
 
 # View database stats
-sqlite3 data/fct_stats.db << EOF
+sqlite3 data/generated/db/fct_stats.db << EOF
 SELECT 'Athletes:', COUNT(*) FROM athletes;
 SELECT 'Events:', COUNT(*) FROM events;
 SELECT 'Meets:', COUNT(*) FROM meets;
@@ -496,8 +496,8 @@ EOF
 ### Webapp Issues
 
 **Problem**: No data showing
-- Verify database exists: `ls -lh data/fct_stats.db`
-- Check database has data: `sqlite3 data/fct_stats.db "SELECT COUNT(*) FROM results;"`
+- Verify database exists: `ls -lh data/generated/db/fct_stats.db`
+- Check database has data: `sqlite3 data/generated/db/fct_stats.db "SELECT COUNT(*) FROM results;"`
 - Check Flask logs for errors
 
 **Problem**: Docker container won't start
@@ -513,7 +513,7 @@ EOF
 
 **Problem**: Corrupted database
 - Restore from backup
-- If no backup, check integrity: `sqlite3 data/fct_stats.db "PRAGMA integrity_check;"`
+- If no backup, check integrity: `sqlite3 data/generated/db/fct_stats.db "PRAGMA integrity_check;"`
 
 ---
 
@@ -525,9 +525,19 @@ fct_stats/
 │   ├── canonical_events.yaml
 │   └── schools.yaml
 ├── data/
-│   ├── fct_stats.db    # SQLite database
-│   ├── meets/          # Meet configuration YAMLs
-│   └── pages/          # Downloaded HTML results
+│   ├── sources/                    # Source data (input files)
+│   │   ├── current/
+│   │   │   ├── 2025/              # Current year spreadsheets and configs
+│   │   │   ├── pages/             # Downloaded HTML/TXT results
+│   │   │   └── meets/             # Meet configuration YAMLs
+│   │   └── historic/              # Historical records (markdown)
+│   └── generated/                  # Generated output (regenerable)
+│       ├── db/
+│       │   └── fct_stats.db       # SQLite database
+│       └── parsed/                 # Parsed JSON results
+│           ├── meets/             # Individual meet results
+│           ├── historical_records.json
+│           └── parsed_performance_list.json
 ├── database/
 │   └── schema.sql      # Database schema
 ├── docker/             # Docker configuration

@@ -20,9 +20,9 @@ rsync -av --delete \
   --exclude='__pycache__/' \
   --exclude='*.pyc' \
   --exclude='.git/' \
-  --exclude='data/fct_stats.db' \
-  --exclude='data/pages/' \
-  --exclude='data/meets/' \
+  --exclude='data/generated/db/' \
+  --exclude='data/sources/current/pages/' \
+  --exclude='data/sources/current/meets/' \
   --exclude='.vscode/' \
   --exclude='*.log' \
   "$SOURCE_DIR/" "$TARGET_DIR/"

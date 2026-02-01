@@ -92,7 +92,7 @@ def parse_boys_records():
     """Parse boys track records from markdown."""
     records = []
     
-    file_path = Path(__file__).parent.parent / 'tmp' / 'FCHS Boys Track & Field Records.docx.md'
+    file_path = Path(__file__).parent.parent / 'data' / 'sources' / 'historic' / 'FCHS Boys Track & Field Records.docx.md'
     with open(file_path, 'r') as f:
         content = f.read()
     
@@ -222,7 +222,7 @@ def parse_girls_records():
     """Parse girls track records from markdown."""
     records = []
     
-    file_path = Path(__file__).parent.parent / 'tmp' / 'FCHS Girls Track & Field Records.docx.md'
+    file_path = Path(__file__).parent.parent / 'data' / 'sources' / 'historic' / 'FCHS Girls Track & Field Records.docx.md'
     with open(file_path, 'r') as f:
         content = f.read()
     
@@ -399,7 +399,7 @@ def main():
         all_results.append(result)
     
     # Save to JSON in common format
-    output_path = Path(__file__).parent.parent / 'data' / 'historical_records.json'
+    output_path = Path(__file__).parent.parent / 'data' / 'generated' / 'parsed' / 'historical_records.json'
     with open(output_path, 'w') as f:
         json.dump(all_results, f, indent=2)
     

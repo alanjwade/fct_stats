@@ -32,7 +32,7 @@ def load_calendar_events():
 
 def load_meet_dates():
     """Load meet dates and levels from config file."""
-    meets_config_path = Path(__file__).parent.parent / 'config' / 'meets_2025.json'
+    meets_config_path = Path(__file__).parent.parent / 'data' / '2025' / 'meets_2025.json'
     meet_info = {}
     
     if meets_config_path.exists():
@@ -109,7 +109,7 @@ def import_all_records(db_path: str = None, clear_db: bool = True):
         logger.info("Database cleared")
     
     # Import historical records first
-    historical_path = Path(__file__).parent.parent / 'data' / 'historical_records.json'
+    historical_path = Path(__file__).parent.parent / 'data' / 'generated' / 'parsed' / 'historical_records.json'
     if historical_path.exists():
         logger.info(f"Importing historical records from {historical_path}...")
         with open(historical_path, 'r') as f:
@@ -122,7 +122,7 @@ def import_all_records(db_path: str = None, clear_db: bool = True):
         historical_count = 0
     
     # Import performance records
-    performance_path = Path(__file__).parent.parent / 'data' / 'parsed_performance_list.json'
+    performance_path = Path(__file__).parent.parent / 'data' / 'generated' / 'parsed' / 'parsed_performance_list.json'
     if performance_path.exists():
         logger.info(f"Importing performance records from {performance_path}...")
         with open(performance_path, 'r') as f:

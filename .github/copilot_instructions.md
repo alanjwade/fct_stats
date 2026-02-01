@@ -25,10 +25,19 @@ fct_stats/
 │   ├── calendar_events.json  # Calendar integration
 │   └── schools.yaml          # School matching
 ├── data/                      # Data files
-│   ├── fct_stats.db          # SQLite database (written by scripts)
-│   ├── historical_records.json      # Parsed historical records
-│   ├── parsed_performance_list.json # Parsed 2025 performance data
-│   └── pages/                # Raw HTML meet results (archived)
+│   ├── sources/              # Source data (raw inputs)
+│   │   ├── current/          # Current season data
+│   │   │   ├── 2025/        # 2025 spreadsheets and configs
+│   │   │   ├── pages/       # Raw HTML/TXT meet results
+│   │   │   └── meets/       # Meet configuration YAMLs
+│   │   └── historic/        # Historical records (markdown)
+│   └── generated/            # Generated outputs (regenerable)
+│       ├── db/
+│       │   └── fct_stats.db  # SQLite database
+│       └── parsed/           # Parsed JSON results
+│           ├── meets/       # Individual meet JSON files
+│           ├── historical_records.json
+│           └── parsed_performance_list.json
 ├── database/
 │   └── schema.sql            # Database schema definition
 ├── scraper/                   # Core parsing library
@@ -49,7 +58,7 @@ fct_stats/
 
 ### Database Schema
 
-SQLite database (`data/fct_stats.db`) with tables:
+SQLite database (`data/generated/db/fct_stats.db`) with tables:
 
 - **athletes**: Athlete information (name, gender, graduation year)
 - **events**: Canonical event definitions (100m, Long Jump, etc.)
@@ -64,14 +73,14 @@ SQLite database (`data/fct_stats.db`) with tables:
 ```
 Raw Data Sources
     ↓
-[parse_performance_list.py] ← ODS spreadsheet (2025 Track & Field Performance List.xlsx.ods)
-[parse_historical_records.py] ← Markdown files (historical records)
+[parse_performance_list.py] ← ODS: data/sources/current/2025/*.ods
+[parse_historical_records.py] ← Markdown: data/sources/historic/*.md
     ↓
-JSON Files (data/*.json)
+JSON Files (data/generated/parsed/)
     ↓
-[import_all_records.py] ← meets_2025.json (dates/levels)
+[import_all_records.py] ← meets config: data/sources/current/2025/meets_2025.json
     ↓
-SQLite Database (data/fct_stats.db)
+SQLite Database (data/generated/db/fct_stats.db)
     ↓
 [Flask Webapp] → HTML Views
 ```
@@ -126,13 +135,13 @@ Structure:
 
 #### `parse_performance_list.py`
 
-Parses ODS spreadsheet (`tmp/2025 Track & Field Performance List.xlsx.ods`):
+Parses ODS spreadsheet (`data/sources/current/2025/2025 Track & Field Performance List.xlsx.ods`):
 
 - 6 sheets: Girls Track, Girls Field, Girls Relays, Boys Track, Boys Field, Boys Relays
 - Event headers in column A, meets starting in column D
 - Skips columns: `['PR', '2024 SB', 'SB', 'Season Best']`
-- Loads dates/levels from `meets_2025.json`
-- Outputs: `data/parsed_performance_list.json`
+- Loads dates/levels from `data/sources/current/2025/meets_2025.json`
+- Outputs: `data/generated/parsed/parsed_performance_list.json`
 
 **Critical**: Uses dict-based cell mapping to handle merged cells correctly.
 
@@ -143,7 +152,7 @@ Parses markdown historical records files:
 - Handles variable whitespace/tabs in markdown tables
 - Parses relay team members (comma-separated names)
 - Outputs same JSON format as performance list
-- Outputs: `data/historical_records.json`
+- Outputs: `data/generated/parsed/historical_records.json`
 
 #### `import_all_records.py`
 
@@ -506,7 +515,7 @@ Potential areas for expansion:
 
 ## Contact & Maintenance
 
-- **Database location**: `data/fct_stats.db`
+- **Database location**: `data/generated/db/fct_stats.db`
 - **Backup strategy**: Git tracks all JSON source files
 - **Update frequency**: After each meet during season
 - **Owner contact**: alan.j.wade@gmail.com
@@ -532,7 +541,7 @@ cd webapp && python3 app.py
 docker-compose -f docker/docker-compose.dev.yml up
 
 # Check database
-sqlite3 data/fct_stats.db "SELECT COUNT(*) FROM results;"
+sqlite3 data/generated/db/fct_stats.db "SELECT COUNT(*) FROM results;"
 ```
 
 ### Key Files to Check First

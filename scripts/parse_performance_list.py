@@ -464,7 +464,7 @@ def main():
     print(f"Loaded {len(meet_info)} meets from config/meets_2025.json")
     
     # Find the ODS file
-    ods_path = Path(__file__).parent.parent / 'tmp' / '2025 Track & Field Performance List.xlsx.ods'
+    ods_path = Path(__file__).parent.parent / 'data' / 'sources' / 'current' / '2025' / '2025 Track & Field Performance List.xlsx.ods'
     
     if not ods_path.exists():
         print(f"Error: ODS file not found at {ods_path}")
@@ -477,7 +477,7 @@ def main():
     print(f"Total results extracted: {len(results)}")
     
     # Save to JSON
-    output_path = Path(__file__).parent.parent / 'data' / 'parsed_performance_list.json'
+    output_path = Path(__file__).parent.parent / 'data' / 'generated' / 'parsed' / 'parsed_performance_list.json'
     with open(output_path, 'w') as f:
         json.dump(results, f, indent=2)
     
