@@ -251,6 +251,10 @@ def extract_event_name(cell_text):
     # Common patterns: "100m - Sprint" or "100M DASH" or "100m (some text)"
     # Look for event patterns
     patterns = [
+        r'(\d+mH(?:H)?)',  # Hurdles abbreviations like 100mH, 300mH, 110mH, etc.
+        r'(\d+MH(?:H)?)',  # Same but uppercase
+        r'(\d+m(?:\s+)?Hurdles)',  # Full hurdles name like "100m Hurdles"
+        r'(\d+M(?:\s+)?Hurdles)',  # Same but uppercase
         r'(\d+m)',  # Distance events like 100m, 200m, 800m, etc.
         r'(\d+M)',  # Same but uppercase
         r'(Mile)',  # Mile
@@ -261,10 +265,8 @@ def extract_event_name(cell_text):
         r'(Long Jump)',
         r'(Triple Jump)',
         r'(Pole Vault)',
-        r'(\d+m Hurdles)',
-        r'(\d+M Hurdles)',
-        r'(\d+m Relay)',
-        r'(\d+M Relay)',
+        r'(\d+m(?:\s+)?Relay)',
+        r'(\d+M(?:\s+)?Relay)',
         r'(\d+x\d+m?)',  # Relay format like 4x100m
         r'(\d+x\d+M?)',  # Relay format uppercase
     ]
@@ -319,9 +321,9 @@ def parse_sheet(sheet, event_matcher, gender, meet_dates):
         # Try to extract event from column A first
         event_from_a = None
         if cell_a_text:
-            # Look for event patterns like "100m", "100m Hurdles", etc.
-            # Match things like "100m", "100m (other text)", "110m Hurdles", etc.
-            event_match = re.match(r'^(\d+m(?:\s+Hurdles)?|High Jump|Long Jump|Triple Jump|Pole Vault|Shot Put|Discus|Javelin)', cell_a_text, re.IGNORECASE)
+            # Look for event patterns like "100m", "100m Hurdles", "100mH", "300mH", etc.
+            # Match things like "100m", "100mH", "100m (other text)", "110m Hurdles", etc.
+            event_match = re.match(r'^(\d+m(?:H|Hurdles)?|High Jump|Long Jump|Triple Jump|Pole Vault|Shot Put|Discus|Javelin)', cell_a_text, re.IGNORECASE)
             if event_match:
                 event_from_a = event_match.group(1)
         

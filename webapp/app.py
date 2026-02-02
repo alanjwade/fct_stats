@@ -491,7 +491,7 @@ def athlete_stats(athlete_id):
             JOIN events e ON r.event_id = e.id
             JOIN meets m ON r.meet_id = m.id
             WHERE r.athlete_id = ?
-            ORDER BY e.name, m.meet_date DESC
+            ORDER BY m.meet_date DESC, e.name
         """, (athlete_id,)).fetchall()
         
         for result in results:
@@ -503,12 +503,49 @@ def athlete_stats(athlete_id):
                     'results': []
                 }
             results_by_event[event_name]['results'].append(result)
+        
+        # Group results by year
+        results_by_year = {}
+        events_by_year = {}
+        event_ids_by_name = {}  # Map event names to IDs for chart loading
+        for result in results:
+            year = int(result['meet_date'].split('-')[0]) if result['meet_date'] else None
+            if year:
+                if year not in results_by_year:
+                    results_by_year[year] = []
+                    events_by_year[year] = set()
+                results_by_year[year].append(result)
+                events_by_year[year].add(result['event_name'])
+                event_ids_by_name[result['event_name']] = result['event_id']
+        
+        # Sort years descending, and results within each year by date descending
+        for year in results_by_year:
+            results_by_year[year].sort(key=lambda r: r['meet_date'], reverse=True)
+        sorted_years = sorted(results_by_year.keys(), reverse=True)
+        
+        # Convert event sets to sorted lists and create event info with IDs
+        events_with_ids_by_year = {}
+        for year in events_by_year:
+            events_by_year[year] = sorted(list(events_by_year[year]))
+            events_with_ids_by_year[year] = [(e, event_ids_by_name[e]) for e in events_by_year[year]]
+        
+        # Count results per event per year
+        event_count_by_year = {}
+        for year in results_by_year:
+            event_count_by_year[year] = {}
+            for event in events_by_year[year]:
+                event_count_by_year[year][event] = len([r for r in results_by_year[year] if r['event_name'] == event])
     
     return render_template('athlete_stats.html',
         athlete=athlete,
         prs=prs,
         results_by_event=results_by_event,
-        results=results
+        results=results,
+        results_by_year=results_by_year,
+        events_by_year=events_by_year,
+        events_with_ids_by_year=events_with_ids_by_year,
+        event_count_by_year=event_count_by_year,
+        sorted_years=sorted_years
     )
 
 
@@ -880,7 +917,14 @@ def events_list():
         if year_filter and year_filter != 'all':
             events = conn.execute("""
                 SELECT 
-                    e.*,
+                    e.id,
+                    e.name,
+                    e.category,
+                    e.distance_meters,
+                    e.timed,
+                    e.lower_is_better,
+                    e.is_relay,
+                    e.gender_specific,
                     COUNT(CASE WHEN a.gender = 'M' THEN r.id END) as men_count,
                     COUNT(CASE WHEN a.gender = 'F' THEN r.id END) as women_count,
                     COUNT(r.id) as result_count
@@ -895,7 +939,14 @@ def events_list():
         else:
             events = conn.execute("""
                 SELECT 
-                    e.*,
+                    e.id,
+                    e.name,
+                    e.category,
+                    e.distance_meters,
+                    e.timed,
+                    e.lower_is_better,
+                    e.is_relay,
+                    e.gender_specific,
                     COUNT(CASE WHEN a.gender = 'M' THEN r.id END) as men_count,
                     COUNT(CASE WHEN a.gender = 'F' THEN r.id END) as women_count,
                     COUNT(r.id) as result_count
@@ -906,22 +957,52 @@ def events_list():
                 ORDER BY e.category, e.name
             """).fetchall()
     
-    # Group events by category
-    events_by_category = {}
+    # Group events by category and gender
+    # For gender-specific events, include only in appropriate section
+    men_events_by_category = {}
+    women_events_by_category = {}
+    
     for event in events:
         category = event['category'].replace('_', ' ').title()
-        if category not in events_by_category:
-            events_by_category[category] = []
-        events_by_category[category].append(event)
+        
+        # Determine which gender this event applies to
+        # Check if 'gender_specific' column exists and has a value
+        try:
+            gender_specific = event['gender_specific'] if event['gender_specific'] else None
+        except (KeyError, IndexError):
+            gender_specific = None
+        
+        # Add to men's events if not gender-specific or specifically for men
+        if not gender_specific or gender_specific == 'M':
+            if category not in men_events_by_category:
+                men_events_by_category[category] = []
+            men_events_by_category[category].append(event)
+        
+        # Add to women's events if not gender-specific or specifically for women
+        if not gender_specific or gender_specific == 'F':
+            if category not in women_events_by_category:
+                women_events_by_category[category] = []
+            women_events_by_category[category].append(event)
     
-    return render_template('events_list.html', events_by_category=events_by_category)
+    return render_template('events_list.html', 
+                         men_events_by_category=men_events_by_category,
+                         women_events_by_category=women_events_by_category)
 
 
 # API endpoints for charts
 @app.route('/api/athlete/<int:athlete_id>/progress/<int:event_id>')
 def athlete_progress_api(athlete_id, event_id):
     """Get athlete progress data for charts."""
+    def format_time_value(seconds):
+        """Convert seconds to mm:ss.ss format for display."""
+        if seconds < 60:
+            return f"{seconds:.2f}"
+        minutes = int(seconds // 60)
+        secs = seconds % 60
+        return f"{minutes}:{secs:05.2f}"
+    
     with get_db_connection() as conn:
+        # Get all results for this athlete and event
         results = conn.execute("""
             SELECT 
                 r.mark,
@@ -936,12 +1017,55 @@ def athlete_progress_api(athlete_id, event_id):
             ORDER BY m.meet_date
         """, (athlete_id, event_id)).fetchall()
         
+        # Get PR for this event
+        pr_result = conn.execute("""
+            SELECT mark FROM results
+            WHERE athlete_id = ? AND event_id = ?
+            ORDER BY mark ASC LIMIT 1
+        """, (athlete_id, event_id)).fetchone()
+        
+        pr_mark = pr_result['mark'] if pr_result else None
+        
+        # Determine if each result is a PR (for timed events, lower is better; for distance, higher is better)
+        is_timed = results[0]['timed'] if results else True
+        is_pr_list = []
+        for r in results:
+            if is_timed:
+                # For timed events, PR is the minimum time
+                is_pr = r['mark'] == pr_mark
+            else:
+                # For distance events, we need to get the maximum
+                max_result = conn.execute("""
+                    SELECT mark FROM results
+                    WHERE athlete_id = ? AND event_id = ?
+                    ORDER BY mark DESC LIMIT 1
+                """, (athlete_id, event_id)).fetchone()
+                max_mark = max_result['mark'] if max_result else None
+                is_pr = r['mark'] == max_mark
+            is_pr_list.append(is_pr)
+        
+        # Format display values for chart
+        if is_timed:
+            # For timed events, format as mm:ss.ss or ss.ss
+            display_values = [format_time_value(r['mark']) for r in results]
+        else:
+            # For distance events, use the mark_display which shows feet/inches
+            display_values = [r['mark_display'] for r in results]
+        
+        # Get event name for y-axis label
+        event_result = conn.execute("""
+            SELECT name, timed FROM events WHERE id = ?
+        """, (event_id,)).fetchone()
+        event_name = event_result['name'] if event_result else ""
+        
         data = {
             'dates': [r['meet_date'] for r in results],
-            'marks': [r['mark'] for r in results],
-            'displays': [r['mark_display'] for r in results],
+            'values': [r['mark'] for r in results],
+            'displays': display_values,
             'meets': [r['meet_name'] for r in results],
-            'timed': results[0]['timed'] if results else True
+            'is_pr': is_pr_list,
+            'timed': is_timed,
+            'event_name': event_name
         }
     
     return jsonify(data)

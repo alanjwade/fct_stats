@@ -28,74 +28,150 @@
             --fc-gold-dark: #9a7d00;
         }
         
+        * {
+            transition: all 0.2s ease-in-out;
+        }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #2d3748;
+            line-height: 1.6;
         }
         
         .navbar {
             background: linear-gradient(135deg, var(--fc-purple) 0%, var(--fc-purple-dark) 100%);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            padding: 0.75rem 0;
         }
         
         .navbar-brand {
             color: var(--fc-gold) !important;
-            font-weight: bold;
+            font-weight: 700;
             font-size: 1.5rem;
+            letter-spacing: -0.02em;
         }
         
         .navbar-brand:hover {
             color: var(--fc-gold-light) !important;
+            transform: scale(1.02);
         }
         
         .nav-link {
             color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            border-radius: 6px;
+            margin: 0 0.2rem;
         }
         
         .nav-link:hover, .nav-link.active {
             color: var(--fc-gold) !important;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn {
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 0.5rem 1.25rem;
+            letter-spacing: 0.02em;
         }
         
         .btn-primary {
             background-color: var(--fc-purple);
             border-color: var(--fc-purple);
+            box-shadow: 0 2px 8px rgba(75, 40, 109, 0.3);
         }
         
         .btn-primary:hover {
             background-color: var(--fc-purple-dark);
             border-color: var(--fc-purple-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(75, 40, 109, 0.4);
         }
         
         .btn-outline-primary {
             color: var(--fc-purple);
             border-color: var(--fc-purple);
+            border-width: 2px;
         }
         
         .btn-outline-primary:hover {
             background-color: var(--fc-purple);
             border-color: var(--fc-purple);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(75, 40, 109, 0.3);
+        }
+        
+        .btn-sm {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.875rem;
         }
         
         .card {
             border: none;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 8px 20px rgba(0, 0, 0, 0.08);
         }
         
         .card-header {
             background: linear-gradient(135deg, var(--fc-purple) 0%, var(--fc-purple-light) 100%);
             color: white;
-            border-radius: 10px 10px 0 0 !important;
+            border-radius: 12px 12px 0 0 !important;
             font-weight: 600;
+            padding: 1rem 1.5rem;
+            border-bottom: none;
+            cursor: pointer;
+        }
+        
+        .card-header:hover {
+            background: linear-gradient(135deg, var(--fc-purple-light) 0%, var(--fc-purple) 100%);
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .table {
+            margin-bottom: 0;
         }
         
         .table-striped > tbody > tr:nth-of-type(odd) > * {
-            background-color: rgba(75, 40, 109, 0.05);
+            background-color: rgba(75, 40, 109, 0.03);
+        }
+        
+        .table-hover > tbody > tr:hover > * {
+            background-color: rgba(196, 160, 0, 0.08);
         }
         
         .table th {
             background-color: var(--fc-purple);
             color: white;
-            font-weight: 500;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            padding: 0.875rem 0.75rem;
+            border: none;
+        }
+        
+        .table td {
+            padding: 0.875rem 0.75rem;
+            vertical-align: middle;
+            border-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .badge {
+            font-weight: 600;
+            padding: 0.4em 0.75em;
+            border-radius: 6px;
+            font-size: 0.8rem;
         }
         
         .badge-pr {
@@ -114,77 +190,115 @@
         .pr-card {
             background: linear-gradient(135deg, var(--fc-gold) 0%, var(--fc-gold-light) 100%);
             color: #000;
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 1.5rem;
             text-align: center;
-            transition: transform 0.2s;
+            box-shadow: 0 2px 8px rgba(196, 160, 0, 0.2);
         }
         
         .pr-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(196, 160, 0, 0.3);
         }
         
         .pr-card .event-name {
-            font-size: 0.9rem;
-            font-weight: 600;
+            font-size: 0.85rem;
+            font-weight: 700;
             text-transform: uppercase;
-            opacity: 0.8;
+            opacity: 0.85;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
         }
         
         .pr-card .pr-time {
             font-size: 2rem;
-            font-weight: bold;
+            font-weight: 800;
+            margin: 0.5rem 0;
         }
         
         .pr-card .pr-date {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             opacity: 0.7;
+            font-weight: 500;
         }
         
         .stat-card {
             background: white;
             border-left: 4px solid var(--fc-purple);
-            padding: 1rem;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 1.25rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
         
+        .stat-card:hover {
+            border-left-width: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        
         .stat-card .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
+            font-size: 2.25rem;
+            font-weight: 800;
             color: var(--fc-purple);
+            line-height: 1.2;
         }
         
         .stat-card .stat-label {
-            color: #6c757d;
-            font-size: 0.9rem;
+            color: #718096;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
         
         .hero-section {
             background: linear-gradient(135deg, var(--fc-purple) 0%, var(--fc-purple-dark) 100%);
             color: white;
-            padding: 3rem 0;
+            padding: 3.5rem 0;
             margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(75, 40, 109, 0.3);
         }
         
         .hero-section h1 {
             color: var(--fc-gold);
-            font-weight: bold;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+        
+        .hero-section .lead {
+            font-weight: 500;
+            opacity: 0.95;
         }
         
         footer {
             background-color: var(--fc-purple-dark);
             color: rgba(255, 255, 255, 0.7);
-            padding: 2rem 0;
-            margin-top: 3rem;
+            padding: 2.5rem 0;
+            margin-top: 4rem;
+            box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1);
         }
         
         footer a {
             color: var(--fc-gold);
+            font-weight: 500;
+        }
+        
+        footer a:hover {
+            color: var(--fc-gold-light);
+        }
+        
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            padding: 0.625rem 1rem;
+            font-size: 0.95rem;
+        }
+        
+        .form-control:focus {
+            border-color: var(--fc-purple);
+            box-shadow: 0 0 0 3px rgba(75, 40, 109, 0.1);
         }
         
         .search-box {
-            max-width: 400px;
+            max-width: 500px;
         }
         
         .progress-chart {
@@ -192,24 +306,50 @@
         }
         
         .event-category {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #6c757d;
+            letter-spacing: 0.08em;
+            color: #a0aec0;
+            font-weight: 700;
         }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 1.25rem 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .collapse {
+            transition: height 0.35s ease;
+        }
+        
+        .bi {
+            vertical-align: -0.125em;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            color: #2d3748;
+            letter-spacing: -0.02em;
+        }
+        
+        h1 { font-size: 2.25rem; }
+        h2 { font-size: 1.875rem; }
+        h3 { font-size: 1.5rem; }
         
         /* Mobile Responsive Improvements */
         @media (max-width: 767px) {
             .hero-section h1 {
-                font-size: 1.75rem;
+                font-size: 1.875rem;
             }
             
             .hero-section {
-                padding: 2rem 0;
+                padding: 2.5rem 0;
             }
             
-            .card-body.py-4 {
-                padding: 1.5rem !important;
+            .card-body {
+                padding: 1.25rem;
             }
             
             .table {
@@ -217,11 +357,11 @@
             }
             
             .stat-card .stat-value {
-                font-size: 1.5rem;
+                font-size: 1.75rem;
             }
             
             .pr-card .pr-time {
-                font-size: 1.5rem;
+                font-size: 1.75rem;
             }
             
             .navbar-brand {
@@ -230,15 +370,23 @@
             
             .nav-link {
                 font-size: 0.9rem;
+                padding: 0.4rem 0.75rem !important;
             }
+            
+            h1 { font-size: 1.75rem; }
+            h2 { font-size: 1.5rem; }
+            h3 { font-size: 1.25rem; }
         }
         
         a {
             color: var(--fc-purple);
+            text-decoration: none;
+            font-weight: 500;
         }
         
         a:hover {
             color: var(--fc-purple-dark);
+            text-decoration: none;
         }
         
         .text-gold {
@@ -247,6 +395,57 @@
         
         .bg-purple {
             background-color: var(--fc-purple) !important;
+        }
+        
+        .text-muted {
+            color: #718096 !important;
+        }
+        
+        /* Improved spacing utilities */
+        .mt-custom { margin-top: 2.5rem; }
+        .mb-custom { margin-bottom: 2.5rem; }
+        
+        /* Link hover in tables */
+        .table a {
+            font-weight: 600;
+        }
+        
+        .table a:hover {
+            color: var(--fc-gold);
+        }
+        
+        /* Smooth page load animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .container {
+            animation: fadeInUp 0.5s ease-out;
+        }
+        
+        /* Better scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--fc-purple);
+            border-radius: 6px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--fc-purple-dark);
         }
     </style>
     

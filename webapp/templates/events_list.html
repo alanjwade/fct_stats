@@ -6,11 +6,11 @@
 <div class="container mt-4">
     <h1 class="mb-4"><i class="bi bi-trophy"></i> Events</h1>
     
-    {% if events_by_category %}
+    {% if men_events_by_category or women_events_by_category %}
     <!-- Men's Events -->
     <h2 class="mt-4 mb-3"><i class="bi bi-person"></i> Men's Events</h2>
     <div class="row">
-        {% for category, events in events_by_category.items() %}
+        {% for category, events in men_events_by_category.items() %}
         <div class="col-lg-4 col-md-6 mb-4">
             <div class="card h-100">
                 <div class="card-header">
@@ -36,7 +36,7 @@
     <!-- Women's Events -->
     <h2 class="mt-4 mb-3"><i class="bi bi-person"></i> Women's Events</h2>
     <div class="row">
-        {% for category, events in events_by_category.items() %}
+        {% for category, events in women_events_by_category.items() %}
         <div class="col-lg-4 col-md-6 mb-4">
             <div class="card h-100">
                 <div class="card-header">

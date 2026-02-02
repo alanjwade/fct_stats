@@ -79,10 +79,40 @@
     {% endif %}
     
     <!-- All Results Table -->
-    <h3 class="mb-3"><i class="bi bi-list-ul"></i> All Results</h3>
-    <div class="card">
+    {% for year in sorted_years %}
+    <h3 class="mb-3 mt-5"><i class="bi bi-list-ul"></i> All Results ({{ year }})</h3>
+    
+    <!-- Collapsible Event Charts -->
+    {% if events_with_ids_by_year[year] %}
+    <div class="mb-4">
+        <h5 class="mb-3">Performance Charts</h5>
+        <div class="row">
+            {% for event_name, event_id in events_with_ids_by_year[year] %}
+            <div class="col-12 col-lg-6 mb-3">
+                <div class="card">
+                    <div class="card-header" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#chart-collapse-{{ year }}-{{ event_name | replace(' ', '-') | replace('/', '-') }}" aria-expanded="false">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-chevron-right"></i> {{ event_name }}</span>
+                            <span class="badge bg-secondary">{{ event_count_by_year[year][event_name] if event_count_by_year[year][event_name] else '0' }} results</span>
+                        </div>
+                    </div>
+                    <div class="collapse" id="chart-collapse-{{ year }}-{{ event_name | replace(' ', '-') | replace('/', '-') }}">
+                        <div class="card-body">
+                            <div id="chart-{{ year }}-{{ event_name | replace(' ', '-') | replace('/', '-') }}" class="progress-chart" style="min-height: 300px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Results Table for Year -->
+    <div class="card mb-5">
         <div class="card-body">
-            {% if results %}
+            {% set year_results = results_by_year[year] %}
+            {% if year_results %}
             <div class="table-responsive">
                 <table class="table table-striped table-hover">
                     <thead>
@@ -96,7 +126,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for result in results %}
+                        {% for result in year_results %}
                         <tr>
                             <td class="d-none d-sm-table-cell">{{ result.meet_date }}</td>
                             <td>{{ result.meet_name }}</td>
@@ -130,73 +160,117 @@
                 </table>
             </div>
             {% else %}
-            <p class="text-muted text-center mb-0">No results recorded yet.</p>
+            <p class="text-muted text-center mb-0">No results recorded for {{ year }}.</p>
             {% endif %}
         </div>
     </div>
+    {% endfor %}
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // Load progress charts for each event
-    {% for event in events_with_results %}
+    // Load progress charts for each event in each year
+    {% for year in sorted_years %}
+        {% for event_name, event_id in events_with_ids_by_year[year] %}
     (function() {
-        const chartId = 'chart-{{ event.name | replace(" ", "-") | replace("/", "-") }}';
+        const chartId = 'chart-{{ year }}-{{ event_name | replace(" ", "-") | replace("/", "-") }}';
+        const collapseId = 'chart-collapse-{{ year }}-{{ event_name | replace(" ", "-") | replace("/", "-") }}';
         
-        fetch('{{ url_for("api_athlete_progress", athlete_id=athlete.id, event_name=event.name) }}')
-            .then(response => response.json())
-            .then(data => {
-                if (data.dates && data.dates.length > 0) {
-                    const trace = {
-                        x: data.dates,
-                        y: data.values,
-                        mode: 'lines+markers',
-                        type: 'scatter',
-                        line: {
-                            color: '#4B286D',
-                            width: 2
-                        },
-                        marker: {
-                            color: data.is_pr.map(pr => pr ? '#C4A000' : '#4B286D'),
-                            size: data.is_pr.map(pr => pr ? 12 : 8),
-                            symbol: data.is_pr.map(pr => pr ? 'star' : 'circle')
-                        },
-                        text: data.meets,
-                        hovertemplate: '<b>%{text}</b><br>%{x}<br>%{y:.2f}<extra></extra>'
-                    };
-                    
-                    const layout = {
-                        margin: { t: 20, r: 20, b: 40, l: 50 },
-                        xaxis: {
-                            title: '',
-                            tickangle: -45
-                        },
-                        yaxis: {
-                            title: '{{ "Time (s)" if event.is_timed else "Distance/Height" }}',
-                            {% if event.lower_is_better %}
-                            autorange: 'reversed'
-                            {% endif %}
-                        },
-                        showlegend: false,
-                        hovermode: 'closest'
-                    };
-                    
-                    const config = {
-                        responsive: true,
-                        displayModeBar: false
-                    };
-                    
-                    Plotly.newPlot(chartId, [trace], layout, config);
-                } else {
-                    document.getElementById(chartId).innerHTML = '<p class="text-muted text-center">Not enough data for chart</p>';
-                }
-            })
-            .catch(err => {
-                console.error('Error loading chart:', err);
-                document.getElementById(chartId).innerHTML = '<p class="text-muted text-center">Error loading chart</p>';
-            });
+        // Load chart when collapse is shown
+        document.getElementById(collapseId).addEventListener('show.bs.collapse', function() {
+            // Check if already loaded
+            const chartDiv = document.getElementById(chartId);
+            if (chartDiv.innerHTML.trim() && Plotly.getPlotly()) {
+                return; // Already loaded
+            }
+            
+            fetch('{{ url_for("athlete_progress_api", athlete_id=athlete.id, event_id=event_id) }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.dates && data.dates.length > 0) {
+                        const trace = {
+                            x: data.dates,
+                            y: data.values,
+                            mode: 'lines+markers',
+                            type: 'scatter',
+                            line: {
+                                color: '#4B286D',
+                                width: 2
+                            },
+                            marker: {
+                                color: data.is_pr.map(pr => pr ? '#C4A000' : '#4B286D'),
+                                size: data.is_pr.map(pr => pr ? 12 : 8),
+                                symbol: data.is_pr.map(pr => pr ? 'star' : 'circle')
+                            },
+                            text: data.displays,
+                            customdata: data.meets,
+                            hovertemplate: '<b>%{customdata}</b><br>%{x}<br>%{text}<extra></extra>'
+                        };
+                        
+                        // Determine y-axis label based on event type
+                        let yaxisTitle = '';
+                        if (data.timed) {
+                            yaxisTitle = 'Time';
+                        } else {
+                            yaxisTitle = 'Distance (Feet/Inches)';
+                        }
+                        
+                        const layout = {
+                            margin: { t: 20, r: 20, b: 40, l: 50 },
+                            xaxis: {
+                                title: '',
+                                tickangle: -45
+                            },
+                            yaxis: {
+                                title: yaxisTitle,
+                                autorange: true,
+                                tickformat: data.timed ? '' : '.2f'  // For timed, we'll use custom formatter below
+                            },
+                            showlegend: false,
+                            hovermode: 'closest'
+                        };
+                        
+                        // For timed events, create custom tick formatter
+                        if (data.timed) {
+                            const formatTime = (seconds) => {
+                                if (seconds < 60) {
+                                    return seconds.toFixed(2);
+                                }
+                                const mins = Math.floor(seconds / 60);
+                                const secs = seconds % 60;
+                                return `${mins}:${secs.toFixed(2).padStart(5, '0')}`;
+                            };
+                            layout.yaxis.tickformat = '';
+                            // Create tick values based on the data range
+                            const minVal = Math.min(...data.values);
+                            const maxVal = Math.max(...data.values);
+                            const tickVals = [];
+                            const step = (maxVal - minVal) / 4;  // ~4-5 ticks
+                            for (let i = 0; i <= 4; i++) {
+                                tickVals.push(minVal + i * step);
+                            }
+                            layout.yaxis.tickvals = tickVals;
+                            layout.yaxis.ticktext = tickVals.map(v => formatTime(v));
+                        }
+                        
+                        const config = {
+                            responsive: true,
+                            displayModeBar: false
+                        };
+                        
+                        Plotly.newPlot(chartId, [trace], layout, config);
+                    } else {
+                        document.getElementById(chartId).innerHTML = '<p class="text-muted text-center py-3">Not enough data for chart</p>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading chart:', err);
+                    document.getElementById(chartId).innerHTML = '<p class="text-muted text-center py-3">Error loading chart</p>';
+                });
+        });
     })();
+        {% endfor %}
     {% endfor %}
 </script>
 {% endblock %}
