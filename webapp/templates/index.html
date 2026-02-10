@@ -198,40 +198,5 @@
             </div>
         </div>
     </div>
-
-    <!-- Quick Links to Stats -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <i class="bi bi-graph-up"></i> Performance & Records
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 col-6 mb-3">
-                            <a href="{{ url_for('stats') }}" class="btn btn-outline-primary w-100">
-                                <i class="bi bi-bar-chart"></i> View Statistics
-                            </a>
-                        </div>
-                        <div class="col-md-3 col-6 mb-3">
-                            <a href="{{ url_for('athletes_list') }}" class="btn btn-outline-primary w-100">
-                                <i class="bi bi-people"></i> Athletes
-                            </a>
-                        </div>
-                        <div class="col-md-3 col-6 mb-3">
-                            <a href="{{ url_for('events_list') }}" class="btn btn-outline-primary w-100">
-                                <i class="bi bi-trophy"></i> Event Records
-                            </a>
-                        </div>
-                        <div class="col-md-3 col-6 mb-3">
-                            <a href="{{ url_for('team_bests') }}" class="btn btn-outline-primary w-100">
-                                <i class="bi bi-star"></i> Team Records
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 {% endblock %}

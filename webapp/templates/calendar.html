@@ -6,6 +6,19 @@
 <div class="container mt-4">
     <h1 class="mb-4"><i class="bi bi-calendar3"></i> Track & Field Calendar</h1>
     
+    <!-- Event Details Modal -->
+    <div class="modal fade" id="eventModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="eventModalTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="eventModalBody"></div>
+            </div>
+        </div>
+    </div>
+    
     {% if sorted_months %}
     {% for month_data in sorted_months %}
     <div class="card mb-4">
@@ -16,7 +29,18 @@
             <div class="table-responsive">
                 <table class="table table-bordered mb-0" style="table-layout: fixed;">
                     <thead class="table-light">
-                        <tr>
+                        <!-- Mobile abbreviated days -->
+                        <tr class="d-md-none">
+                            <th style="width: 14.28%; font-size: 0.75rem;">Su</th>
+                            <th style="width: 14.28%; font-size: 0.75rem;">Mo</th>
+                            <th style="width: 14.28%; font-size: 0.75rem;">Tu</th>
+                            <th style="width: 14.28%; font-size: 0.75rem;">We</th>
+                            <th style="width: 14.28%; font-size: 0.75rem;">Th</th>
+                            <th style="width: 14.28%; font-size: 0.75rem;">Fr</th>
+                            <th style="width: 14.28%; font-size: 0.75rem;">Sa</th>
+                        </tr>
+                        <!-- Desktop full days -->
+                        <tr class="d-none d-md-table-row">
                             <th style="width: 14.28%;">Sunday</th>
                             <th style="width: 14.28%;">Monday</th>
                             <th style="width: 14.28%;">Tuesday</th>
@@ -28,7 +52,36 @@
                     </thead>
                     <tbody>
                         {% for week in month_data.calendar_weeks %}
-                        <tr style="height: 120px;">
+                        <tr style="height: auto; min-height: 80px;" class="d-md-none">
+                            {# Mobile view - compact #}
+                            {% for day in week %}
+                            {% if day == 0 %}
+                                <td class="bg-light p-1"></td>
+                            {% else %}
+                                {% set is_today = (day == today.day and month_data.month == today.month and month_data.year == today.year) %}
+                                <td class="align-top p-1 {% if is_today %}bg-warning bg-opacity-25 border border-warning{% endif %}" style="{% if is_today %}border-width: 2px !important;{% endif %}">
+                                    <div class="fw-bold {% if is_today %}text-warning{% else %}text-muted{% endif %} mb-1" style="font-size: 0.85rem;">{{ day }}</div>
+                                    {% if day in month_data.events_by_day %}
+                                        <div style="display: flex; gap: 2px; flex-wrap: wrap;">
+                                            {% for event in month_data.events_by_day[day] %}
+                                                <button type="button" class="badge event-badge" data-event="{{ event.title }}" data-time="{{ event.time or '' }}" data-location="{{ event.location or '' }}" data-level="{{ event.level or '' }}" data-bs-toggle="modal" data-bs-target="#eventModal" style="cursor: pointer; padding: 3px 5px; font-size: 0.6rem;">
+                                                    {% if event.level == 'varsity' %}
+                                                        <span class="bg-primary">V</span>
+                                                    {% elif event.level == 'jv' %}
+                                                        <span class="bg-info">JV</span>
+                                                    {% else %}
+                                                        <i class="bi bi-calendar-event"></i>
+                                                    {% endif %}
+                                                </button>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                            {% endfor %}
+                        </tr>
+                        <tr style="height: 120px;" class="d-none d-md-table-row">
+                            {# Desktop view - full details #}
                             {% for day in week %}
                             {% if day == 0 %}
                                 <td class="bg-light"></td>
@@ -75,4 +128,31 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+document.querySelectorAll('.event-badge').forEach(badge => {
+    badge.addEventListener('click', function(e) {
+        e.preventDefault();
+        const title = this.dataset.event;
+        const time = this.dataset.time;
+        const location = this.dataset.location;
+        const level = this.dataset.level;
+        
+        let levelBadge = '';
+        if (level === 'varsity') {
+            levelBadge = '<span class="badge bg-primary mb-2">Varsity</span>';
+        } else if (level === 'jv') {
+            levelBadge = '<span class="badge bg-info mb-2">JV</span>';
+        }
+        
+        let body = levelBadge + '<div>';
+        if (time) body += '<p><strong><i class="bi bi-clock"></i> Time:</strong> ' + time + '</p>';
+        if (location) body += '<p><strong><i class="bi bi-geo-alt"></i> Location:</strong> ' + location + '</p>';
+        body += '</div>';
+        
+        document.getElementById('eventModalTitle').textContent = title;
+        document.getElementById('eventModalBody').innerHTML = body;
+    });
+});
+</script>
 {% endblock %}

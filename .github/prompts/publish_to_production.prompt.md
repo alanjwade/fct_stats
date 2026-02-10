@@ -1,6 +1,7 @@
 # Publishing FCT Stats to Production
 
 This prompt helps you publish the FCT Stats application to the homelab production server.
+model: GPT-4o (copilot)
 
 ## Overview
 
