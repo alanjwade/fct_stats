@@ -111,7 +111,295 @@
     "day": "29",
     "day_name": "Thursday",
     "title": "Preseason Training",
-    "time": "4:20 PM - 5:45 PM",
-    "location": "Indoor HS Meet @ CO School of Mines 6:00 PM - 10:00 PM Colorado School of Mines"
+    "time": "4:20 PM - 5:45 PM"
+  },
+  {
+    "date": "02/17/2026",
+    "day": "17",
+    "day_name": "Tuesday",
+    "title": "Track & Field Camp - 4 Day Camp",
+    "time": "4:20 PM",
+    "location": "FCHS",
+    "type": "Team Event"
+  },
+  {
+    "date": "02/23/2026",
+    "day": "23",
+    "day_name": "Monday",
+    "title": "Official Practice",
+    "time": "4:20 PM",
+    "location": "FCHS",
+    "type": "Team Event",
+    "notes": "Orange Card Required"
+  },
+  {
+    "date": "02/24/2026",
+    "day": "24",
+    "day_name": "Tuesday",
+    "title": "Parent Meeting",
+    "time": "6:00 PM",
+    "location": "HS Commons",
+    "type": "Team Event"
+  },
+  {
+    "date": "03/04/2026",
+    "day": "4",
+    "day_name": "Wednesday",
+    "title": "Fort Collins JV Scrimmage",
+    "time": "3:00 PM",
+    "location": "Fort Collins HS",
+    "level": "JV"
+  },
+  {
+    "date": "03/07/2026",
+    "day": "7",
+    "day_name": "Saturday",
+    "title": "John Martin Early Bird Invite",
+    "time": "9:00 AM",
+    "location": "Fort Collins HS",
+    "level": "Varsity"
+  },
+  {
+    "date": "03/10/2026",
+    "day": "10",
+    "day_name": "Tuesday",
+    "title": "Poudre JV Meet",
+    "time": "3:00 PM",
+    "location": "Poudre HS",
+    "level": "JV"
+  },
+  {
+    "date": "03/14/2026",
+    "day": "14",
+    "day_name": "Saturday",
+    "title": "Thunder Ridge Invite",
+    "time": "9:30 AM",
+    "location": "Echo Park Stadium",
+    "level": "Varsity"
+  },
+  {
+    "date": "03/21/2026",
+    "day": "21",
+    "day_name": "Saturday",
+    "title": "Runners Roost Invite",
+    "time": "8:30 AM",
+    "location": "French Field",
+    "level": "Varsity"
+  },
+  {
+    "date": "03/25/2026",
+    "day": "25",
+    "day_name": "Wednesday",
+    "title": "Rocky JV Meet",
+    "time": "3:00 PM",
+    "location": "French Field",
+    "level": "JV"
+  },
+  {
+    "date": "03/27/2026",
+    "day": "27",
+    "day_name": "Friday",
+    "title": "Roosevelt Power Invite",
+    "time": "12:00 PM",
+    "location": "Roosevelt HS",
+    "level": "Varsity"
+  },
+  {
+    "date": "03/27/2026",
+    "day": "27",
+    "day_name": "Friday",
+    "title": "Jack Christiansen Invite",
+    "time": "3:00 PM",
+    "location": "CSU",
+    "level": "Varsity"
+  },
+  {
+    "date": "03/28/2026",
+    "day": "28",
+    "day_name": "Saturday",
+    "title": "Jack Christiansen Invite",
+    "time": "10:00 AM",
+    "location": "CSU",
+    "level": "Varsity"
+  },
+  {
+    "date": "04/01/2026",
+    "day": "1",
+    "day_name": "Wednesday",
+    "title": "Timnath JV Meet",
+    "time": "3:00 PM",
+    "location": "PSD Stadium",
+    "level": "JV"
+  },
+  {
+    "date": "04/04/2026",
+    "day": "4",
+    "day_name": "Saturday",
+    "title": "Altitude Invite",
+    "time": "8:30 AM",
+    "location": "PSD Stadium",
+    "level": "Varsity"
+  },
+  {
+    "date": "04/08/2026",
+    "day": "8",
+    "day_name": "Wednesday",
+    "title": "Randi Yaussi City Meet",
+    "time": "1:00 PM",
+    "location": "PSD Stadium",
+    "level": "JV/Varsity"
+  },
+  {
+    "date": "04/10/2026",
+    "day": "10",
+    "day_name": "Friday",
+    "title": "Arcadia Invite",
+    "time": "5:00 PM",
+    "location": "Arcadia HS, CA",
+    "level": "Varsity"
+  },
+  {
+    "date": "04/10/2026",
+    "day": "10",
+    "day_name": "Friday",
+    "title": "Pomona Invite",
+    "time": "2:00 PM",
+    "location": "JeffCo Stadium",
+    "level": "Varsity"
+  },
+  {
+    "date": "04/11/2026",
+    "day": "11",
+    "day_name": "Saturday",
+    "title": "Arcadia Invite",
+    "time": "9:00 AM",
+    "location": "Arcadia HS, CA",
+    "level": "Varsity"
+  },
+  {
+    "date": "04/11/2026",
+    "day": "11",
+    "day_name": "Saturday",
+    "title": "Pomona Invite",
+    "time": "9:00 AM",
+    "location": "JeffCo Stadium",
+    "level": "Varsity"
+  },
+  {
+    "date": "04/15/2026",
+    "day": "15",
+    "day_name": "Wednesday",
+    "title": "Fossil JV Meet",
+    "time": "3:00 PM",
+    "location": "Fossil HS",
+    "level": "JV"
+  },
+  {
+    "date": "04/18/2026",
+    "day": "18",
+    "day_name": "Saturday",
+    "title": "Cherry Creek Invite",
+    "time": "9:00 AM",
+    "location": "Stutler Bowl",
+    "level": "Varsity"
+  },
+  {
+    "date": "04/18/2026",
+    "day": "18",
+    "day_name": "Saturday",
+    "title": "Randall Hess Invite",
+    "time": "9:30 AM",
+    "location": "Roosevelt HS",
+    "level": "Varsity"
+  },
+  {
+    "date": "04/22/2026",
+    "day": "22",
+    "day_name": "Wednesday",
+    "title": "JV Northern League Champs",
+    "time": "TBD",
+    "location": "TBD",
+    "level": "JV"
+  },
+  {
+    "date": "04/24/2026",
+    "day": "24",
+    "day_name": "Friday",
+    "title": "Longmont Invite",
+    "time": "12:00 PM",
+    "location": "Longmont HS",
+    "level": "Varsity"
+  },
+  {
+    "date": "04/29/2026",
+    "day": "29",
+    "day_name": "Wednesday",
+    "title": "Northern League Champs",
+    "time": "3:00 PM",
+    "location": "Roosevelt HS",
+    "level": "Varsity"
+  },
+  {
+    "date": "05/01/2026",
+    "day": "1",
+    "day_name": "Friday",
+    "title": "Northern League Champs",
+    "time": "3:30 PM",
+    "location": "Roosevelt HS",
+    "level": "Varsity"
+  },
+  {
+    "date": "05/05/2026",
+    "day": "5",
+    "day_name": "Tuesday",
+    "title": "Spartan Last Chance Invite",
+    "time": "10:00 AM",
+    "location": "Berthoud HS",
+    "level": "Varsity"
+  },
+  {
+    "date": "05/08/2026",
+    "day": "8",
+    "day_name": "Friday",
+    "title": "St. Vrain HOKA",
+    "time": "9:00 AM",
+    "location": "Longmont HS",
+    "level": "Varsity"
+  },
+  {
+    "date": "05/09/2026",
+    "day": "9",
+    "day_name": "Saturday",
+    "title": "Teddy's Last Chance",
+    "time": "10:00 AM",
+    "location": "Roosevelt HS",
+    "level": "Varsity"
+  },
+  {
+    "date": "05/14/2026",
+    "day": "14",
+    "day_name": "Thursday",
+    "title": "State Championships - Day 1",
+    "time": "8:00 AM",
+    "location": "JeffCo Stadium",
+    "level": "Qualifiers"
+  },
+  {
+    "date": "05/15/2026",
+    "day": "15",
+    "day_name": "Friday",
+    "title": "State Championships - Day 2",
+    "time": "8:00 AM",
+    "location": "JeffCo Stadium",
+    "level": "Qualifiers"
+  },
+  {
+    "date": "05/16/2026",
+    "day": "16",
+    "day_name": "Saturday",
+    "title": "State Championships - Day 3",
+    "time": "9:00 AM",
+    "location": "JeffCo Stadium",
+    "level": "Qualifiers"
   }
 ]

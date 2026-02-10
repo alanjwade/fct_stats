@@ -67,12 +67,19 @@ class Database:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             
-            # Try to find existing athlete
-            cursor.execute("""
-                SELECT id FROM athletes 
-                WHERE first_name = ? AND last_name = ? 
-                AND (graduation_year = ? OR graduation_year IS NULL OR ? IS NULL)
-            """, (first_name, last_name, graduation_year, graduation_year))
+            # Try to find existing athlete - include gender in lookup if provided
+            if gender:
+                cursor.execute("""
+                    SELECT id FROM athletes 
+                    WHERE first_name = ? AND last_name = ? AND gender = ?
+                    AND (graduation_year = ? OR graduation_year IS NULL OR ? IS NULL)
+                """, (first_name, last_name, gender, graduation_year, graduation_year))
+            else:
+                cursor.execute("""
+                    SELECT id FROM athletes 
+                    WHERE first_name = ? AND last_name = ? 
+                    AND (graduation_year = ? OR graduation_year IS NULL OR ? IS NULL)
+                """, (first_name, last_name, graduation_year, graduation_year))
             
             row = cursor.fetchone()
             if row:
@@ -119,8 +126,7 @@ class Database:
         meet_date: str = None,
         venue: str = None,
         location: str = None,
-        season: str = None,
-        level: str = 'varsity'
+        season: str = None
     ) -> int:
         """Get existing meet or create new one. Returns meet ID."""
         with self.get_connection() as conn:
@@ -132,17 +138,12 @@ class Database:
             
             row = cursor.fetchone()
             if row:
-                # Update level if it was added later
-                cursor.execute("""
-                    UPDATE meets SET level = ? WHERE id = ?
-                """, (level, row['id']))
-                conn.commit()
                 return row['id']
             
             cursor.execute("""
-                INSERT INTO meets (name, meet_date, venue, location, season, level)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (name, meet_date, venue, location, season, level))
+                INSERT INTO meets (name, meet_date, venue, location, season)
+                VALUES (?, ?, ?, ?, ?)
+            """, (name, meet_date, venue, location, season))
             
             return cursor.lastrowid
 

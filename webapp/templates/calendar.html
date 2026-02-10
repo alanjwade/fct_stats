@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Calendar - FC Track & Field{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4"><i class="bi bi-calendar3"></i> Track & Field Calendar</h1>
+    
+    {% if sorted_months %}
+    {% for month_data in sorted_months %}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0"><i class="bi bi-calendar-week"></i> {{ month_data.name }}</h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered mb-0" style="table-layout: fixed;">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 14.28%;">Sunday</th>
+                            <th style="width: 14.28%;">Monday</th>
+                            <th style="width: 14.28%;">Tuesday</th>
+                            <th style="width: 14.28%;">Wednesday</th>
+                            <th style="width: 14.28%;">Thursday</th>
+                            <th style="width: 14.28%;">Friday</th>
+                            <th style="width: 14.28%;">Saturday</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for week in month_data.calendar_weeks %}
+                        <tr style="height: 120px;">
+                            {% for day in week %}
+                            {% if day == 0 %}
+                                <td class="bg-light"></td>
+                            {% else %}
+                                {% set is_today = (day == today.day and month_data.month == today.month and month_data.year == today.year) %}
+                                <td class="align-top p-2 {% if is_today %}bg-warning bg-opacity-25 border border-warning{% endif %}" style="{% if is_today %}border-width: 2px !important;{% endif %}">
+                                    <div class="fw-bold {% if is_today %}text-warning{% else %}text-muted{% endif %} mb-1">{{ day }}</div>
+                                    {% if day in month_data.events_by_day %}
+                                        {% for event in month_data.events_by_day[day] %}
+                                        <div class="mb-2">
+                                            {% if event.level %}
+                                                {% if event.level == 'varsity' %}
+                                                <span class="badge bg-primary mb-1" style="font-size: 0.7rem;">Varsity</span>
+                                                {% elif event.level == 'jv' %}
+                                                <span class="badge bg-info mb-1" style="font-size: 0.7rem;">JV</span>
+                                                {% endif %}
+                                            {% endif %}
+                                            <div class="small">
+                                                <strong>{{ event.title }}</strong>
+                                                {% if event.time %}
+                                                <br><i class="bi bi-clock"></i> {{ event.time }}
+                                                {% endif %}
+                                                {% if event.location %}
+                                                <br><i class="bi bi-geo-alt"></i> {{ event.location }}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No calendar events available at this time.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

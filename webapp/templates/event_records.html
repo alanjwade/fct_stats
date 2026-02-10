@@ -55,13 +55,13 @@
                                 {% if is_relay and result.relay_members %}
                                     <strong>{{ result.relay_members }}</strong>
                                     <br class="d-sm-none">
-                                    <small class="text-muted d-sm-none">{{ result.meet_date }}</small>
+                                    <small class="text-muted d-sm-none">{{ result.meet_date or result.season }}</small>
                                 {% else %}
                                     <a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">
                                         {{ result.athlete_name }}
                                     </a>
                                     <br class="d-sm-none">
-                                    <small class="text-muted d-sm-none">{{ result.meet_date }}</small>
+                                    <small class="text-muted d-sm-none">{{ result.meet_date or result.season }}</small>
                                 {% endif %}
                             </td>
                             <td>
@@ -74,7 +74,7 @@
                                 </strong>
                             </td>
                             <td class="d-none d-md-table-cell">{{ result.meet_name }}</td>
-                            <td class="d-none d-sm-table-cell">{{ result.meet_date }}</td>
+                            <td class="d-none d-sm-table-cell">{{ result.meet_date or result.season }}</td>
                             <td class="d-none d-lg-table-cell">
                                 {% if result.level == 'varsity' %}
                                 <span class="badge badge-varsity">Varsity</span>
@@ -129,13 +129,13 @@
                                 {% if is_relay and result.relay_members %}
                                     <strong>{{ result.relay_members }}</strong>
                                     <br class="d-sm-none">
-                                    <small class="text-muted d-sm-none">{{ result.meet_date }}</small>
+                                    <small class="text-muted d-sm-none">{{ result.meet_date or result.season }}</small>
                                 {% else %}
                                     <a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">
                                         {{ result.athlete_name }}
                                     </a>
                                     <br class="d-sm-none">
-                                    <small class="text-muted d-sm-none">{{ result.meet_date }}</small>
+                                    <small class="text-muted d-sm-none">{{ result.meet_date or result.season }}</small>
                                 {% endif %}
                             </td>
                             <td>
@@ -148,7 +148,7 @@
                                 </strong>
                             </td>
                             <td class="d-none d-md-table-cell">{{ result.meet_name }}</td>
-                            <td class="d-none d-sm-table-cell">{{ result.meet_date }}</td>
+                            <td class="d-none d-sm-table-cell">{{ result.meet_date or result.season }}</td>
                             <td class="d-none d-lg-table-cell">
                                 {% if result.level == 'varsity' %}
                                 <span class="badge badge-varsity">Varsity</span>

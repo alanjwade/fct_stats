@@ -468,46 +468,26 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'stats' %}active{% endif %}" href="{{ url_for('stats') }}{% if current_year %}?year={{ current_year }}{% endif %}">
-                            <i class="bi bi-graph-up"></i> Stats
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'athletes_list' %}active{% endif %}" href="{{ url_for('athletes_list') }}{% if current_year %}?year={{ current_year }}{% endif %}">
-                            <i class="bi bi-people"></i> Athletes
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'events_list' %}active{% endif %}" href="{{ url_for('events_list') }}{% if current_year %}?year={{ current_year }}{% endif %}">
-                            <i class="bi bi-trophy"></i> Events
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'team_bests' %}active{% endif %}" href="{{ url_for('team_bests') }}{% if current_year %}?year={{ current_year }}{% endif %}">
-                            <i class="bi bi-star"></i> Records
+                        <a class="nav-link {% if request.endpoint == 'calendar' %}active{% endif %}" href="{{ url_for('calendar') }}">
+                            <i class="bi bi-calendar3"></i> Calendar
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.endpoint == 'season_bests_2025' %}active{% endif %}" href="{{ url_for('season_bests_2025') }}">
-                            <i class="bi bi-calendar-event"></i> 2025 Season Bests
+                            <i class="bi bi-trophy"></i> 2025 Events
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'athletes_list' %}active{% endif %}" href="{{ url_for('athletes_list') }}">
+                            <i class="bi bi-people"></i> 2025 Athletes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'team_bests' %}active{% endif %}" href="{{ url_for('team_bests') }}">
+                            <i class="bi bi-star-fill"></i> All Time Records
                         </a>
                     </li>
                 </ul>
-                {% if available_years %}
-                <form class="d-flex" method="GET" id="yearFilterForm">
-                    <!-- Preserve other query params -->
-                    {% for key, value in request.args.items() %}
-                        {% if key != 'year' %}
-                        <input type="hidden" name="{{ key }}" value="{{ value }}">
-                        {% endif %}
-                    {% endfor %}
-                    <select class="form-select form-select-sm" name="year" onchange="this.form.submit()" style="background-color: rgba(255,255,255,0.1); color: white; border-color: rgba(255,255,255,0.3); min-width: 130px;">
-                        {% for value, label in available_years %}
-                        <option value="{{ value }}" {% if current_year == value %}selected{% endif %} style="color: black;">{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </form>
-                {% endif %}
             </div>
         </div>
     </nav>

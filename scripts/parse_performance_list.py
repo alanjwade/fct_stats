@@ -115,7 +115,20 @@ def parse_mark(mark_str):
         except ValueError:
             return None, mark_display, is_wind_assisted
     
-    # Try to parse as a plain number (seconds or distance)
+    # Check for feet-inches format (e.g., "123'11" or "20-6.5" for field events)
+    feet_inches_match = re.match(r"(\d+)['\-](\d+(?:\.\d+)?)", mark_str)
+    if feet_inches_match:
+        # Convert feet and inches to meters
+        try:
+            feet = int(feet_inches_match.group(1))
+            inches = float(feet_inches_match.group(2))
+            total_inches = feet * 12 + inches
+            mark_value = total_inches * 0.0254  # Convert inches to meters
+            return mark_value, mark_display, is_wind_assisted
+        except (ValueError, TypeError):
+            pass
+    
+    # Try to parse as a plain number (seconds or distance in meters)
     try:
         mark_value = float(mark_str.replace('"', '').replace("'", ''))
         return mark_value, mark_display, is_wind_assisted

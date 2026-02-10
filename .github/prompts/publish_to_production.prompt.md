@@ -9,6 +9,23 @@ The FCT Stats application runs on a homelab server using Docker containers. Ther
 - **Database**: SQLite database with all athlete/meet/result data
 - **Both**: Combined publish (recommended for most updates)
 
+## Quick Start (Default Command)
+
+To publish everything and restart the production server in one go:
+
+```bash
+./scripts/publish-all.sh && cd ~/homelab/fct_stats && mkdir -p data/generated/db && mv data/fct_stats.db data/generated/db/fct_stats.db 2>/dev/null || true && docker-compose -f docker/docker-compose.yml up -d --build
+```
+
+Or create an alias in your shell:
+```bash
+alias publish-prod='./scripts/publish-all.sh && cd ~/homelab/fct_stats && mkdir -p data/generated/db && mv data/fct_stats.db data/generated/db/fct_stats.db 2>/dev/null || true && docker-compose -f docker/docker-compose.yml up -d --build'
+```
+
+Then just run: `publish-prod`
+
+---
+
 ## Publishing Options
 
 ### Option 1: Publish Everything (Recommended)
@@ -24,10 +41,17 @@ Use this when you've made changes to both code and data.
 3. Copies new database from `data/generated/db/fct_stats.db` to homelab
 4. Shows database statistics
 
-**After publishing:**
+**Then restart the server:**
 ```bash
 cd ~/homelab/fct_stats
+mkdir -p data/generated/db
+mv data/fct_stats.db data/generated/db/fct_stats.db 2>/dev/null || true
 docker-compose -f docker/docker-compose.yml up -d --build
+```
+
+**Or use the restart script:**
+```bash
+./scripts/homelab-restart.sh
 ```
 
 ### Option 2: Publish Only Webapp
@@ -41,7 +65,12 @@ Use this when you've made code/template/styling changes but no database changes.
 - Syncs webapp files using rsync
 - Excludes: venv, __pycache__, .git, data/generated/db/, data/sources/current/pages/, data/sources/current/meets/
 
-**After publishing:**
+**Then restart the webapp container:**
+```bash
+./scripts/homelab-restart.sh
+```
+
+Or manually:
 ```bash
 cd ~/homelab/fct_stats
 docker-compose -f docker/docker-compose.yml restart webapp
@@ -56,13 +85,37 @@ Use this when you've added new meet results or updated data but code is unchange
 
 **What it does:**
 1. Creates backup: `~/homelab/fct_stats/backups/fct_stats_YYYYMMDD_HHMMSS.db`
-2. Copies `data/fct_stats.db` to `~/homelab/fct_stats/data/`
+2. Copies `data/generated/db/fct_stats.db` to `~/homelab/fct_stats/data/generated/db/`
 3. Shows statistics (athletes, events, meets, results counts)
 
-**After publishing:**
+**Then restart the webapp container:**
+```bash
+./scripts/homelab-restart.sh
+```
+
+Or manually:
 ```bash
 cd ~/homelab/fct_stats
 docker-compose -f docker/docker-compose.yml restart webapp
+```
+
+### Option 4: Just Restart the Production Server
+Use this to restart the server without publishing any changes.
+
+```bash
+./scripts/homelab-restart.sh
+```
+
+**What it does:**
+1. Stops existing services
+2. Rebuilds and starts fresh containers
+3. Shows confirmation
+
+Or manually:
+```bash
+cd ~/homelab/fct_stats
+docker-compose -f docker/docker-compose.yml down
+docker-compose -f docker/docker-compose.yml up -d --build
 ```
 
 ## Step-by-Step Publishing Workflow
@@ -186,19 +239,31 @@ The rsync excludes:
 
 ### Database Not Found Error
 
-1. **Verify database was published:**
+1. **Verify database is in correct location:**
    ```bash
-   ls -lh ~/homelab/fct_stats/data/fct_stats.db
+   ls -lh ~/homelab/fct_stats/data/generated/db/fct_stats.db
+   ```
+   
+   If the database is at `~/homelab/fct_stats/data/fct_stats.db`, move it:
+   ```bash
+   mkdir -p ~/homelab/fct_stats/data/generated/db
+   mv ~/homelab/fct_stats/data/fct_stats.db ~/homelab/fct_stats/data/generated/db/fct_stats.db
    ```
 
 2. **Check database permissions:**
    ```bash
-   chmod 644 ~/homelab/fct_stats/data/fct_stats.db
+   chmod 644 ~/homelab/fct_stats/data/generated/db/fct_stats.db
    ```
 
 3. **Verify database is valid:**
    ```bash
-   sqlite3 ~/homelab/fct_stats/data/fct_stats.db "SELECT COUNT(*) FROM athletes;"
+   sqlite3 ~/homelab/fct_stats/data/generated/db/fct_stats.db "SELECT COUNT(*) FROM athletes;"
+   ```
+
+4. **Restart the container:**
+   ```bash
+   cd ~/homelab/fct_stats
+   docker-compose -f docker/docker-compose.yml restart webapp
    ```
 
 ### Container Won't Start
@@ -223,7 +288,13 @@ The rsync excludes:
 ## Quick Reference Commands
 
 ```bash
-# Publish everything
+# QUICK START: Publish everything and restart (recommended)
+./scripts/publish-all.sh && cd ~/homelab/fct_stats && mkdir -p data/generated/db && mv data/fct_stats.db data/generated/db/fct_stats.db 2>/dev/null || true && docker-compose -f docker/docker-compose.yml up -d --build
+
+# Or use the dedicated script
+./scripts/homelab-restart.sh
+
+# Publish everything only (without restart)
 ./scripts/publish-all.sh
 
 # Publish webapp only
@@ -232,12 +303,15 @@ The rsync excludes:
 # Publish database only
 ./scripts/publish-db.sh
 
-# Start services
-cd ~/homelab/fct_stats
-docker-compose -f docker/docker-compose.yml up -d
+# Restart services (after publishing separately)
+./scripts/homelab-restart.sh
 
-# Restart services
-docker-compose -f docker/docker-compose.yml restart
+# Manual restart without publish
+cd ~/homelab/fct_stats
+docker-compose -f docker/docker-compose.yml up -d --build
+
+# Restart just the webapp container
+docker-compose -f docker/docker-compose.yml restart webapp
 
 # Stop services
 docker-compose -f docker/docker-compose.yml down
@@ -247,9 +321,6 @@ docker-compose -f docker/docker-compose.yml logs -f
 
 # Check status
 docker-compose -f docker/docker-compose.yml ps
-
-# Rebuild containers
-docker-compose -f docker/docker-compose.yml up -d --build
 ```
 
 ## Pre-Publish Checklist

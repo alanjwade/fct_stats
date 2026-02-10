@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS athletes (
     gender TEXT CHECK(gender IN ('M', 'F')),
     graduation_year INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(first_name, last_name, graduation_year)
+    UNIQUE(first_name, last_name, gender, graduation_year)
 );
 
 -- Canonical events

@@ -58,10 +58,6 @@ def import_meet_file(db, event_matcher, meet_file: Path, meet_config: dict) -> t
     meet_date = config_entry.get('date') or meet_data.get('date')
     default_level = config_entry.get('level', 'varsity')
     
-    # Default date based on year
-    if not meet_date and year:
-        meet_date = f"{year}-03-15"
-    
     added = 0
     skipped = 0
     
@@ -87,7 +83,12 @@ def import_meet_file(db, event_matcher, meet_file: Path, meet_config: dict) -> t
             # Get meet info - use record's meet name if different from file meet
             record_meet = record.get('meet', meet_name)
             record_config = meet_config.get(record_meet, {})
+            record_year = record.get('year') or year
+            
+            # Use actual dates when available, don't generate defaults
+            # This allows meet_date to be None for historical records where only year is known
             record_date = record.get('date') or record_config.get('date') or meet_date
+            
             record_level = record.get('level') or record_config.get('level') or default_level
             
             meet_id = db.get_or_create_meet(
@@ -95,8 +96,7 @@ def import_meet_file(db, event_matcher, meet_file: Path, meet_config: dict) -> t
                 meet_date=record_date,
                 venue=record_meet,
                 location=record_meet,
-                season=str(year) if year else None,
-                level=record_level
+                season=str(record_year) if record_year else None
             )
             
             # Handle relay vs individual

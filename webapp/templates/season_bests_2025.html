@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}2025 Season Bests{% endblock %}
+{% block title %}2025 Events - FC Track & Field{% endblock %}
 
 {% block content %}
 <style>
@@ -19,10 +19,40 @@
     background-color: #4B286D !important;
     border-color: #4B286D #4B286D #4B286D !important;
 }
+
+.event-section {
+    margin-bottom: 2rem;
+}
+
+.event-section h4 {
+    color: var(--fc-purple);
+    border-bottom: 2px solid var(--fc-gold);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.event-group {
+    margin-bottom: 1.5rem;
+}
+
+.event-group h5 {
+    color: #4B286D;
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+}
+
+.event-table {
+    font-size: 0.9rem;
+}
+
+.event-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
 </style>
 
-<div class="container mt-4">
-    <h1 class="mb-4">2025 Season Bests</h1>
+<div class="container-fluid mt-4">
+    <h1 class="mb-4"><i class="bi bi-trophy"></i> 2025 Events</h1>
     
     <!-- Tabs for Boys/Girls -->
     <ul class="nav nav-tabs" id="genderTabs" role="tablist">
@@ -41,248 +71,412 @@
     <div class="tab-content mt-3" id="genderTabContent">
         <!-- Boys Tab -->
         <div class="tab-pane fade show active" id="boys" role="tabpanel" aria-labelledby="boys-tab">
-            <!-- Track Events -->
-            <h3 class="mt-4">Track</h3>
-            <div class="accordion" id="boysTrackAccordion">
-                {% for event_name in event_order_track %}
-                    {% if event_name in boys_track %}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="boysTrack{{ loop.index }}">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#boysTrackCollapse{{ loop.index }}" aria-expanded="false" aria-controls="boysTrackCollapse{{ loop.index }}">
-                                {{ event_name }} ({{ boys_track[event_name]|length }})
-                            </button>
-                        </h2>
-                        <div id="boysTrackCollapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="boysTrack{{ loop.index }}" data-bs-parent="#boysTrackAccordion">
-                            <div class="accordion-body">
-                                <table class="table table-sm table-hover">
+            <div class="row">
+                <!-- Left Column: Sprint, Middle Distance, Distance -->
+                <div class="col-lg-4">
+                    <!-- Sprint Events -->
+                    {% if boys_sprint %}
+                    <div class="event-section">
+                        <h4><i class="bi bi-lightning-fill"></i> Sprint</h4>
+                        {% for event_name in event_order_sprint %}
+                            {% if event_name in boys_sprint %}
+                            <div class="event-group">
+                                <h5>{{ event_name }}</h5>
+                                <table class="table table-sm table-striped event-table">
                                     <thead>
                                         <tr>
                                             <th>Athlete</th>
                                             <th>Mark</th>
-                                            <th>Meet</th>
-                                            <th>Date</th>
+                                            <th class="d-none d-md-table-cell">Meet</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for result in boys_track[event_name] %}
+                                        {% for result in boys_sprint[event_name][:10] %}
                                         <tr>
                                             <td><a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">{{ result.athlete_name }}</a></td>
-                                            <td>{{ result.mark_display }}</td>
-                                            <td>{{ result.meet_name }}</td>
-                                            <td>{{ result.meet_date }}</td>
+                                            <td><strong>{{ result.mark|format_time }}</strong></td>
+                                            <td class="d-none d-md-table-cell small text-muted">{{ result.meet_name }}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                     {% endif %}
-                {% endfor %}
-            </div>
-            
-            <!-- Field Events -->
-            <h3 class="mt-4">Field</h3>
-            <div class="accordion" id="boysFieldAccordion">
-                {% for event_name in event_order_field %}
-                    {% if event_name in boys_field %}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="boysField{{ loop.index }}">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#boysFieldCollapse{{ loop.index }}" aria-expanded="false" aria-controls="boysFieldCollapse{{ loop.index }}">
-                                {{ event_name }} ({{ boys_field[event_name]|length }})
-                            </button>
-                        </h2>
-                        <div id="boysFieldCollapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="boysField{{ loop.index }}" data-bs-parent="#boysFieldAccordion">
-                            <div class="accordion-body">
-                                <table class="table table-sm table-hover">
+                    
+                    <!-- Middle Distance Events -->
+                    {% if boys_middle_distance %}
+                    <div class="event-section">
+                        <h4><i class="bi bi-watch"></i> Middle Distance</h4>
+                        {% for event_name in event_order_middle %}
+                            {% if event_name in boys_middle_distance %}
+                            <div class="event-group">
+                                <h5>{{ event_name }}</h5>
+                                <table class="table table-sm table-striped event-table">
                                     <thead>
                                         <tr>
                                             <th>Athlete</th>
                                             <th>Mark</th>
-                                            <th>Meet</th>
-                                            <th>Date</th>
+                                            <th class="d-none d-md-table-cell">Meet</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for result in boys_field[event_name] %}
+                                        {% for result in boys_middle_distance[event_name][:10] %}
                                         <tr>
                                             <td><a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">{{ result.athlete_name }}</a></td>
-                                            <td>{{ result.mark_display }}</td>
-                                            <td>{{ result.meet_name }}</td>
-                                            <td>{{ result.meet_date }}</td>
+                                            <td><strong>{{ result.mark|format_time }}</strong></td>
+                                            <td class="d-none d-md-table-cell small text-muted">{{ result.meet_name }}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                     {% endif %}
-                {% endfor %}
-            </div>
-            
-            <!-- Relay Events -->
-            {% if boys_relays %}
-            <h3 class="mt-4">Relays</h3>
-            <div class="accordion" id="boysRelaysAccordion">
-                {% for event_name in event_order_relays %}
-                    {% if event_name in boys_relays %}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="boysRelays{{ loop.index }}">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#boysRelaysCollapse{{ loop.index }}" aria-expanded="false" aria-controls="boysRelaysCollapse{{ loop.index }}">
-                                {{ event_name }} ({{ boys_relays[event_name]|length }})
-                            </button>
-                        </h2>
-                        <div id="boysRelaysCollapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="boysRelays{{ loop.index }}" data-bs-parent="#boysRelaysAccordion">
-                            <div class="accordion-body">
-                                <table class="table table-sm table-hover">
+                    
+                    <!-- Distance Events -->
+                    {% if boys_distance %}
+                    <div class="event-section">
+                        <h4><i class="bi bi-flag"></i> Distance</h4>
+                        {% for event_name in event_order_distance %}
+                            {% if event_name in boys_distance %}
+                            <div class="event-group">
+                                <h5>{{ event_name }}</h5>
+                                <table class="table table-sm table-striped event-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Athlete</th>
+                                            <th>Mark</th>
+                                            <th class="d-none d-md-table-cell">Meet</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in boys_distance[event_name][:10] %}
+                                        <tr>
+                                            <td><a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">{{ result.athlete_name }}</a></td>
+                                            <td><strong>{{ result.mark|format_time }}</strong></td>
+                                            <td class="d-none d-md-table-cell small text-muted">{{ result.meet_name }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Middle Column: Hurdles and Relays -->
+                <div class="col-lg-4">
+                    <!-- Hurdles Events -->
+                    {% if boys_hurdles %}
+                    <div class="event-section">
+                        <h4><i class="bi bi-ui-checks-grid"></i> Hurdles</h4>
+                        {% for event_name in event_order_hurdles_boys %}
+                            {% if event_name in boys_hurdles %}
+                            <div class="event-group">
+                                <h5>{{ event_name }}</h5>
+                                <table class="table table-sm table-striped event-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Athlete</th>
+                                            <th>Mark</th>
+                                            <th class="d-none d-md-table-cell">Meet</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in boys_hurdles[event_name][:10] %}
+                                        <tr>
+                                            <td><a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">{{ result.athlete_name }}</a></td>
+                                            <td><strong>{{ result.mark|format_time }}</strong></td>
+                                            <td class="d-none d-md-table-cell small text-muted">{{ result.meet_name }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Relay Events -->
+                    {% if boys_relays %}
+                    <div class="event-section">
+                        <h4><i class="bi bi-people-fill"></i> Relays</h4>
+                        {% for event_name in event_order_relays %}
+                            {% if event_name in boys_relays %}
+                            <div class="event-group">
+                                <h5>{{ event_name }}</h5>
+                                <table class="table table-sm table-striped event-table">
                                     <thead>
                                         <tr>
                                             <th>Mark</th>
-                                            <th>Meet</th>
-                                            <th>Date</th>
+                                            <th class="d-none d-md-table-cell">Meet</th>
+                                            <th class="d-none d-md-table-cell">Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for result in boys_relays[event_name] %}
+                                        {% for result in boys_relays[event_name][:10] %}
                                         <tr>
-                                            <td>{{ result.mark_display }}</td>
-                                            <td>{{ result.meet_name }}</td>
-                                            <td>{{ result.meet_date }}</td>
+                                            <td><strong>{{ result.mark|format_time }}</strong></td>
+                                            <td class="d-none d-md-table-cell small text-muted">{{ result.meet_name }}</td>
+                                            <td class="d-none d-md-table-cell small text-muted">{{ result.meet_date }}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                     {% endif %}
-                {% endfor %}
+                </div>
+                
+                <!-- Right Column: Field Events -->
+                <div class="col-lg-4">
+                    {% if boys_field %}
+                    <div class="event-section">
+                        <h4><i class="bi bi-arrow-up-right"></i> Field</h4>
+                        {% for event_name in event_order_field %}
+                            {% if event_name in boys_field %}
+                            <div class="event-group">
+                                <h5>{{ event_name }}</h5>
+                                <table class="table table-sm table-striped event-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Athlete</th>
+                                            <th>Mark</th>
+                                            <th class="d-none d-md-table-cell">Meet</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in boys_field[event_name][:10] %}
+                                        <tr>
+                                            <td><a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">{{ result.athlete_name }}</a></td>
+                                            <td><strong>{{ result.mark|format_mark(False, event_name) }}</strong></td>
+                                            <td class="d-none d-md-table-cell small text-muted">{{ result.meet_name }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
             </div>
-            {% endif %}
         </div>
         
         <!-- Girls Tab -->
         <div class="tab-pane fade" id="girls" role="tabpanel" aria-labelledby="girls-tab">
-            <!-- Track Events -->
-            <h3 class="mt-4">Track</h3>
-            <div class="accordion" id="girlsTrackAccordion">
-                {% for event_name in event_order_track %}
-                    {% if event_name in girls_track %}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="girlsTrack{{ loop.index }}">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#girlsTrackCollapse{{ loop.index }}" aria-expanded="false" aria-controls="girlsTrackCollapse{{ loop.index }}">
-                                {{ event_name }} ({{ girls_track[event_name]|length }})
-                            </button>
-                        </h2>
-                        <div id="girlsTrackCollapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="girlsTrack{{ loop.index }}" data-bs-parent="#girlsTrackAccordion">
-                            <div class="accordion-body">
-                                <table class="table table-sm table-hover">
+            <div class="row">
+                <!-- Left Column: Sprint, Middle Distance, Distance -->
+                <div class="col-lg-4">
+                    <!-- Sprint Events -->
+                    {% if girls_sprint %}
+                    <div class="event-section">
+                        <h4><i class="bi bi-lightning-fill"></i> Sprint</h4>
+                        {% for event_name in event_order_sprint %}
+                            {% if event_name in girls_sprint %}
+                            <div class="event-group">
+                                <h5>{{ event_name }}</h5>
+                                <table class="table table-sm table-striped event-table">
                                     <thead>
                                         <tr>
                                             <th>Athlete</th>
                                             <th>Mark</th>
-                                            <th>Meet</th>
-                                            <th>Date</th>
+                                            <th class="d-none d-md-table-cell">Meet</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for result in girls_track[event_name] %}
+                                        {% for result in girls_sprint[event_name][:10] %}
                                         <tr>
                                             <td><a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">{{ result.athlete_name }}</a></td>
-                                            <td>{{ result.mark_display }}</td>
-                                            <td>{{ result.meet_name }}</td>
-                                            <td>{{ result.meet_date }}</td>
+                                            <td><strong>{{ result.mark|format_time }}</strong></td>
+                                            <td class="d-none d-md-table-cell small text-muted">{{ result.meet_name }}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                     {% endif %}
-                {% endfor %}
-            </div>
-            
-            <!-- Field Events -->
-            <h3 class="mt-4">Field</h3>
-            <div class="accordion" id="girlsFieldAccordion">
-                {% for event_name in event_order_field %}
-                    {% if event_name in girls_field %}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="girlsField{{ loop.index }}">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#girlsFieldCollapse{{ loop.index }}" aria-expanded="false" aria-controls="girlsFieldCollapse{{ loop.index }}">
-                                {{ event_name }} ({{ girls_field[event_name]|length }})
-                            </button>
-                        </h2>
-                        <div id="girlsFieldCollapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="girlsField{{ loop.index }}" data-bs-parent="#girlsFieldAccordion">
-                            <div class="accordion-body">
-                                <table class="table table-sm table-hover">
+                    
+                    <!-- Middle Distance Events -->
+                    {% if girls_middle_distance %}
+                    <div class="event-section">
+                        <h4><i class="bi bi-watch"></i> Middle Distance</h4>
+                        {% for event_name in event_order_middle %}
+                            {% if event_name in girls_middle_distance %}
+                            <div class="event-group">
+                                <h5>{{ event_name }}</h5>
+                                <table class="table table-sm table-striped event-table">
                                     <thead>
                                         <tr>
                                             <th>Athlete</th>
                                             <th>Mark</th>
-                                            <th>Meet</th>
-                                            <th>Date</th>
+                                            <th class="d-none d-md-table-cell">Meet</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for result in girls_field[event_name] %}
+                                        {% for result in girls_middle_distance[event_name][:10] %}
                                         <tr>
                                             <td><a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">{{ result.athlete_name }}</a></td>
-                                            <td>{{ result.mark_display }}</td>
-                                            <td>{{ result.meet_name }}</td>
-                                            <td>{{ result.meet_date }}</td>
+                                            <td><strong>{{ result.mark|format_time }}</strong></td>
+                                            <td class="d-none d-md-table-cell small text-muted">{{ result.meet_name }}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                     {% endif %}
-                {% endfor %}
-            </div>
-            
-            <!-- Relay Events -->
-            {% if girls_relays %}
-            <h3 class="mt-4">Relays</h3>
-            <div class="accordion" id="girlsRelaysAccordion">
-                {% for event_name in event_order_relays %}
-                    {% if event_name in girls_relays %}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="girlsRelays{{ loop.index }}">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#girlsRelaysCollapse{{ loop.index }}" aria-expanded="false" aria-controls="girlsRelaysCollapse{{ loop.index }}">
-                                {{ event_name }} ({{ girls_relays[event_name]|length }})
-                            </button>
-                        </h2>
-                        <div id="girlsRelaysCollapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="girlsRelays{{ loop.index }}" data-bs-parent="#girlsRelaysAccordion">
-                            <div class="accordion-body">
-                                <table class="table table-sm table-hover">
+                    
+                    <!-- Distance Events -->
+                    {% if girls_distance %}
+                    <div class="event-section">
+                        <h4><i class="bi bi-flag"></i> Distance</h4>
+                        {% for event_name in event_order_distance %}
+                            {% if event_name in girls_distance %}
+                            <div class="event-group">
+                                <h5>{{ event_name }}</h5>
+                                <table class="table table-sm table-striped event-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Athlete</th>
+                                            <th>Mark</th>
+                                            <th class="d-none d-md-table-cell">Meet</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in girls_distance[event_name][:10] %}
+                                        <tr>
+                                            <td><a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">{{ result.athlete_name }}</a></td>
+                                            <td><strong>{{ result.mark|format_time }}</strong></td>
+                                            <td class="d-none d-md-table-cell small text-muted">{{ result.meet_name }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Middle Column: Hurdles and Relays -->
+                <div class="col-lg-4">
+                    <!-- Hurdles Events -->
+                    {% if girls_hurdles %}
+                    <div class="event-section">
+                        <h4><i class="bi bi-ui-checks-grid"></i> Hurdles</h4>
+                        {% for event_name in event_order_hurdles_girls %}
+                            {% if event_name in girls_hurdles %}
+                            <div class="event-group">
+                                <h5>{{ event_name }}</h5>
+                                <table class="table table-sm table-striped event-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Athlete</th>
+                                            <th>Mark</th>
+                                            <th class="d-none d-md-table-cell">Meet</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in girls_hurdles[event_name][:10] %}
+                                        <tr>
+                                            <td><a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">{{ result.athlete_name }}</a></td>
+                                            <td><strong>{{ result.mark|format_time }}</strong></td>
+                                            <td class="d-none d-md-table-cell small text-muted">{{ result.meet_name }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Relay Events -->
+                    {% if girls_relays %}
+                    <div class="event-section">
+                        <h4><i class="bi bi-people-fill"></i> Relays</h4>
+                        {% for event_name in event_order_relays %}
+                            {% if event_name in girls_relays %}
+                            <div class="event-group">
+                                <h5>{{ event_name }}</h5>
+                                <table class="table table-sm table-striped event-table">
                                     <thead>
                                         <tr>
                                             <th>Mark</th>
-                                            <th>Meet</th>
-                                            <th>Date</th>
+                                            <th class="d-none d-md-table-cell">Meet</th>
+                                            <th class="d-none d-md-table-cell">Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for result in girls_relays[event_name] %}
+                                        {% for result in girls_relays[event_name][:10] %}
                                         <tr>
-                                            <td>{{ result.mark_display }}</td>
-                                            <td>{{ result.meet_name }}</td>
-                                            <td>{{ result.meet_date }}</td>
+                                            <td><strong>{{ result.mark|format_time }}</strong></td>
+                                            <td class="d-none d-md-table-cell small text-muted">{{ result.meet_name }}</td>
+                                            <td class="d-none d-md-table-cell small text-muted">{{ result.meet_date }}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                     {% endif %}
-                {% endfor %}
+                </div>
+                
+                <!-- Right Column: Field Events -->
+                <div class="col-lg-4">
+                    {% if girls_field %}
+                    <div class="event-section">
+                        <h4><i class="bi bi-arrow-up-right"></i> Field</h4>
+                        {% for event_name in event_order_field %}
+                            {% if event_name in girls_field %}
+                            <div class="event-group">
+                                <h5>{{ event_name }}</h5>
+                                <table class="table table-sm table-striped event-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Athlete</th>
+                                            <th>Mark</th>
+                                            <th class="d-none d-md-table-cell">Meet</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in girls_field[event_name][:10] %}
+                                        <tr>
+                                            <td><a href="{{ url_for('athlete_stats', athlete_id=result.athlete_id) }}">{{ result.athlete_name }}</a></td>
+                                            <td><strong>{{ result.mark|format_mark(False, event_name) }}</strong></td>
+                                            <td class="d-none d-md-table-cell small text-muted">{{ result.meet_name }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
             </div>
-            {% endif %}
         </div>
     </div>
 </div>
