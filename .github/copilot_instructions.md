@@ -569,3 +569,16 @@ data_dir = '../data'  # Relative paths break in different contexts
 ---
 
 **Remember**: The webapp is READ-ONLY. All database modifications happen through scripts.
+
+## Important Note
+
+Do not publish the webapp or database unless explicitly requested. Always confirm with the user before initiating any publish-related actions.
+
+## Guidelines
+- Ensure all changes are tested locally before suggesting a publish.
+- Provide clear communication about the impact of publishing.
+- Wait for explicit user approval before proceeding with any publish commands.
+
+## Additional Notes
+- Follow the user's instructions carefully.
+- Document any changes made during the session.

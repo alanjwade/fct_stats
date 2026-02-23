@@ -90,7 +90,7 @@
             {% for event_name, event_id in events_with_ids_by_year[year] %}
             <div class="col-12 col-lg-6 mb-3">
                 <div class="card">
-                    <div class="card-header" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#chart-collapse-{{ year }}-{{ event_name | replace(' ', '-') | replace('/', '-') }}" aria-expanded="false">
+                    <div class="card-header collapsible" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#chart-collapse-{{ year }}-{{ event_name | replace(' ', '-') | replace('/', '-') }}" aria-expanded="false">
                         <div class="d-flex justify-content-between align-items-center">
                             <span><i class="bi bi-chevron-right"></i> {{ event_name }}</span>
                             <span class="badge bg-secondary">{{ event_count_by_year[year][event_name] if event_count_by_year[year][event_name] else '0' }} results</span>
@@ -144,8 +144,8 @@
                                 {% endif %}
                                 </strong>
                             </td>
-                            <td>{{ result.place or '-' }}</td>
-                            <td>
+                            <td class="d-none d-md-table-cell">{{ result.place or '-' }}</td>
+                            <td class="d-none d-lg-table-cell">
                                 {% if result.level == 'varsity' %}
                                 <span class="badge badge-varsity">Varsity</span>
                                 {% elif result.level == 'jv' %}
@@ -169,6 +169,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 <script>
     // Load progress charts for each event in each year
     {% for year in sorted_years %}

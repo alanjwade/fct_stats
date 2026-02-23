@@ -1,7 +1,12 @@
+---
+agent: agent
+description: This prompt provides detailed instructions for publishing the FCT Stats application to the homelab production server. It covers various publishing options (webapp, database, combined), step-by-step workflows, troubleshooting tips, and important notes about the production environment.
+model: GPT-4o (copilot)
+---
+
 # Publishing FCT Stats to Production
 
 This prompt helps you publish the FCT Stats application to the homelab production server.
-model: GPT-4o (copilot)
 
 ## Overview
 

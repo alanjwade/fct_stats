@@ -2,10 +2,25 @@
 
 {% block title %}Home - FC Track & Field{% endblock %}
 
+{% block extra_css %}
+<style>
+.photo-strip-img {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+}
+@media (max-width: 767px) {
+    .photo-strip-img {
+        max-height: 140px;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="hero-section">
     <div class="container">
-        <h1><i class="bi bi-lightning-fill"></i> Fort Collins Track & Field</h1>
+        <h1>Fort Collins Track & Field</h1>
         <p class="lead mb-0">Welcome to the Lambkin Track & Field Team</p>
     </div>
 </div>
@@ -14,19 +29,43 @@
     <!-- Band App CTA Banner -->
     <div class="alert alert-success alert-dismissible fade show" role="alert" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); border: none; color: white;">
         <div class="row align-items-center">
-            <div class="col">
+            <div class="col-12 col-md">
                 <h4 class="alert-heading mb-2">
                     <i class="bi bi-megaphone"></i> Team Communications
                 </h4>
                 <p class="mb-0">Join our Band community for real-time updates, schedule changes, and team announcements.</p>
             </div>
-            <div class="col-auto">
-                <a href="#" class="btn btn-light btn-lg">
+            <div class="col-12 col-md-auto mt-2 mt-md-0">
+                <a href="https://band.us/n/a2afbeUbC5j2G" target="_blank" class="btn btn-light btn-lg">
                     <i class="bi bi-download"></i> Get the Band App
                 </a>
             </div>
         </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Photo strip -->
+    <div class="row g-2 mb-4">
+        <div class="col-6 col-md-3">
+            <img src="{{ url_for('static', filename='images/fct1.jpg') }}"
+                 alt="Team photo"
+                 class="img-fluid rounded shadow-sm photo-strip-img">
+        </div>
+        <div class="col-6 col-md-3">
+            <img src="{{ url_for('static', filename='images/relay.png') }}"
+                 alt="Relay"
+                 class="img-fluid rounded shadow-sm photo-strip-img">
+        </div>
+        <div class="col-6 col-md-3">
+            <img src="{{ url_for('static', filename='images/discus.png') }}"
+                 alt="Discus"
+                 class="img-fluid rounded shadow-sm photo-strip-img">
+        </div>
+        <div class="col-6 col-md-3">
+            <img src="{{ url_for('static', filename='images/cadel.png') }}"
+                 alt="Athlete"
+                 class="img-fluid rounded shadow-sm photo-strip-img">
+        </div>
     </div>
 
     <div class="row">

@@ -25,6 +25,7 @@ rsync -av --delete \
   --exclude='data/sources/current/meets/' \
   --exclude='.vscode/' \
   --exclude='*.log' \
+  --exclude='docker/certbot/' \
   "$SOURCE_DIR/" "$TARGET_DIR/"
 
 echo ""

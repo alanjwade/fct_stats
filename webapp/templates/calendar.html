@@ -64,7 +64,7 @@
                                     {% if day in month_data.events_by_day %}
                                         <div style="display: flex; gap: 2px; flex-wrap: wrap;">
                                             {% for event in month_data.events_by_day[day] %}
-                                                <button type="button" class="badge event-badge" data-event="{{ event.title }}" data-time="{{ event.time or '' }}" data-location="{{ event.location or '' }}" data-level="{{ event.level or '' }}" data-bs-toggle="modal" data-bs-target="#eventModal" style="cursor: pointer; padding: 3px 5px; font-size: 0.6rem;">
+                                                <button type="button" class="badge event-badge" data-event="{{ event.title }}" data-time="{{ event.time or '' }}" data-location="{{ event.location or '' }}" data-location-url="{{ location_map.get(event.location, '') or '' }}" data-level="{{ event.level or '' }}" data-bs-toggle="modal" data-bs-target="#eventModal" style="cursor: pointer; padding: 3px 5px; font-size: 0.6rem;">
                                                     {% if event.level == 'varsity' %}
                                                         <span class="bg-primary">V</span>
                                                     {% elif event.level == 'jv' %}
@@ -105,7 +105,12 @@
                                                 <br><i class="bi bi-clock"></i> {{ event.time }}
                                                 {% endif %}
                                                 {% if event.location %}
-                                                <br><i class="bi bi-geo-alt"></i> {{ event.location }}
+                                                <br><i class="bi bi-geo-alt"></i> 
+                                                {% if location_map.get(event.location) %}
+                                                    <a href="{{ location_map.get(event.location) }}" target="_blank" style="color: inherit; text-decoration: underline;">{{ event.location }}</a>
+                                                {% else %}
+                                                    {{ event.location }}
+                                                {% endif %}
                                                 {% endif %}
                                             </div>
                                         </div>
@@ -136,6 +141,7 @@ document.querySelectorAll('.event-badge').forEach(badge => {
         const title = this.dataset.event;
         const time = this.dataset.time;
         const location = this.dataset.location;
+        const locationUrl = this.dataset.locationUrl;
         const level = this.dataset.level;
         
         let levelBadge = '';
@@ -147,7 +153,13 @@ document.querySelectorAll('.event-badge').forEach(badge => {
         
         let body = levelBadge + '<div>';
         if (time) body += '<p><strong><i class="bi bi-clock"></i> Time:</strong> ' + time + '</p>';
-        if (location) body += '<p><strong><i class="bi bi-geo-alt"></i> Location:</strong> ' + location + '</p>';
+        if (location) {
+            if (locationUrl) {
+                body += '<p><strong><i class="bi bi-geo-alt"></i> Location:</strong> <a href="' + locationUrl + '" target="_blank">' + location + '</a></p>';
+            } else {
+                body += '<p><strong><i class="bi bi-geo-alt"></i> Location:</strong> ' + location + '</p>';
+            }
+        }
         body += '</div>';
         
         document.getElementById('eventModalTitle').textContent = title;

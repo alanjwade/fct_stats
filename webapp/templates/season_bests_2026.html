@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}2025 Leaderboard - FC Track & Field{% endblock %}
+{% block title %}2026 Leaderboard - FC Track & Field{% endblock %}
 
 {% block content %}
 <style>
@@ -182,7 +182,7 @@
 </style>
 
 <div class="container mt-4">
-    <h1 class="mb-4"><i class="bi bi-trophy"></i> 2025 Leaderboard</h1>
+    <h1 class="mb-4"><i class="bi bi-trophy"></i> 2026 Leaderboard</h1>
     
     <!-- Tabs for Boys/Girls -->
     <ul class="nav nav-tabs" id="genderTabs" role="tablist">
@@ -372,6 +372,11 @@ function renderEventCards(gender) {
                 <div class="event-card-title">${eventName}</div>
             </div>
         `;
+    }
+
+    if (html === '') {
+        container.innerHTML = '<p class="text-muted fst-italic">No results yet for the 2026 season.</p>';
+        return;
     }
     
     container.innerHTML = html;

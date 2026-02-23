@@ -1,4 +1,24 @@
-[
+{
+  "locationMap": {
+    "Colorado School of Mines": "https://www.google.com/maps/search/Colorado+School+of+Mines+Golden+CO",
+    "FCHS": "https://maps.app.goo.gl/c5UNBN4UPxhokHWz5",
+    "Fort Collins HS": "https://maps.app.goo.gl/c5UNBN4UPxhokHWz5",
+    "HS Commons": "https://maps.app.goo.gl/JfkEZedi3NKChcpq7",
+    "Poudre HS": "https://maps.app.goo.gl/2RRT6x47uCWAmnLH8",
+    "Echo Park Stadium": "https://maps.app.goo.gl/85yKo74weNeZze6c6",
+    "French Field": "https://maps.app.goo.gl/Zqm583tf4A6m55FcA",
+    "Roosevelt HS": "https://maps.app.goo.gl/uWLTB4DARZZj9Mzz7",
+    "CSU": "https://maps.app.goo.gl/qJQbPQw7jbNaRgE5A",
+    "PSD Stadium": "https://maps.app.goo.gl/wBCbfXLNYyEyMoaRA",
+    "Arcadia HS, CA": "https://maps.app.goo.gl/3W697KTb4DkRRaG17",
+    "JeffCo Stadium": "https://maps.app.goo.gl/tonuMxRXSgBimm357",
+    "Fossil HS": "https://maps.app.goo.gl/ULRxBWrTiddbsMoQ7",
+    "Stutler Bowl": "https://maps.app.goo.gl/dFV8wZkdomb6jejE7",
+    "Longmont HS": "https://maps.app.goo.gl/4nw6PEXKrZL9kk36A",
+    "Berthoud HS": "https://maps.app.goo.gl/Cg3cDhnAECQv7LJW9",
+    "TBD": ""
+  },
+  "events": [
   {
     "date": "01/01/2026",
     "day": "1",
@@ -117,7 +137,34 @@
     "date": "02/17/2026",
     "day": "17",
     "day_name": "Tuesday",
-    "title": "Track & Field Camp - 4 Day Camp",
+    "title": "Track & Field Camp - Day 1 of 4",
+    "time": "4:20 PM",
+    "location": "FCHS",
+    "type": "Team Event"
+  },
+  {
+    "date": "02/18/2026",
+    "day": "18",
+    "day_name": "Wednesday",
+    "title": "Track & Field Camp - Day 2 of 4",
+    "time": "4:20 PM",
+    "location": "FCHS",
+    "type": "Team Event"
+  },
+  {
+    "date": "02/19/2026",
+    "day": "19",
+    "day_name": "Thursday",
+    "title": "Track & Field Camp - Day 3 of 4",
+    "time": "4:20 PM",
+    "location": "FCHS",
+    "type": "Team Event"
+  },
+  {
+    "date": "02/20/2026",
+    "day": "20",
+    "day_name": "Friday",
+    "title": "Track & Field Camp - Day 4 of 4",
     "time": "4:20 PM",
     "location": "FCHS",
     "type": "Team Event"
@@ -403,3 +450,4 @@
     "level": "Qualifiers"
   }
 ]
+}

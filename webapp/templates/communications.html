@@ -3,14 +3,8 @@
 {% block title %}Team Communications - FCT Stats{% endblock %}
 
 {% block content %}
-<div class="hero-section">
-    <div class="container">
-        <h1><i class="bi bi-chat-dots-fill"></i> Team Communications</h1>
-        <p class="lead mb-0">Stay connected with the Fort Collins Track & Field team</p>
-    </div>
-</div>
-
-<div class="container">
+<div class="container mt-4">
+    <h1 class="mb-4"><i class="bi bi-chat-dots-fill"></i> Team Communications</h1>
     <!-- Band App Call-to-Action -->
     <div class="row mb-4">
         <div class="col-12">
@@ -134,42 +128,13 @@
         <div class="col-lg-6 mb-4">
             <div class="card mb-4">
                 <div class="card-header">
-                    <i class="bi bi-calendar-event"></i> 2025 Meet Schedule
+                    <i class="bi bi-calendar-event"></i> Meet Schedule
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Meet</th>
-                                    <th>Location</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Jan 18</td>
-                                    <td>Randall Hess Roughrider Invitational</td>
-                                    <td>Boulder, CO</td>
-                                </tr>
-                                <tr>
-                                    <td>Jan 25</td>
-                                    <td>Longmont Invitational</td>
-                                    <td>Longmont, CO</td>
-                                </tr>
-                                <tr>
-                                    <td>Feb 1</td>
-                                    <td>Conference Championship</td>
-                                    <td>Fort Collins, CO</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="3" class="text-center text-muted">
-                                        <em>More meets will be added as they are scheduled</em>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <p class="text-muted mb-3">View the full up-to-date meet schedule on the Calendar page.</p>
+                    <a href="{{ url_for('calendar') }}" class="btn btn-primary">
+                        <i class="bi bi-calendar3"></i> Open Calendar
+                    </a>
                 </div>
             </div>
             
@@ -221,13 +186,13 @@
                             </a>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <a href="#" class="btn btn-outline-primary w-100">
+                            <a href="{{ url_for('calendar') }}" class="btn btn-outline-primary w-100">
                                 <i class="bi bi-calendar-check"></i> Team Calendar
                             </a>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <a href="#" class="btn btn-outline-primary w-100">
-                                <i class="bi bi-file-earmark-text"></i> Forms & Documents
+                            <a href="{{ url_for('season_bests_2026') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-trophy"></i> 2026 Leaderboard
                             </a>
                         </div>
                     </div>

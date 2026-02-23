@@ -211,7 +211,13 @@ def index():
         import json
         from datetime import datetime
         with open(calendar_path, 'r') as f:
-            all_events = json.load(f)
+            calendar_data = json.load(f)
+            # Check if new format with locationMap
+            if isinstance(calendar_data, dict) and 'locationMap' in calendar_data:
+                all_events = calendar_data.get('events', [])
+            else:
+                # Old format - just a list of events
+                all_events = calendar_data if isinstance(calendar_data, list) else []
         
         # Filter for upcoming events only (today or future)
         today = datetime.now().date()
@@ -240,11 +246,25 @@ def calendar():
     import json
     from datetime import datetime
     from collections import defaultdict
-    
     # Load calendar events
     calendar_path = Path(__file__).parent / 'config' / 'calendar_events.json'
     if not calendar_path.exists():
         calendar_path = Path(__file__).parent.parent / 'config' / 'calendar_events.json'
+    
+    # Load location map and events
+    location_map = {}
+    all_events = []
+    
+    if calendar_path.exists():
+        with open(calendar_path, 'r') as f:
+            calendar_data = json.load(f)
+            # Check if new format with locationMap
+            if isinstance(calendar_data, dict) and 'locationMap' in calendar_data:
+                location_map = calendar_data.get('locationMap', {})
+                all_events = calendar_data.get('events', [])
+            else:
+                # Old format - just a list of events
+                all_events = calendar_data if isinstance(calendar_data, list) else []
     
     # Load meets configuration to get level information
     meets_path = Path(__file__).parent / 'config' / 'meets_2025.json'
@@ -263,41 +283,37 @@ def calendar():
     today = datetime.now().date()
     current_month_key = today.strftime('%Y-%m')
     
-    if calendar_path.exists():
-        with open(calendar_path, 'r') as f:
-            all_events = json.load(f)
-        
-        for event in all_events:
-            if event.get('date'):
-                try:
-                    event_date = datetime.strptime(event['date'], '%m/%d/%Y')
-                    month_key = event_date.strftime('%Y-%m')
-                    
-                    # Only include current month and future months
-                    if month_key < current_month_key:
-                        continue
-                    
-                    day = event_date.day
-                    
-                    # Use level from event if available, otherwise try to match with meets config
-                    level = event.get('level')
-                    if not level:
-                        event_title = event.get('title', '')
-                        for meet_name, meet_data in meets_config.items():
-                            if meet_name.lower() in event_title.lower():
-                                level = meet_data.get('level')
-                                break
-                    
-                    # Normalize level to lowercase
-                    if level:
-                        level = level.lower()
-                    
-                    event_copy = event.copy()
-                    event_copy['level'] = level
-                    event_copy['date_obj'] = event_date
-                    events_by_month[month_key][day].append(event_copy)
-                except ValueError:
-                    pass
+    for event in all_events:
+        if event.get('date'):
+            try:
+                event_date = datetime.strptime(event['date'], '%m/%d/%Y')
+                month_key = event_date.strftime('%Y-%m')
+                
+                # Only include current month and future months
+                if month_key < current_month_key:
+                    continue
+                
+                day = event_date.day
+                
+                # Use level from event if available, otherwise try to match with meets config
+                level = event.get('level')
+                if not level:
+                    event_title = event.get('title', '')
+                    for meet_name, meet_data in meets_config.items():
+                        if meet_name.lower() in event_title.lower():
+                            level = meet_data.get('level')
+                            break
+                
+                # Normalize level to lowercase
+                if level:
+                    level = level.lower()
+                
+                event_copy = event.copy()
+                event_copy['level'] = level
+                event_copy['date_obj'] = event_date
+                events_by_month[month_key][day].append(event_copy)
+            except ValueError:
+                pass
     
     # Sort months and convert to list format for template
     sorted_months = []
@@ -319,7 +335,7 @@ def calendar():
             'today': today
         })
     
-    return render_template('calendar.html', sorted_months=sorted_months, today=today)
+    return render_template('calendar.html', sorted_months=sorted_months, today=today, location_map=location_map)
 
 
 @app.route('/stats')
@@ -433,6 +449,48 @@ def stats():
         },
         recent_meets=recent_meets,
         top_events=top_events
+    )
+
+
+@app.route('/athletes-2026')
+def athletes_list_2026():
+    """List all athletes who have results in 2026."""
+    record_page_view('athletes_list_2026')
+    gender_filter = request.args.get('gender', '')
+
+    with get_db_connection() as conn:
+        query = """
+            SELECT
+                a.id,
+                a.first_name || ' ' || a.last_name as name,
+                a.gender,
+                a.graduation_year,
+                CASE
+                    WHEN a.graduation_year = 2026 THEN '12th'
+                    WHEN a.graduation_year = 2027 THEN '11th'
+                    WHEN a.graduation_year = 2028 THEN '10th'
+                    WHEN a.graduation_year = 2029 THEN '9th'
+                    ELSE NULL
+                END as grade,
+                COUNT(DISTINCT r.event_id) as pr_count,
+                COUNT(r.id) as result_count
+            FROM athletes a
+            INNER JOIN results r ON a.id = r.athlete_id
+            INNER JOIN meets m ON r.meet_id = m.id
+            WHERE strftime('%Y', m.meet_date) = '2026'
+        """
+        params = []
+
+        if gender_filter:
+            query += " AND a.gender = ?"
+            params.append(gender_filter)
+
+        query += " GROUP BY a.id ORDER BY a.last_name, a.first_name"
+        athletes = conn.execute(query, params).fetchall()
+
+    return render_template('athletes_list_2026.html',
+        athletes=athletes,
+        gender_filter=gender_filter
     )
 
 
@@ -742,6 +800,177 @@ def team_bests():
     )
 
 
+@app.route('/season-bests-2026')
+def season_bests_2026():
+    """2026 Season Bests - best result per athlete per event in 2026."""
+    record_page_view('season_bests_2026')
+
+    with get_db_connection() as conn:
+        query = """
+            WITH RankedResults AS (
+                SELECT
+                    e.id as event_id,
+                    e.name as event_name,
+                    e.category,
+                    e.timed,
+                    e.lower_is_better,
+                    e.is_relay,
+                    a.gender,
+                    a.id as athlete_id,
+                    a.first_name || ' ' || a.last_name as athlete_name,
+                    r.mark,
+                    r.mark_display,
+                    m.name as meet_name,
+                    m.meet_date,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY e.id, a.id, a.gender
+                        ORDER BY
+                            CASE WHEN e.lower_is_better THEN r.mark END ASC,
+                            CASE WHEN NOT e.lower_is_better THEN r.mark END DESC
+                    ) as rn
+                FROM results r
+                JOIN athletes a ON r.athlete_id = a.id
+                JOIN events e ON r.event_id = e.id
+                JOIN meets m ON r.meet_id = m.id
+                WHERE strftime('%Y', m.meet_date) = '2026'
+            )
+            SELECT *
+            FROM RankedResults
+            WHERE rn = 1
+            ORDER BY gender, category, event_name,
+                CASE WHEN lower_is_better THEN mark END ASC,
+                CASE WHEN NOT lower_is_better THEN mark END DESC
+        """
+
+        all_results = conn.execute(query).fetchall()
+
+        boys_sprint = []
+        boys_middle_distance = []
+        boys_distance = []
+        boys_hurdles = []
+        boys_relays = []
+        boys_field = []
+        girls_sprint = []
+        girls_middle_distance = []
+        girls_distance = []
+        girls_hurdles = []
+        girls_relays = []
+        girls_field = []
+
+        for result in all_results:
+            category = result['category']
+            event_name = result['event_name']
+            gender = result['gender']
+
+            if gender == 'M':
+                if result['is_relay']:
+                    boys_relays.append(result)
+                elif event_name in ['100m', '200m']:
+                    boys_sprint.append(result)
+                elif event_name in ['400m', '800m']:
+                    boys_middle_distance.append(result)
+                elif event_name in ['1600m', '3200m']:
+                    boys_distance.append(result)
+                elif 'Hurdles' in event_name:
+                    boys_hurdles.append(result)
+                elif category in ['jump', 'throw']:
+                    boys_field.append(result)
+            else:  # F
+                if result['is_relay']:
+                    girls_relays.append(result)
+                elif event_name in ['100m', '200m']:
+                    girls_sprint.append(result)
+                elif event_name in ['400m', '800m']:
+                    girls_middle_distance.append(result)
+                elif event_name in ['1600m', '3200m']:
+                    girls_distance.append(result)
+                elif 'Hurdles' in event_name:
+                    girls_hurdles.append(result)
+                elif category in ['jump', 'throw']:
+                    girls_field.append(result)
+
+        event_order_sprint = ['100m', '200m']
+        event_order_middle = ['400m', '800m']
+        event_order_distance = ['1600m', '3200m']
+        event_order_hurdles_boys = ['110m Hurdles', '300m Hurdles']
+        event_order_hurdles_girls = ['100m Hurdles', '300m Hurdles']
+        event_order_field = ['High Jump', 'Pole Vault', 'Long Jump', 'Triple Jump', 'Shot Put', 'Discus']
+        event_order_relays = ['4x100m Relay', '4x200m Relay', '4x400m Relay', '4x800m Relay']
+
+        def sort_by_event_order(results, event_order):
+            def get_order(result):
+                try:
+                    return event_order.index(result['event_name'])
+                except ValueError:
+                    return 999
+            return sorted(results, key=get_order)
+
+        boys_sprint = sort_by_event_order(boys_sprint, event_order_sprint)
+        boys_middle_distance = sort_by_event_order(boys_middle_distance, event_order_middle)
+        boys_distance = sort_by_event_order(boys_distance, event_order_distance)
+        boys_hurdles = sort_by_event_order(boys_hurdles, event_order_hurdles_boys)
+        boys_relays = sort_by_event_order(boys_relays, event_order_relays)
+        boys_field = sort_by_event_order(boys_field, event_order_field)
+
+        girls_sprint = sort_by_event_order(girls_sprint, event_order_sprint)
+        girls_middle_distance = sort_by_event_order(girls_middle_distance, event_order_middle)
+        girls_distance = sort_by_event_order(girls_distance, event_order_distance)
+        girls_hurdles = sort_by_event_order(girls_hurdles, event_order_hurdles_girls)
+        girls_relays = sort_by_event_order(girls_relays, event_order_relays)
+        girls_field = sort_by_event_order(girls_field, event_order_field)
+
+        def group_by_event(results):
+            events = {}
+            for result in results:
+                event_name = result['event_name']
+                if event_name not in events:
+                    events[event_name] = []
+                events[event_name].append(result)
+            return events
+
+        def rows_to_dicts(results_by_event):
+            converted = {}
+            for event_name, results in results_by_event.items():
+                converted[event_name] = [dict(row) for row in results]
+            return converted
+
+        boys_sprint_by_event = rows_to_dicts(group_by_event(boys_sprint))
+        boys_middle_distance_by_event = rows_to_dicts(group_by_event(boys_middle_distance))
+        boys_distance_by_event = rows_to_dicts(group_by_event(boys_distance))
+        boys_hurdles_by_event = rows_to_dicts(group_by_event(boys_hurdles))
+        boys_relays_by_event = rows_to_dicts(group_by_event(boys_relays))
+        boys_field_by_event = rows_to_dicts(group_by_event(boys_field))
+
+        girls_sprint_by_event = rows_to_dicts(group_by_event(girls_sprint))
+        girls_middle_distance_by_event = rows_to_dicts(group_by_event(girls_middle_distance))
+        girls_distance_by_event = rows_to_dicts(group_by_event(girls_distance))
+        girls_hurdles_by_event = rows_to_dicts(group_by_event(girls_hurdles))
+        girls_relays_by_event = rows_to_dicts(group_by_event(girls_relays))
+        girls_field_by_event = rows_to_dicts(group_by_event(girls_field))
+
+    return render_template('season_bests_2026.html',
+        boys_sprint=boys_sprint_by_event,
+        boys_middle_distance=boys_middle_distance_by_event,
+        boys_distance=boys_distance_by_event,
+        boys_hurdles=boys_hurdles_by_event,
+        boys_relays=boys_relays_by_event,
+        boys_field=boys_field_by_event,
+        girls_sprint=girls_sprint_by_event,
+        girls_middle_distance=girls_middle_distance_by_event,
+        girls_distance=girls_distance_by_event,
+        girls_hurdles=girls_hurdles_by_event,
+        girls_relays=girls_relays_by_event,
+        girls_field=girls_field_by_event,
+        event_order_sprint=event_order_sprint,
+        event_order_middle=event_order_middle,
+        event_order_distance=event_order_distance,
+        event_order_hurdles_boys=event_order_hurdles_boys,
+        event_order_hurdles_girls=event_order_hurdles_girls,
+        event_order_relays=event_order_relays,
+        event_order_field=event_order_field
+    )
+
+
 @app.route('/season-bests-2025')
 def season_bests_2025():
     """2025 Season Bests - best result per athlete per event in 2025."""
@@ -888,6 +1117,28 @@ def season_bests_2025():
         girls_hurdles_by_event = group_by_event(girls_hurdles)
         girls_relays_by_event = group_by_event(girls_relays)
         girls_field_by_event = group_by_event(girls_field)
+        
+        # Convert Row objects to dicts for JSON serialization
+        def rows_to_dicts(results_by_event):
+            """Convert sqlite3.Row objects to dicts for JSON serialization."""
+            converted = {}
+            for event_name, results in results_by_event.items():
+                converted[event_name] = [dict(row) for row in results]
+            return converted
+        
+        boys_sprint_by_event = rows_to_dicts(boys_sprint_by_event)
+        boys_middle_distance_by_event = rows_to_dicts(boys_middle_distance_by_event)
+        boys_distance_by_event = rows_to_dicts(boys_distance_by_event)
+        boys_hurdles_by_event = rows_to_dicts(boys_hurdles_by_event)
+        boys_relays_by_event = rows_to_dicts(boys_relays_by_event)
+        boys_field_by_event = rows_to_dicts(boys_field_by_event)
+        
+        girls_sprint_by_event = rows_to_dicts(girls_sprint_by_event)
+        girls_middle_distance_by_event = rows_to_dicts(girls_middle_distance_by_event)
+        girls_distance_by_event = rows_to_dicts(girls_distance_by_event)
+        girls_hurdles_by_event = rows_to_dicts(girls_hurdles_by_event)
+        girls_relays_by_event = rows_to_dicts(girls_relays_by_event)
+        girls_field_by_event = rows_to_dicts(girls_field_by_event)
     
     return render_template('season_bests_2025.html',
         boys_sprint=boys_sprint_by_event,
