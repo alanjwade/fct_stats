@@ -235,7 +235,15 @@ def index():
                 # No date available, include it
                 calendar_events.append(event)
     
-    return render_template('index.html', calendar_events=calendar_events)
+    # Get location map for creating links
+    location_map = {}
+    if calendar_path.exists():
+        with open(calendar_path, 'r') as f:
+            calendar_data = json.load(f)
+            if isinstance(calendar_data, dict) and 'locationMap' in calendar_data:
+                location_map = calendar_data.get('locationMap', {})
+    
+    return render_template('index.html', calendar_events=calendar_events, location_map=location_map)
 
 
 @app.route('/calendar')

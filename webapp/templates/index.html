@@ -101,7 +101,13 @@
                                     <td>
                                         <div><strong>{{ event.title }}</strong></div>
                                         {% if event.location %}
-                                        <small class="text-muted d-md-none">{{ event.location }}</small>
+                                        <small class="text-muted d-md-none">
+                                            {% if location_map and event.location in location_map and location_map[event.location] %}
+                                            <a href="{{ location_map[event.location] }}" target="_blank" class="text-decoration-none text-muted">{{ event.location }}</a>
+                                            {% else %}
+                                            {{ event.location }}
+                                            {% endif %}
+                                        </small>
                                         {% endif %}
                                         {% if event.time and event.time != 'N/A' %}
                                         <small class="text-muted d-md-none">{{ event.time }}</small>
@@ -111,11 +117,23 @@
                                         {% if event.time and event.time != 'N/A' %}
                                         <small>{{ event.time }}</small>
                                         {% if event.location %}
-                                        <br><small class="text-muted">{{ event.location }}</small>
+                                        <br><small class="text-muted">
+                                            {% if location_map and event.location in location_map and location_map[event.location] %}
+                                            <a href="{{ location_map[event.location] }}" target="_blank" class="text-decoration-none text-muted">{{ event.location }}</a>
+                                            {% else %}
+                                            {{ event.location }}
+                                            {% endif %}
+                                        </small>
                                         {% endif %}
                                         {% else %}
                                         {% if event.location %}
-                                        <small class="text-muted">{{ event.location }}</small>
+                                        <small class="text-muted">
+                                            {% if location_map and event.location in location_map and location_map[event.location] %}
+                                            <a href="{{ location_map[event.location] }}" target="_blank" class="text-decoration-none text-muted">{{ event.location }}</a>
+                                            {% else %}
+                                            {{ event.location }}
+                                            {% endif %}
+                                        </small>
                                         {% else %}
                                         <small class="text-muted">-</small>
                                         {% endif %}
@@ -231,6 +249,14 @@
                                 <small class="text-muted">Volunteer Assistant Coach</small>
                             </div>
                             <small class="text-muted">Distance</small>
+                        </div>
+                        
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between flex-wrap">
+                                <h5 class="mb-1">Luke Peterson</h5>
+                                <small class="text-muted">Volunteer Assistant Coach</small>
+                            </div>
+                            <small class="text-muted">Throws</small>
                         </div>
                     </div>
                 </div>
