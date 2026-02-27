@@ -120,6 +120,35 @@ scraper/venv/bin/python -m scraper.scraper --db /path/to/database.db
 scraper/venv/bin/python -m scraper.scraper data/meets/2025/my_meet.yaml --db /path/to/db.db --no-historical
 ```
 
+## Fallback: No YAML Meet Files Available
+
+If there are no YAML meet files in `data/meets/` (check with `find data/meets -name "*.yaml"`), use the parsed JSON data pipeline instead. This is the standard approach for the current setup.
+
+### Step 1: Check for YAML files
+```bash
+find data/meets -name "*.yaml" -o -name "*.yml" 2>/dev/null | head -20
+```
+
+### Step 2: If none found, re-import from parsed JSON meets and historical records
+```bash
+# Import school records from data/sources/historic/*.md
+./.venv/bin/python scripts/import_historical_records.py
+
+# Import all parsed meet JSON files from data/generated/parsed/meets/
+./.venv/bin/python scripts/import_from_parsed_meets.py
+```
+
+This covers:
+- Historical school records (`data/sources/historic/FCHS *.md`)
+- All parsed 2025 meet JSON files (`data/generated/parsed/meets/2025/*.json`)
+
+### When to use this fallback
+- No YAML meet configs exist (pages haven't been downloaded/configured yet)
+- You've added new meets via `scripts/parse_new_meet.py` and want to import results
+- You want a quick full rebuild without configuring YAML files
+
+---
+
 ## Common Workflows
 
 ### Workflow 1: Update Single Meet After Editing YAML
@@ -179,6 +208,24 @@ scraper/venv/bin/python -m scraper.scraper data/meets/2025/my_meet.yaml --db /pa
    ```
 
 This keeps historical school records while rebuilding meet results.
+
+### Workflow 5: Re-import from Parsed Meets (No YAML Files)
+Use this when no YAML meet configs exist but parsed JSON meet files are available.
+
+1. **Import historical school records:**
+   ```bash
+   ./.venv/bin/python scripts/import_historical_records.py
+   ```
+
+2. **Import all parsed meet JSON files:**
+   ```bash
+   ./.venv/bin/python scripts/import_from_parsed_meets.py
+   ```
+
+3. **Verify:**
+   ```bash
+   ./.venv/bin/python -c "import sqlite3; conn = sqlite3.connect('data/generated/db/fct_stats.db'); print('Results:', conn.execute('SELECT COUNT(*) FROM results').fetchone()[0])"
+   ```
 
 ## Understanding YAML Meet Files
 
@@ -364,10 +411,19 @@ scraper/venv/bin/pip freeze > scraper/requirements.txt
 
 ## Pre-Scrape Checklist
 
+**If using YAML-based scraper (`scraper/venv/bin/python -m scraper.scraper`):**
 - [ ] Meet YAML files created in `data/meets/YYYY/`
 - [ ] Result files exist (HTML/TXT) referenced in YAML
 - [ ] Canonical events are correct in `config/canonical_events.yaml`
 - [ ] School matcher patterns include all needed schools
+
+**If using parsed JSON pipeline (no YAML files):**
+- [ ] Parsed JSON files exist in `data/generated/parsed/meets/`
+- [ ] Historical records markdown files exist in `data/sources/historic/`
+- [ ] Use: `./.venv/bin/python scripts/import_historical_records.py`
+- [ ] Use: `./.venv/bin/python scripts/import_from_parsed_meets.py`
+
+**Always:**
 - [ ] Database path is accessible
 - [ ] No other processes are accessing the database
 

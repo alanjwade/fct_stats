@@ -157,7 +157,7 @@ docker-compose -f docker/docker-compose.yml up -d --build
    ```
 
 6. **Visit production site:**
-   - http://fct-stats.duckdns.org
+   - https://track.fchsrunning.org
 
 ### For Code-Only Changes (Templates, Styling, Routes)
 
@@ -218,7 +218,7 @@ The rsync excludes:
 ### Production Environment
 - **Location**: `~/homelab/fct_stats/`
 - **Docker Compose**: `docker/docker-compose.yml`
-- **URL**: http://fct-stats.duckdns.org
+- **URL**: https://track.fchsrunning.org
 - **Container Name**: `fct_stats_webapp`
 - **Network**: `proxy-network` (shared with nginx proxy)
 - **Database**: Mounted read-only from `../data/generated/db/fct_stats.db`
@@ -341,6 +341,6 @@ docker-compose -f docker/docker-compose.yml ps
 
 - [ ] Services started: `docker-compose ps` shows "Up"
 - [ ] No errors in logs: `docker-compose logs webapp`
-- [ ] Production site accessible: http://fct-stats.duckdns.org
+- [ ] Production site accessible: https://track.fchsrunning.org
 - [ ] New data/changes visible on production site
 - [ ] Database backup created (if db was published)

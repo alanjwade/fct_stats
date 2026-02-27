@@ -14,8 +14,7 @@ services:
     environment:
       - DATABASE_PATH=/app/data/generated/db/fct_stats.db
       - CONFIG_PATH=/app/config
-      - VIRTUAL_HOST=fct-stats.duckdns.org
-      - LETSENCRYPT_HOST=fct-stats.duckdns.org
+      - VIRTUAL_HOST=track.fchsrunning.org
     networks:
       - proxy-network
     expose:

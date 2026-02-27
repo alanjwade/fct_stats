@@ -105,7 +105,7 @@ docker-compose -f docker/docker-compose.yml up -d
    ```
 
 4. **Check site:**
-   - Visit http://fct-stats.duckdns.org
+   - Visit https://track.fchsrunning.org
    - Verify new data is visible
 
 ### Scenario 2: Published Code Changes
@@ -128,7 +128,7 @@ docker-compose -f docker/docker-compose.yml up -d
 
 4. **Verify:**
    - Check logs for errors
-   - Visit http://fct-stats.duckdns.org
+   - Visit https://track.fchsrunning.org
    - Test new functionality
 
 ### Scenario 3: Site is Down/Not Responding
@@ -318,8 +318,7 @@ docker-compose -f docker/docker-compose.yml up -d
 ### Environment Variables
 - `DATABASE_PATH=/app/data/fct_stats.db`
 - `CONFIG_PATH=/app/config`
-- `VIRTUAL_HOST=fct-stats.duckdns.org`
-- `LETSENCRYPT_HOST=fct-stats.duckdns.org`
+- `VIRTUAL_HOST=track.fchsrunning.org`
 
 ### Network
 - **Network**: `proxy-network` (external)
@@ -356,7 +355,7 @@ docker-compose -f docker/docker-compose.yml up -d
 
 - [ ] Container status shows "Up": `docker-compose ps`
 - [ ] No errors in logs: `docker-compose logs webapp`
-- [ ] Site accessible: http://fct-stats.duckdns.org
+- [ ] Site accessible: https://track.fchsrunning.org
 - [ ] Expected changes visible
 - [ ] No console errors in browser (F12 developer tools)
 

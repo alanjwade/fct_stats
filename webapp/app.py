@@ -96,11 +96,12 @@ def _current_school_year():
 def _grade_case_expression(alias='a'):
     """Return a dynamic SQL CASE expression mapping graduation_year to grade."""
     sy = _current_school_year()
+    prefix = f"{alias}." if alias else ""
     return f"""CASE
-                    WHEN {alias}.graduation_year = {sy} THEN '12th'
-                    WHEN {alias}.graduation_year = {sy+1} THEN '11th'
-                    WHEN {alias}.graduation_year = {sy+2} THEN '10th'
-                    WHEN {alias}.graduation_year = {sy+3} THEN '9th'
+                    WHEN {prefix}graduation_year = {sy} THEN '12th'
+                    WHEN {prefix}graduation_year = {sy+1} THEN '11th'
+                    WHEN {prefix}graduation_year = {sy+2} THEN '10th'
+                    WHEN {prefix}graduation_year = {sy+3} THEN '9th'
                     ELSE NULL
                 END"""
 
