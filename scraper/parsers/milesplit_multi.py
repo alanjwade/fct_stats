@@ -178,12 +178,17 @@ class MilesplitMultiParser(BaseParser):
         
         # Try to extract time/mark (look for patterns)
         if is_timed:
-            time_match = re.search(r'(\d{1,2}:\d{2}\.\d+|\d+\.\d+)\s*([+-]?\d+\.\d+)?', line)
+            # Use a more specific pattern that requires 2 decimal digits for seconds-only
+            # to avoid grabbing wind readings
+            time_match = re.search(r'(\d{1,2}:\d{2}\.\d+|\b\d+\.\d{2}\b)', line)
             if time_match:
                 result.mark_display = time_match.group(1)
                 result.mark = self.parse_time_to_seconds(time_match.group(1))
-                if time_match.group(2):
-                    result.wind = self.parse_wind(time_match.group(2))
+                # Check for wind reading after the time
+                after_time = line[time_match.end():].strip()
+                wind_match = re.match(r'([+-]?\d+\.\d+)', after_time)
+                if wind_match:
+                    result.wind = self.parse_wind(wind_match.group(1))
                 line = line[:time_match.start()].strip()
         else:
             dist_match = re.search(r"(\d+['\-]\d+(?:\.\d+)?[\"']?|\d+\.\d+m?)", line)

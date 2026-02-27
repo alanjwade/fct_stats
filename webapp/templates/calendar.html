@@ -151,13 +151,19 @@ document.querySelectorAll('.event-badge').forEach(badge => {
             levelBadge = '<span class="badge bg-info mb-2">JV</span>';
         }
         
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        
         let body = levelBadge + '<div>';
-        if (time) body += '<p><strong><i class="bi bi-clock"></i> Time:</strong> ' + time + '</p>';
+        if (time) body += '<p><strong><i class="bi bi-clock"></i> Time:</strong> ' + escapeHtml(time) + '</p>';
         if (location) {
             if (locationUrl) {
-                body += '<p><strong><i class="bi bi-geo-alt"></i> Location:</strong> <a href="' + locationUrl + '" target="_blank">' + location + '</a></p>';
+                body += '<p><strong><i class="bi bi-geo-alt"></i> Location:</strong> <a href="' + encodeURI(locationUrl) + '" target="_blank">' + escapeHtml(location) + '</a></p>';
             } else {
-                body += '<p><strong><i class="bi bi-geo-alt"></i> Location:</strong> ' + location + '</p>';
+                body += '<p><strong><i class="bi bi-geo-alt"></i> Location:</strong> ' + escapeHtml(location) + '</p>';
             }
         }
         body += '</div>';

@@ -87,22 +87,24 @@ SELECT
     e.id as event_id,
     e.name as event_name,
     e.lower_is_better,
-    CASE 
-        WHEN e.lower_is_better THEN MIN(r.mark)
-        ELSE MAX(r.mark)
-    END as pr_mark,
+    r.mark as pr_mark,
     r.mark_display as pr_display,
     m.meet_date as pr_date,
     m.name as pr_meet
-FROM athletes a
-JOIN results r ON a.id = r.athlete_id
+FROM results r
+JOIN athletes a ON r.athlete_id = a.id
 JOIN events e ON r.event_id = e.id
 JOIN meets m ON r.meet_id = m.id
-GROUP BY a.id, e.id
-HAVING r.mark = CASE 
-    WHEN e.lower_is_better THEN MIN(r.mark)
-    ELSE MAX(r.mark)
-END;
+WHERE r.mark = (
+    SELECT CASE 
+        WHEN e.lower_is_better THEN MIN(r2.mark)
+        ELSE MAX(r2.mark)
+    END
+    FROM results r2
+    WHERE r2.athlete_id = r.athlete_id
+    AND r2.event_id = r.event_id
+)
+GROUP BY a.id, e.id;
 
 -- Team bests for each event (all-time)
 CREATE VIEW IF NOT EXISTS team_bests_alltime AS
@@ -111,10 +113,7 @@ SELECT
     e.name as event_name,
     e.category,
     a.gender,
-    CASE 
-        WHEN e.lower_is_better THEN MIN(r.mark)
-        ELSE MAX(r.mark)
-    END as best_mark,
+    r.mark as best_mark,
     r.mark_display as best_display,
     a.first_name || ' ' || a.last_name as athlete_name,
     a.id as athlete_id,
@@ -125,11 +124,17 @@ FROM results r
 JOIN athletes a ON r.athlete_id = a.id
 JOIN events e ON r.event_id = e.id
 JOIN meets m ON r.meet_id = m.id
-GROUP BY e.id, a.gender
-HAVING r.mark = CASE 
-    WHEN e.lower_is_better THEN MIN(r.mark)
-    ELSE MAX(r.mark)
-END;
+WHERE r.mark = (
+    SELECT CASE 
+        WHEN e.lower_is_better THEN MIN(r2.mark)
+        ELSE MAX(r2.mark)
+    END
+    FROM results r2
+    JOIN athletes a2 ON r2.athlete_id = a2.id
+    WHERE r2.event_id = r.event_id
+    AND a2.gender = a.gender
+)
+GROUP BY e.id, a.gender;
 
 -- Team bests for each event by season
 CREATE VIEW IF NOT EXISTS team_bests_by_season AS
@@ -139,10 +144,7 @@ SELECT
     e.category,
     a.gender,
     m.season,
-    CASE 
-        WHEN e.lower_is_better THEN MIN(r.mark)
-        ELSE MAX(r.mark)
-    END as best_mark,
+    r.mark as best_mark,
     r.mark_display as best_display,
     a.first_name || ' ' || a.last_name as athlete_name,
     a.id as athlete_id,
@@ -152,11 +154,19 @@ FROM results r
 JOIN athletes a ON r.athlete_id = a.id
 JOIN events e ON r.event_id = e.id
 JOIN meets m ON r.meet_id = m.id
-GROUP BY e.id, a.gender, m.season
-HAVING r.mark = CASE 
-    WHEN e.lower_is_better THEN MIN(r.mark)
-    ELSE MAX(r.mark)
-END;
+WHERE r.mark = (
+    SELECT CASE 
+        WHEN e.lower_is_better THEN MIN(r2.mark)
+        ELSE MAX(r2.mark)
+    END
+    FROM results r2
+    JOIN meets m2 ON r2.meet_id = m2.id
+    JOIN athletes a2 ON r2.athlete_id = a2.id
+    WHERE r2.event_id = r.event_id
+    AND a2.gender = a.gender
+    AND m2.season = m.season
+)
+GROUP BY e.id, a.gender, m.season;
 
 -- Analytics page views (privacy-preserving)
 CREATE TABLE IF NOT EXISTS page_views (

@@ -20,7 +20,7 @@
                             <th class="d-none d-sm-table-cell">Gender</th>
                             <th class="d-none d-md-table-cell">Grade</th>
                             <th>Results</th>
-                            <th class="d-none d-md-table-cell">PRs</th>
+                            <th class="d-none d-md-table-cell">Events</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -52,7 +52,7 @@
                             </td>
                             <td class="d-none d-md-table-cell">{{ athlete.grade or '-' }}</td>
                             <td>{{ athlete.result_count }}</td>
-                            <td class="d-none d-md-table-cell">{{ athlete.pr_count }}</td>
+                            <td class="d-none d-md-table-cell">{{ athlete.event_count }}</td>
                             <td>
                                 <a href="{{ url_for('athlete_stats', athlete_id=athlete.id) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-graph-up d-none d-sm-inline"></i>

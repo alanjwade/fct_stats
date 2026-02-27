@@ -95,8 +95,9 @@ class HyTekTextParser(BaseParser):
         # or: " 6 # 696 Folkestad, Ava 10 Fort Collins 12.71 0.1 13 3"
         # or: " 23 # 814 Wade, Joseph 12 Fort Collins x4:38.45 4" (x prefix = non-scoring)
         # or: " 3 # 692 Dodd, Chloe 12 Fort Collins J10-04.00 6" (J prefix = tied on countback)
+        # Supports names with hyphens, apostrophes, periods, and spaces
         result_pattern = re.compile(
-            r'^\s+(\d+)\s+#\s*(\d+)\s+(.+?),\s+(.+?)\s+(\d+)\s+([A-Za-z ]+?)\s+([a-zA-Z]?[\d:\.\-]+[a-zA-Z]*)\s+'
+            r'^\s+(\d+)\s+#\s*(\d+)\s+([A-Za-z][A-Za-z \'\-.]+?),\s+([A-Za-z][A-Za-z \'\-.]+?)\s+(\d+)\s+([A-Za-z][A-Za-z .\'\-]+?)\s+([a-zA-Z]?[\d:\.\-]+[a-zA-Z]*)\s+'
         )
         
         for line in event_text.split('\n'):
@@ -190,8 +191,9 @@ class HyTekTextParser(BaseParser):
         
         # Pattern for relay team members
         # Example: " 1) #702 Hoppin, Macie 10 2) #725 Sullivan, Sarah 9"
+        # Supports names with hyphens, apostrophes, periods
         member_pattern = re.compile(
-            r'(\d+)\)\s+#(\d+)\s+(.+?),\s+(.+?)\s+(\d+)'
+            r'(\d+)\)\s+#(\d+)\s+([A-Za-z][A-Za-z \'\-.]+?),\s+([A-Za-z][A-Za-z \'\-.]+?)\s+(\d+)'
         )
         
         lines = event_text.split('\n')
@@ -199,6 +201,7 @@ class HyTekTextParser(BaseParser):
         current_school = None
         current_relay_team = None
         current_mark = None
+        current_mark_str = None
         current_place = None
         team_members = []
         

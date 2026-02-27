@@ -126,9 +126,14 @@ class Database:
         meet_date: str = None,
         venue: str = None,
         location: str = None,
-        season: str = None
+        season: str = None,
+        level: str = None
     ) -> int:
-        """Get existing meet or create new one. Returns meet ID."""
+        """Get existing meet or create new one. Returns meet ID.
+        
+        Note: level is accepted for API compatibility but stored per-result,
+        not per-meet, since a single meet can have both varsity and JV events.
+        """
         with self.get_connection() as conn:
             cursor = conn.cursor()
             
@@ -251,8 +256,12 @@ _db = None
 
 
 def get_database(db_path: str = None) -> Database:
-    """Get or create the database singleton."""
+    """Get or create the database singleton.
+    
+    If called with a different db_path than the existing instance,
+    creates a new instance for the new path.
+    """
     global _db
-    if _db is None:
+    if _db is None or (db_path is not None and str(_db.db_path) != str(Path(db_path))):
         _db = Database(db_path)
     return _db

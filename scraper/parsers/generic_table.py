@@ -252,7 +252,9 @@ class GenericTableParser(BaseParser):
                 continue
             
             # Name (letters, spaces, common name chars)
-            if re.match(r'^[A-Za-z][A-Za-z\s,.\'-]+$', cell):
+            # Exclude common non-name tokens like wind indicators
+            non_name_tokens = {'nwi', 'dns', 'dnf', 'dq', 'scr', 'nt', 'nh', 'foul', 'fs', 'nd'}
+            if re.match(r'^[A-Za-z][A-Za-z\s,.\'\-]+$', cell) and cell.lower().strip() not in non_name_tokens:
                 if not result.athlete_name:
                     result.athlete_name = cell
                 elif not result.school:
@@ -272,10 +274,15 @@ class GenericTableParser(BaseParser):
         
         # Extract mark/time
         if is_timed:
-            time_match = re.search(r'(\d{1,2}:\d{2}\.\d+|\d+\.\d{2})', line)
+            time_match = re.search(r'(\d{1,2}:\d{2}\.\d+|\b\d+\.\d{2}\b)', line)
             if time_match:
                 result.mark_display = time_match.group(1)
                 result.mark = self.parse_time_to_seconds(time_match.group(1))
+                # Check for wind reading after the time
+                after_time = line[time_match.end():].strip()
+                wind_match = re.match(r'[+-]?\d+\.\d+', after_time)
+                if wind_match:
+                    result.wind = self.parse_wind(wind_match.group(0))
                 line = line[:time_match.start()].strip()
         else:
             dist_match = re.search(r"(\d+['\-]\d+(?:\.\d+)?[\"']?)", line)

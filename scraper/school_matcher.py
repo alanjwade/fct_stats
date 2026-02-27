@@ -15,6 +15,8 @@ class SchoolMatcher:
         if config_path is None:
             config_path = Path(__file__).parent.parent / 'config' / 'schools.yaml'
         
+        self._config_path = str(config_path)
+        
         with open(config_path, 'r') as f:
             config = yaml.safe_load(f)
         
@@ -60,9 +62,9 @@ class SchoolMatcher:
             if score >= self.threshold:
                 return True
             # Check partial match for abbreviations
-            if fuzz.partial_ratio(school_lower, alias) >= 90:
-                # Verify it's not a false positive
-                if len(school_lower) >= 4:  # Avoid matching "FC" alone
+            # Guard against both short school names AND short aliases
+            if len(alias) >= 4 and len(school_lower) >= 4:
+                if fuzz.partial_ratio(school_lower, alias) >= 90:
                     return True
         
         return False
@@ -77,9 +79,13 @@ _matcher = None
 
 
 def get_school_matcher(config_path: str = None) -> SchoolMatcher:
-    """Get or create the school matcher singleton."""
+    """Get or create the school matcher singleton.
+    
+    If called with a different config_path than the existing instance,
+    creates a new instance.
+    """
     global _matcher
-    if _matcher is None:
+    if _matcher is None or (config_path is not None and _matcher._config_path != str(Path(config_path))):
         _matcher = SchoolMatcher(config_path)
     return _matcher
 

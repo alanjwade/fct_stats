@@ -3,6 +3,7 @@ Event matching utility for normalizing event names to canonical forms.
 Uses fuzzy matching to handle variations in event naming.
 """
 
+import re
 import yaml
 from pathlib import Path
 from rapidfuzz import fuzz, process
@@ -15,6 +16,8 @@ class EventMatcher:
     def __init__(self, config_path: str = None):
         if config_path is None:
             config_path = Path(__file__).parent.parent / 'config' / 'canonical_events.yaml'
+        
+        self._config_path = str(config_path)
         
         with open(config_path, 'r') as f:
             config = yaml.safe_load(f)
@@ -46,7 +49,6 @@ class EventMatcher:
         event_lower = event_name.lower().strip()
         
         # Strip common prefixes and suffixes
-        import re
         event_lower = re.sub(r'^(boys?|girls?|mens?|womens?)\s+', '', event_lower)
         event_lower = re.sub(r'\s+(finals?|prelims?|preliminaries?|heats?)$', '', event_lower)
         event_lower = event_lower.strip()
@@ -55,13 +57,15 @@ class EventMatcher:
         if event_lower in self.alias_map:
             return self.alias_map[event_lower]
         
-        # Fuzzy match
+        # Fuzzy match — use token_sort_ratio for better handling of word-order
+        # variations, and a cutoff of 80 to avoid cross-matching similar event
+        # names like "Long Jump" vs "High Jump" (which score ~75 with fuzz.ratio)
         aliases = list(self.alias_map.keys())
         result = process.extractOne(
             event_lower,
             aliases,
-            scorer=fuzz.ratio,
-            score_cutoff=75
+            scorer=fuzz.token_sort_ratio,
+            score_cutoff=80
         )
         
         if result:
@@ -121,9 +125,13 @@ _matcher = None
 
 
 def get_event_matcher(config_path: str = None) -> EventMatcher:
-    """Get or create the event matcher singleton."""
+    """Get or create the event matcher singleton.
+    
+    If called with a different config_path than the existing instance,
+    creates a new instance.
+    """
     global _matcher
-    if _matcher is None:
+    if _matcher is None or (config_path is not None and str(Path(config_path)) != str(Path(_matcher._config_path))):
         _matcher = EventMatcher(config_path)
     return _matcher
 

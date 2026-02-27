@@ -58,26 +58,6 @@
     </div>
     {% endif %}
     
-    <!-- Event Progress Charts -->
-    {% if events_with_results %}
-    <h3 class="mb-3"><i class="bi bi-graph-up"></i> Performance Progress</h3>
-    <div class="row mb-4">
-        {% for event in events_with_results %}
-        <div class="col-12 col-lg-6 mb-4">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-                    <span class="mb-1 mb-sm-0">{{ event.name }}</span>
-                    <span class="badge badge-pr">PR: {{ event.pr_value|format_time }}</span>
-                </div>
-                <div class="card-body">
-                    <div id="chart-{{ event.name | replace(' ', '-') | replace('/', '-') }}" class="progress-chart"></div>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-    
     <!-- All Results Table -->
     {% for year in sorted_years %}
     <h3 class="mb-3 mt-5"><i class="bi bi-list-ul"></i> All Results ({{ year }})</h3>
@@ -182,7 +162,7 @@
         document.getElementById(collapseId).addEventListener('show.bs.collapse', function() {
             // Check if already loaded
             const chartDiv = document.getElementById(chartId);
-            if (chartDiv.innerHTML.trim() && Plotly.getPlotly()) {
+            if (chartDiv.dataset.loaded === 'true') {
                 return; // Already loaded
             }
             
@@ -261,6 +241,7 @@
                         };
                         
                         Plotly.newPlot(chartId, [trace], layout, config);
+                        chartDiv.dataset.loaded = 'true';
                     } else {
                         document.getElementById(chartId).innerHTML = '<p class="text-muted text-center py-3">Not enough data for chart</p>';
                     }

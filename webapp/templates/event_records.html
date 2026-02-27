@@ -80,8 +80,10 @@
                                 <span class="badge badge-varsity">Varsity</span>
                                 {% elif result.level == 'jv' %}
                                 <span class="badge badge-jv">JV</span>
-                                {% else %}
+                                {% elif result.level %}
                                 <span class="badge bg-secondary">{{ result.level|capitalize }}</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Open</span>
                                 {% endif %}
                             </td>
                         </tr>
@@ -154,8 +156,10 @@
                                 <span class="badge badge-varsity">Varsity</span>
                                 {% elif result.level == 'jv' %}
                                 <span class="badge badge-jv">JV</span>
-                                {% else %}
+                                {% elif result.level %}
                                 <span class="badge bg-secondary">{{ result.level|capitalize }}</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Open</span>
                                 {% endif %}
                             </td>
                         </tr>

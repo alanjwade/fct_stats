@@ -9,6 +9,7 @@ from pathlib import Path
 from glob import glob
 
 from .parsers import get_parser
+from .parsers.base_parser import BaseParser
 from .school_matcher import is_fort_collins, get_school_matcher
 from .event_matcher import get_event_matcher
 from .database import get_database
@@ -32,6 +33,7 @@ class Scraper:
         self.db = get_database(db_path)
         self.event_matcher = get_event_matcher()
         self.school_matcher = get_school_matcher()
+        self._base_parser = BaseParser.__subclasses__()[0]()  # For parse utility methods
         self.current_name_mappings = {}  # Store name mappings for current meet
         
         # Initialize events in database
@@ -92,6 +94,9 @@ class Scraper:
         
         # Store name mappings for this meet
         self.current_name_mappings = config.get('name_mappings', {})
+        
+        # Reset relay tracking for this meet
+        self._relay_results = {}
         
         # Process each source file
         for source in config.get('sources', []):
@@ -229,6 +234,7 @@ class Scraper:
         results = []
         
         # Find the next table after the event div
+        table = None
         current = event_div.parent
         while current:
             table = current.find_next('table', class_='eventTable')
@@ -279,9 +285,9 @@ class Scraper:
                     
                     # Convert to numeric value
                     if event_info and event_info.get('timed'):
-                        result.mark = self._parse_time_to_seconds(mark_text)
+                        result.mark = self._base_parser.parse_time_to_seconds(mark_text)
                     else:
-                        result.mark = self._parse_distance_to_meters(mark_text)
+                        result.mark = self._base_parser.parse_distance_to_meters(mark_text)
                 
                 # Wind (if present)
                 if len(cells) > 6:
@@ -300,57 +306,11 @@ class Scraper:
         
         return results
 
-    def _parse_time_to_seconds(self, time_str: str) -> float:
-        """Convert time string to seconds."""
-        if not time_str:
-            return 0.0
-        
-        time_str = time_str.strip()
-        
-        # Handle MM:SS.ss format
-        if ':' in time_str:
-            parts = time_str.split(':')
-            if len(parts) == 2:
-                try:
-                    minutes = float(parts[0])
-                    seconds = float(parts[1])
-                    return minutes * 60 + seconds
-                except ValueError:
-                    return 0.0
-        
-        # Handle SS.ss format
-        try:
-            return float(time_str)
-        except ValueError:
-            return 0.0
-
-    def _parse_distance_to_meters(self, dist_str: str) -> float:
-        """Convert distance string to meters."""
-        if not dist_str:
-            return 0.0
-        
-        dist_str = dist_str.strip()
-        
-        # Handle feet-inches format: 20-6.5 or 20'6.5"
-        import re
-        feet_inches = re.match(r"(\d+)['\-](\d+(?:\.\d+)?)", dist_str)
-        if feet_inches:
-            feet = float(feet_inches.group(1))
-            inches = float(feet_inches.group(2))
-            return (feet * 12 + inches) * 0.0254  # Convert to meters
-        
-        # Handle meters format: 45.23m or 45.23
-        meters_match = re.match(r'(\d+(?:\.\d+)?)m?', dist_str)
-        if meters_match:
-            return float(meters_match.group(1))
-        
-        return 0.0
-
-    def _process_event(self, parser, file_path: str, event_config: dict, meet_id: int, default_gender: str = None):
+    def _process_event(self, parser, file_path: str, event_config: dict, meet_id: int, default_gender: str = None, meet_level: str = 'varsity'):
         """Process a single event from a source file."""
         canonical_event = event_config.get('canonical_event')
         gender = event_config.get('gender', default_gender or '').lower()
-        level = event_config.get('level', 'varsity')
+        level = event_config.get('level', meet_level)
         
         # Convert gender to M/F
         gender_code = 'M' if gender in ['boys', 'male', 'm'] else 'F' if gender in ['girls', 'female', 'f'] else 'U'
@@ -384,7 +344,11 @@ class Scraper:
         logger.info(f"    Saved {fc_count} Fort Collins results")
 
     def _save_result(self, result, event_id: int, meet_id: int, gender: str, level: str):
-        """Save a single result to the database."""
+        """Save a single result to the database.
+        
+        For relay events, the first member creates the result row and subsequent
+        members are added via relay_members. All members share the same result_id.
+        """
         # Apply name mappings if configured for this meet
         athlete_name = result.athlete_name
         if hasattr(self, 'current_name_mappings') and athlete_name in self.current_name_mappings:
@@ -404,11 +368,60 @@ class Scraper:
             gender=gender
         )
         
-        # Build notes - include relay team if present
-        notes = result.notes or ""
+        # Handle relay events: group members under a single result row
         if hasattr(result, 'relay_team') and result.relay_team:
-            relay_note = f"Relay Team: {result.relay_team}"
-            notes = f"{relay_note}; {notes}" if notes else relay_note
+            relay_key = (event_id, meet_id, result.relay_team, level)
+            
+            # Initialize relay tracking dict if needed
+            if not hasattr(self, '_relay_results'):
+                self._relay_results = {}
+            
+            if relay_key in self._relay_results:
+                # This relay team already has a result row — add as relay member
+                existing = self._relay_results[relay_key]
+                leg_order = existing['next_leg']
+                self.db.add_relay_member(
+                    result_id=existing['result_id'],
+                    athlete_id=athlete_id,
+                    leg_order=leg_order
+                )
+                existing['next_leg'] = leg_order + 1
+            else:
+                # First member of this relay team — create the result row
+                notes = f"Relay Team: {result.relay_team}"
+                if result.notes:
+                    notes = f"{notes}; {result.notes}"
+                
+                result_id = self.db.add_result(
+                    athlete_id=athlete_id,
+                    event_id=event_id,
+                    meet_id=meet_id,
+                    mark=result.mark,
+                    mark_display=result.mark_display,
+                    place=result.place,
+                    level=level,
+                    wind=result.wind,
+                    heat=result.heat,
+                    lane=result.lane,
+                    flight=result.flight,
+                    notes=notes
+                )
+                
+                if result_id:
+                    # Add first member as leg 1
+                    self.db.add_relay_member(
+                        result_id=result_id,
+                        athlete_id=athlete_id,
+                        leg_order=1
+                    )
+                    self._relay_results[relay_key] = {
+                        'result_id': result_id,
+                        'next_leg': 2
+                    }
+            return
+        
+        # Non-relay: standard individual result
+        notes = result.notes or ""
         
         # Add result
         self.db.add_result(
