@@ -6,6 +6,7 @@ import sqlite3
 import logging
 import re
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from contextlib import contextmanager
 from functools import wraps
@@ -288,7 +289,7 @@ def calendar():
     
     # Load and organize calendar events
     events_by_month = defaultdict(lambda: defaultdict(list))
-    today = datetime.now().date()
+    today = datetime.now(ZoneInfo('America/Denver')).date()
     current_month_key = today.strftime('%Y-%m')
     
     for event in all_events:
