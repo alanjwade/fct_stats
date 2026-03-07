@@ -14,18 +14,27 @@ echo ""
 # Create target directory if it doesn't exist
 mkdir -p "$TARGET_DIR"
 
-# Sync project files, excluding development artifacts
+# Sync project files, keeping only production-necessary directories
 rsync -av --delete \
   --exclude='venv/' \
+  --exclude='.venv/' \
   --exclude='__pycache__/' \
   --exclude='*.pyc' \
   --exclude='.git/' \
-  --exclude='data/generated/db/' \
-  --exclude='data/sources/current/pages/' \
-  --exclude='data/sources/current/meets/' \
+  --exclude='.github/' \
   --exclude='.vscode/' \
+  --exclude='.gitignore' \
   --exclude='*.log' \
+  --exclude='*.md' \
+  --exclude='*.py' \
+  --exclude='scraper/' \
+  --exclude='database/' \
+  --exclude='scripts/' \
+  --exclude='docs/' \
+  --exclude='tmp/' \
+  --exclude='nginx/' \
   --exclude='docker/certbot/' \
+  --exclude='data/' \
   "$SOURCE_DIR/" "$TARGET_DIR/"
 
 echo ""
