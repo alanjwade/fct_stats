@@ -579,7 +579,8 @@ def athlete_stats(athlete_id):
         # Convert to dict for easier template access
         athlete = dict(athlete_row)
         
-        # Get PRs for this athlete
+        # Get season bests for this athlete (current season only)
+        current_season = str(_current_school_year())
         prs = conn.execute("""
             SELECT 
                 e.id as event_id,
@@ -595,17 +596,20 @@ def athlete_stats(athlete_id):
             JOIN events e ON r.event_id = e.id
             JOIN meets m ON r.meet_id = m.id
             WHERE r.athlete_id = ?
+            AND strftime('%Y', m.meet_date) = ?
             AND r.mark = (
                 SELECT CASE 
                     WHEN e.lower_is_better THEN MIN(r2.mark)
                     ELSE MAX(r2.mark)
                 END
                 FROM results r2
+                JOIN meets m2 ON r2.meet_id = m2.id
                 WHERE r2.athlete_id = r.athlete_id 
                 AND r2.event_id = r.event_id
+                AND strftime('%Y', m2.meet_date) = ?
             )
             ORDER BY e.name
-        """, (athlete_id,)).fetchall()
+        """, (athlete_id, current_season, current_season)).fetchall()
         
         # Get all results grouped by event
         results_by_event = {}

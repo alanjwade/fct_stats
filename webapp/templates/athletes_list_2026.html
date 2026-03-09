@@ -18,7 +18,6 @@
                         <tr>
                             <th>Name</th>
                             <th class="d-none d-sm-table-cell">Gender</th>
-                            <th class="d-none d-md-table-cell">Grade</th>
                             <th>Results</th>
                             <th class="d-none d-md-table-cell">Events</th>
                             <th></th>
@@ -38,7 +37,6 @@
                                     {% elif athlete.gender == 'F' %}
                                     <span class="badge bg-danger">F</span>
                                     {% endif %}
-                                    Grade {{ athlete.grade or '-' }}
                                 </small>
                             </td>
                             <td class="d-none d-sm-table-cell">
@@ -50,7 +48,6 @@
                                 <span class="badge bg-secondary">-</span>
                                 {% endif %}
                             </td>
-                            <td class="d-none d-md-table-cell">{{ athlete.grade or '-' }}</td>
                             <td>{{ athlete.result_count }}</td>
                             <td class="d-none d-md-table-cell">{{ athlete.event_count }}</td>
                             <td>

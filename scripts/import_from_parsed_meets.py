@@ -100,6 +100,8 @@ def import_meet_file(db, event_matcher, meet_file: Path, meet_config: dict) -> t
             )
             
             # Handle relay vs individual
+            # Relays are marked with is_relay flag OR detected by "relay" in event name.
+            # They may or may not have member names from the source file.
             is_relay = record.get('is_relay', False) or 'relay' in canonical_event.lower()
             
             if is_relay and record.get('relay_members'):
@@ -162,7 +164,7 @@ def import_meet_file(db, event_matcher, meet_file: Path, meet_config: dict) -> t
                 else:
                     skipped += 1
             else:
-                # Individual event
+                # Individual event (or relay without member names)
                 first_name = record.get('athlete_first', '')
                 last_name = record.get('athlete_last', '')
                 
@@ -178,7 +180,14 @@ def import_meet_file(db, event_matcher, meet_file: Path, meet_config: dict) -> t
                             first_name = full_name
                 
                 if not first_name:
-                    continue
+                    if is_relay:
+                        # Relay record with no individual member names available.
+                        # Use a per-event placeholder name so each relay team shows up
+                        # distinctly in the Athletes page (e.g. "Fort Collins 4x100m Relay Team").
+                        first_name = "Fort Collins"
+                        last_name = f"{canonical_event} Team"
+                    else:
+                        continue
                 
                 athlete_id = db.get_or_create_athlete(
                     first_name=first_name,

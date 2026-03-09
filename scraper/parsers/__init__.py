@@ -3,6 +3,7 @@
 from .base_parser import BaseParser, ParsedResult
 from .milesplit_multi import MilesplitMultiParser
 from .milesplit_single import MilesplitSingleParser
+from .milesplit_text import MilesplitTextParser
 from .generic_table import GenericTableParser
 from .hytek_text import HyTekTextParser
 
@@ -10,6 +11,7 @@ from .hytek_text import HyTekTextParser
 PARSERS = {
     'milesplit_multi': MilesplitMultiParser(),
     'milesplit_single': MilesplitSingleParser(),
+    'milesplit_text': MilesplitTextParser(),
     'generic_table': GenericTableParser(),
     'hytek_text': HyTekTextParser(),
 }
@@ -27,6 +29,7 @@ __all__ = [
     'ParsedResult',
     'MilesplitMultiParser',
     'MilesplitSingleParser',
+    'MilesplitTextParser',
     'GenericTableParser',
     'HyTekTextParser',
     'get_parser',

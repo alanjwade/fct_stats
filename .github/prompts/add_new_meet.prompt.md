@@ -46,7 +46,27 @@ python scripts/parse_new_meet.py "path/to/results.html" \
     --level varsity
 ```
 
-### Step 3: Validate Results
+If multiple parsers can handle the format, try all of them and compare results to pick the best option.
+
+### Step 3: Compare & Validate Results
+
+When multiple parsers succeed, evaluate them with these metrics:
+- **Total results**: Count of all results parsed
+- **Fort Collins athletes**: How many FC results were found
+- **Event coverage**: How many unique events are represented
+- **Gender balance**: Are both boys and girls represented
+- **Result quality**: Do times/distances look reasonable for the event
+
+**Example comparison output:**
+```
+Parser Results:
+- hytek_text: 156 total results, 34 FC athletes, 16 events
+- generic_table: 142 total results, 28 FC athletes, 14 events
+
+Recommendation: hytek_text (best FC coverage, most events)
+```
+
+If multiple options are equally valid, ask the user which source looks more trustworthy or complete.
 
 A successful parse should have:
 - [ ] **Reasonable count**: 20-200 results for a typical varsity meet
@@ -64,14 +84,27 @@ A successful parse should have:
 
 If no existing parser works, create a new one:
 
-1. **Analyze the format**: Look at the HTML/text structure
-2. **Create parser class** in `scraper/parsers/new_parser.py`
-3. **Inherit from BaseParser**: Use the utilities in base_parser.py
-4. **Implement required methods**:
+1. **Analyze the format**: Look at the HTML/text structure and identify distinctive characteristics
+2. **Name the parser**: Use clear, generic names that describe what makes it different:
+   - Include the primary format source (e.g., `hytek_`, `milesplit_`, `generic_`)
+   - Describe the input type or structure (e.g., `_text`, `_html`, `_multi`, `_single`, `_table`)
+   - Use suffix variants if multiple similar parsers exist: `_a`, `_b`, etc. (don't make names unreasonably long)
+   - Example: `hytek_text.py`, `milesplit_multi.py`, `generic_table.py`, `generic_table_a.py`
+3. **Create parser class** in `scraper/parsers/new_parser.py`
+4. **Inherit from BaseParser**: Use the utilities in base_parser.py
+5. **Implement required methods**:
    - `can_parse(content: str) -> bool`
    - `parse(file_path: str, event_config: dict) -> list[ParsedResult]`
    - `find_event_section(content: str, event_header: str) -> str`
-5. **Register in `__init__.py`**: Add to PARSERS dict
+6. **Register in `__init__.py`**: Add to PARSERS dict
+
+**Relay Event Handling:**
+For relay results, always capture the relay time with these fields:
+- `is_relay: true` — Mark the record as a relay
+- `athlete_first` and `athlete_last` — Populate with actual names if available; can be empty  
+- `relay_members` — List of team members if names are available in the source; can be omitted  
+
+**Important**: Even if the source file doesn't include individual athlete names, the relay time should still be recorded. The import script will use "Fort Collins" as a placeholder name if needed, so the relay time appears in the season-bests leaderboard. This is critical for tracking team performance.
 
 **Parser template:**
 ```python
@@ -154,6 +187,29 @@ python scripts/import_from_parsed_meets.py --no-clear
 # Or reimport everything
 python scripts/import_from_parsed_meets.py
 ```
+
+### Step 8: Display Best Performances
+
+After successful import, display the best Fort Collins performances from this meet, organized by event:
+
+```
+Best Fort Collins Performances - Longmont Invitational (2025-04-25)
+
+100m:
+  Boys: John Smith - 11.45 (4th place)
+  Girls: Sarah Johnson - 12.89 (3rd place)
+
+200m:
+  Boys: Marcus Davis - 23.12 (5th place)
+  Girls: Emily Chen - 26.34 (2nd place)
+
+[continues for all events with Fort Collins results]
+```
+
+Grouped by event with top performers for each gender. This confirms:
+- Parse was successful
+- Fort Collins athletes were properly identified
+- Results are reasonable for their meet placements
 
 ---
 

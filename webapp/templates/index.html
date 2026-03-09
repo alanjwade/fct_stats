@@ -14,17 +14,26 @@
         max-height: 140px;
     }
 }
+
+.home-page-bg {
+    background:
+        linear-gradient(135deg, rgba(75, 40, 109, 0.7) 0%, rgba(58, 31, 84, 0.75) 100%),
+        url("{{ url_for('static', filename='images/track_aerial.png') }}") center/cover fixed no-repeat;
+    min-height: 100%;
+}
+
+.home-page-bg .card {
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.home-page-bg .alert {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="hero-section">
-    <div class="container">
-        <h1>Fort Collins Track & Field</h1>
-        <p class="lead mb-0">Welcome to the Lambkin Track & Field Team</p>
-    </div>
-</div>
-
+<div class="home-page-bg">
 <div class="container py-5">
     <!-- Band App CTA Banner -->
     <div class="alert alert-success alert-dismissible fade show" role="alert" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); border: none; color: white;">
@@ -263,5 +272,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}

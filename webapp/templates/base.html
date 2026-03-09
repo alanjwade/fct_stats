@@ -459,12 +459,12 @@
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('index') }}">
                 <img src="{{ url_for('static', filename='images/logo.png') }}" alt="FC Logo" style="height:36px;width:auto;">
-                FC Track & Field
+                FCHS Track & Field
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="collapse navbar-collapse show" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">

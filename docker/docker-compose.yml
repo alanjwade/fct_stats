@@ -17,8 +17,6 @@ services:
       - VIRTUAL_HOST=track.fchsrunning.org
     networks:
       - proxy-network
-    ports:
-      - "5000:5000"
 
 networks:
   proxy-network:

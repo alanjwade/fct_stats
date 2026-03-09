@@ -21,9 +21,7 @@
                         {% elif athlete.gender == 'F' %}
                         <span class="badge bg-danger me-2">Female</span>
                         {% endif %}
-                        {% if athlete.grade %}
-                        <span class="badge bg-secondary">Grade {{ athlete.grade }}</span>
-                        {% endif %}
+
                     </div>
                 </div>
                 <div class="col-auto">
@@ -35,9 +33,9 @@
         </div>
     </div>
     
-    <!-- PR Cards -->
+    <!-- Season Bests Cards -->
     {% if prs %}
-    <h3 class="mb-3"><i class="bi bi-star-fill text-gold"></i> Personal Records</h3>
+    <h3 class="mb-3"><i class="bi bi-star-fill text-gold"></i> Season Bests</h3>
     <div class="row mb-4">
         {% for pr in prs %}
         <div class="col-6 col-md-4 col-lg-3 mb-3">
