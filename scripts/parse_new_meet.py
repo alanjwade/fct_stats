@@ -1,15 +1,27 @@
 #!/usr/bin/env python3
 """
-Parse a new meet results file and save to the parsed_meets directory.
+Parse a new meet results file (or URL) and save to the parsed_meets directory.
 
 This script:
-1. Detects which parser can handle the input file
-2. Extracts all results for Fort Collins athletes
-3. Validates the results (reasonable count, expected events)
-4. Saves to data/parsed_meets/YYYY/meet_name.json
+1. Accepts either a local file path OR a URL as its first argument
+2. If a URL is given, uses the Playwright web scraper to fetch and cache the
+   page under data/sources/current/pages/<year>/<slug>.json — subsequent runs
+   will load from the cache without hitting the network.
+3. Detects which parser can handle the input
+4. Extracts all results for Fort Collins athletes
+5. Validates the results (reasonable count, expected events)
+6. Saves to data/generated/parsed/meets/YYYY/meet_name.json
 
 Usage:
-    python parse_new_meet.py <input_file> --meet "Meet Name" --date 2025-04-15 [--level varsity]
+    # Local file
+    python parse_new_meet.py path/to/results.html --meet "Meet Name" --date 2025-04-15
+
+    # Web URL (scraped via Playwright and cached automatically)
+    python parse_new_meet.py https://co.milesplit.com/meets/.../results \\
+        --meet "Meet Name" --date 2026-03-07
+
+    # Force re-scrape even if a cached file exists
+    python parse_new_meet.py https://... --meet "..." --date ... --rescrape
 """
 
 import json
@@ -213,32 +225,64 @@ def print_summary(results: list, parser_name: str):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Parse a new meet results file for Fort Collins athletes'
+        description='Parse a new meet results file or URL for Fort Collins athletes'
     )
-    parser.add_argument('input_file', help='Path to meet results file (HTML or text)')
+    parser.add_argument(
+        'input',
+        help='Path to meet results file (HTML or text) OR a full URL to scrape'
+    )
     parser.add_argument('--meet', '-m', required=True, help='Meet name')
     parser.add_argument('--date', '-d', required=True, help='Meet date (YYYY-MM-DD)')
-    parser.add_argument('--level', '-l', default='varsity', 
+    parser.add_argument('--level', '-l', default='varsity',
                        choices=['varsity', 'jv', 'open'], help='Competition level')
     parser.add_argument('--year', '-y', type=int, help='Year (defaults to date year)')
     parser.add_argument('--output', '-o', help='Output file path (auto-generated if not specified)')
-    parser.add_argument('--force', '-f', action='store_true', 
+    parser.add_argument('--force', '-f', action='store_true',
                        help='Save even if validation fails')
     parser.add_argument('--parser', '-p', help='Force use of specific parser')
-    
+    parser.add_argument('--rescrape', action='store_true',
+                       help='Re-fetch the URL even if a cached scrape already exists')
+
     args = parser.parse_args()
-    
-    input_path = Path(args.input_file)
-    if not input_path.exists():
-        print(f"Error: Input file not found: {input_path}")
-        return 1
-    
-    # Read input file
+
+    year = args.year or int(args.date[:4])
+    data_dir = Path(__file__).parent.parent / 'data'
+
+    # ── Resolve input: URL vs file path ──────────────────────────────────────
+    is_url = args.input.startswith('http://') or args.input.startswith('https://')
+
+    if is_url:
+        url = args.input
+        print(f"Input is a URL: {url}")
+
+        from scraper.web_scraper import scrape_url, get_cache_path
+        cache_path = get_cache_path(url, year, data_dir)
+
+        if cache_path.exists() and not args.rescrape:
+            print(f"Using cached scrape: {cache_path}")
+        else:
+            print("Fetching page with Playwright (this may take ~10 s)...")
+            try:
+                cache_path = scrape_url(url, year, data_dir, force=args.rescrape)
+            except RuntimeError as e:
+                print(f"Error: {e}")
+                return 1
+            print(f"Page saved to {cache_path}")
+
+        input_path = cache_path
+    else:
+        input_path = Path(args.input)
+        if not input_path.exists():
+            print(f"Error: Input file not found: {input_path}")
+            return 1
+        url = None
+
+    # ── Read content ──────────────────────────────────────────────────────────
     print(f"Reading {input_path}...")
     with open(input_path, 'r', encoding='utf-8', errors='replace') as f:
         content = f.read()
-    
-    # Detect or use specified parser
+
+    # ── Detect or use specified parser ────────────────────────────────────────
     if args.parser:
         if args.parser not in PARSERS:
             print(f"Error: Unknown parser '{args.parser}'")
@@ -255,68 +299,66 @@ def main():
                 print(f"  {name}")
             print("\nTry specifying a parser with --parser or create a new parser")
             return 1
-    
+
     print(f"Using parser: {parser_name}")
-    
-    # Parse all results
+
+    # ── Parse all results ─────────────────────────────────────────────────────
     try:
         if hasattr(selected_parser, 'parse_all_events'):
             all_results = selected_parser.parse_all_events(content)
         else:
-            # Fall back to parsing with empty config
             all_results = selected_parser.parse(str(input_path), {})
     except Exception as e:
         print(f"Error parsing file: {e}")
         import traceback
         traceback.print_exc()
         return 1
-    
+
     print(f"Parsed {len(all_results)} total results from file")
-    
-    # Filter to Fort Collins athletes
+
+    # ── Filter to Fort Collins athletes ───────────────────────────────────────
     event_matcher = get_event_matcher()
     fc_results = extract_fc_results(all_results, event_matcher)
-    
+
     if not fc_results:
         print("Error: No Fort Collins athletes found in results!")
         print("Check that the school name matching is correct")
         return 1
-    
-    # Add meet info to results
-    year = args.year or int(args.date[:4])
+
+    # ── Attach meet metadata ──────────────────────────────────────────────────
     for result in fc_results:
         result['meet'] = args.meet
         result['date'] = args.date
         result['year'] = year
         result['level'] = args.level
-    
-    # Print summary
+
+    # ── Print summary ─────────────────────────────────────────────────────────
     print_summary(fc_results, parser_name)
-    
-    # Validate results
+
+    # ── Validate ──────────────────────────────────────────────────────────────
     is_valid, issues = validate_results(fc_results)
-    
+
     if issues:
         print(f"\n{'!'*60}")
         print("VALIDATION ISSUES:")
         for issue in issues:
             print(f"  ⚠ {issue}")
         print(f"{'!'*60}")
-    
+
     if not is_valid and not args.force:
         print("\nUse --force to save anyway")
         return 1
-    
-    # Determine output path
+
+    # ── Determine output path ─────────────────────────────────────────────────
     if args.output:
         output_path = Path(args.output)
     else:
-        output_dir = Path(__file__).parent.parent / 'data' / 'generated' / 'parsed' / 'meets' / str(year)
+        output_dir = data_dir / 'generated' / 'parsed' / 'meets' / str(year)
         output_dir.mkdir(parents=True, exist_ok=True)
         slug = slugify(args.meet)
         output_path = output_dir / f"{slug}.json"
-    
-    # Create meet data structure
+
+    # ── Build and save meet data ──────────────────────────────────────────────
     meet_data = {
         "meet_name": args.meet,
         "date": args.date,
@@ -324,21 +366,21 @@ def main():
         "level": args.level,
         "source": str(input_path.name),
         "parser": parser_name,
-        "results": fc_results
+        "results": fc_results,
     }
-    
-    # Save to file
+    if url:
+        meet_data["url"] = url
+
     with open(output_path, 'w') as f:
         json.dump(meet_data, f, indent=2)
-    
+
     print(f"\n✓ Saved {len(fc_results)} results to {output_path}")
-    
-    # Remind to update meets config if needed
+
     print(f"\nNext steps:")
     print(f"1. Review the output file: {output_path}")
-    print(f"2. Ensure meet is in config/meets_2025.json with correct date/level")
+    print(f"2. Ensure meet is in config/meets_{year}.json with correct date/level")
     print(f"3. Run: python scripts/import_from_parsed_meets.py --no-clear")
-    
+
     return 0
 
 

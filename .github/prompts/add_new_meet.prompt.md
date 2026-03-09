@@ -5,40 +5,74 @@ This prompt guides the AI assistant through parsing a new track meet results fil
 ## Input Required
 
 You should have:
-1. A meet results file (HTML or text) - either provide the path or paste the content
+1. A meet results file (HTML or text) **OR a URL** to the results page — either provide the path/URL or paste the content
 2. The meet name (e.g., "Longmont Invitational")
 3. The meet date (YYYY-MM-DD format)
 4. The level (varsity/jv/open)
 
 ## Process
 
-### Step 1: Analyze the Input File
+### Step 1: Analyze the Input
 
-First, examine the results file to understand its format:
+Determine whether the user gave a **URL** or a **local file**:
+
+- **URL** (starts with `https://` or `http://`): use the web scraping path below.
+- **Local file**: read it and proceed to Step 2.
 
 ```
-I have a new meet results file to parse. The file is at: [PATH]
+I have a new meet to add.
+Source: [URL or PATH]
 Meet name: [NAME]
 Date: [DATE]
 Level: [LEVEL]
 
-Please analyze this file and determine:
-1. What format is it? (HyTek, Milesplit, generic HTML table, etc.)
-2. Do we have an existing parser that can handle it?
+Please analyze the source and determine:
+1. Is this a URL or a local file?
+2. What format is the data? (HyTek, MileSplit web page, HTML file, etc.)
 3. Are there Fort Collins athletes visible in the results?
 ```
 
-### Step 2: Try Existing Parsers
+### Step 1a: If the Input is a URL — Web Scraping
+
+Pass the URL directly to `parse_new_meet.py`. The script will:
+1. Check for a cached scrape at `data/sources/current/pages/<year>/<meet-slug>.json`
+2. If no cache exists, launch Playwright/Chromium headlessly, render the page, extract all result tables, and save the JSON cache.
+3. Parse the cached JSON with the `milesplit_web` parser.
+
+```bash
+python scripts/parse_new_meet.py "https://co.milesplit.com/meets/.../results" \
+    --meet "Meet Name" \
+    --date 2026-03-07 \
+    --level varsity
+```
+
+The page is only fetched **once**; subsequent runs load from the cache. To force a fresh fetch:
+```bash
+python scripts/parse_new_meet.py "https://..." --meet "..." --date ... --rescrape
+```
+
+**Also add the URL to `data/sources/current/<year>/meets_<year>.json`** so it's recorded with the meet:
+```json
+{
+  "name": "Meet Name",
+  "date": "2026-03-07",
+  "level": "varsity",
+  "url": "https://co.milesplit.com/meets/.../results"
+}
+```
+
+### Step 2: Try Existing Parsers (for local files)
 
 The existing parsers are in `scraper/parsers/`:
+- **milesplit_web.py** - JSON produced by the Playwright web scraper (auto-selected for scraped URLs)
 - **hytek_text.py** - HyTek Meet Manager text output (look for "HY-TEK's Meet Manager" or "Event X Boys/Girls")
-- **milesplit_multi.py** - Milesplit multi-event pages
-- **milesplit_single.py** - Milesplit single event pages  
+- **milesplit_multi.py** - MileSplit multi-event HTML pages
+- **milesplit_single.py** - MileSplit single-event HTML pages
 - **generic_table.py** - Generic HTML tables with results
 
 Each parser has a `can_parse(content)` method that detects if it can handle the format.
 
-**Run the parser script:**
+**Run the parser script (local file):**
 ```bash
 python scripts/parse_new_meet.py "path/to/results.html" \
     --meet "Meet Name" \
@@ -168,14 +202,17 @@ Example structure:
 
 ### Step 6: Update Configuration
 
-Add the meet to `config/meets_2025.json`:
+Add the meet to `data/sources/current/<year>/meets_<year>.json`.
+Include the `url` field if the source was a web page:
 ```json
 {
   "name": "Meet Name",
   "date": "2025-04-25",
-  "level": "varsity"
+  "level": "varsity",
+  "url": "https://co.milesplit.com/meets/.../results"
 }
 ```
+Omit `url` for meets that came from a local HTML/text file.
 
 ### Step 7: Import to Database
 
@@ -228,9 +265,16 @@ data/
 │               └── [new_meet]_2025.json
 └── sources/
     └── current/
-        ├── pages/           # Raw meet result files
-        │   └── 2025/
-        └── meets/           # Meet YAML configurations
+        ├── 2025/
+        │   └── meets_2025.json   # Meet list (name/date/level/url)
+        ├── 2026/
+        │   └── meets_2026.json
+        ├── pages/               # Raw meet result files & scraped JSON cache
+        │   ├── 2025/
+        │   │   └── [meet-slug].html  (or .json for web-scraped meets)
+        │   └── 2026/
+        │       └── [meet-id]-[meet-slug].json   ← Playwright cache
+        └── meets/               # Meet YAML configurations (legacy)
             └── 2025/
 ```
 
@@ -255,10 +299,20 @@ data/
 ### Useful Commands
 
 ```bash
-# Analyze file without saving
-python scripts/parse_new_meet.py file.html -m "Meet" -d 2025-04-15 --force
+# Scrape a URL (cached automatically)
+python scripts/parse_new_meet.py "https://co.milesplit.com/meets/.../results" \
+    -m "Meet Name" -d 2026-03-07
 
-# Use specific parser
+# Force re-scrape even if cached
+python scripts/parse_new_meet.py "https://..." -m "Meet" -d 2026-03-07 --rescrape
+
+# Parse a local HTML/text file
+python scripts/parse_new_meet.py file.html -m "Meet" -d 2025-04-15
+
+# Save even if validation warns
+python scripts/parse_new_meet.py ... --force
+
+# Use a specific parser
 python scripts/parse_new_meet.py file.html -m "Meet" -d 2025-04-15 --parser hytek_text
 
 # List available parsers

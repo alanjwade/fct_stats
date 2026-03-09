@@ -4,11 +4,14 @@ from .base_parser import BaseParser, ParsedResult
 from .milesplit_multi import MilesplitMultiParser
 from .milesplit_single import MilesplitSingleParser
 from .milesplit_text import MilesplitTextParser
+from .milesplit_web import MilesplitWebParser
 from .generic_table import GenericTableParser
 from .hytek_text import HyTekTextParser
 
-# Registry of available parsers
+# Registry of available parsers.
+# milesplit_web is listed first so it wins can_parse detection for scraped JSON files.
 PARSERS = {
+    'milesplit_web': MilesplitWebParser(),
     'milesplit_multi': MilesplitMultiParser(),
     'milesplit_single': MilesplitSingleParser(),
     'milesplit_text': MilesplitTextParser(),
@@ -30,6 +33,7 @@ __all__ = [
     'MilesplitMultiParser',
     'MilesplitSingleParser',
     'MilesplitTextParser',
+    'MilesplitWebParser',
     'GenericTableParser',
     'HyTekTextParser',
     'get_parser',
