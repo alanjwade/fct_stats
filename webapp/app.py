@@ -4,6 +4,7 @@ Fort Collins Track Stats Web Application
 
 import calendar as cal_module
 import json
+import hashlib
 import sqlite3
 import logging
 import os
@@ -27,6 +28,10 @@ DATABASE_PATH = os.environ.get('DATABASE_PATH', str(Path(__file__).parent.parent
 # Secret key for hidden analytics page (change this in production!)
 ANALYTICS_SECRET = os.environ.get('ANALYTICS_SECRET', 'lambkin-purple-stats-2025')
 
+# Separate analytics DB that persists across publish/deploy cycles
+ANALYTICS_DB_PATH = os.environ.get('ANALYTICS_DB_PATH', str(Path(__file__).parent.parent / 'data' / 'analytics' / 'analytics.db'))
+VISITOR_SALT = os.environ.get('VISITOR_SALT', 'fct-stats-visitor-2026')
+
 # Common bot user agent patterns
 BOT_PATTERNS = [
     r'bot', r'crawler', r'spider', r'scraper', r'headless',
@@ -44,6 +49,12 @@ BOT_PATTERNS = [
 ]
 BOT_REGEX = re.compile('|'.join(BOT_PATTERNS), re.IGNORECASE)
 
+# Top-level navigation pages to track (skip individual athlete/event pages)
+TOP_LEVEL_PAGES = {
+    'home', 'calendar', 'stats', 'athletes_list', 'athletes_list_2026',
+    'events_list', 'team_bests', 'season_bests_2026', 'season_bests_2025',
+}
+
 
 def is_bot(user_agent):
     """Check if the user agent appears to be a bot."""
@@ -52,22 +63,35 @@ def is_bot(user_agent):
     return bool(BOT_REGEX.search(user_agent))
 
 
+def get_visitor_hash(ip_address):
+    """Generate a privacy-preserving daily hash for a visitor IP (not reversible)."""
+    today = datetime.now(MOUNTAIN_TZ).strftime('%Y-%m-%d')
+    raw = f"{VISITOR_SALT}:{today}:{ip_address or ''}"
+    return hashlib.sha256(raw.encode()).hexdigest()[:16]
+
+
 def record_page_view(page_type, page_detail=None):
-    """Record a page view for analytics (if not a bot)."""
+    """Record a page view for top-level pages only (bots filtered)."""
+    if page_type not in TOP_LEVEL_PAGES:
+        return  # Only track top-level navigation pages
+
     user_agent = request.headers.get('User-Agent', '')
-    
     if is_bot(user_agent):
         return  # Don't track bots
-    
+
     try:
-        with get_db_connection() as conn:
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        if ip and ',' in ip:
+            ip = ip.split(',')[0].strip()
+        visitor_hash = get_visitor_hash(ip)
+
+        with get_analytics_db_connection() as conn:
             conn.execute("""
-                INSERT INTO page_views (page_type, page_detail)
+                INSERT INTO page_views (page_type, visitor_hash)
                 VALUES (?, ?)
-            """, (page_type, page_detail))
+            """, (page_type, visitor_hash))
             conn.commit()
     except Exception as e:
-        # Don't let analytics failures break the app
         logger.warning(f"Failed to record page view: {e}")
 
 
@@ -80,6 +104,42 @@ def get_db_connection():
         yield conn
     finally:
         conn.close()
+
+
+@contextmanager
+def get_analytics_db_connection():
+    """Get the analytics database connection as a context manager."""
+    conn = sqlite3.connect(ANALYTICS_DB_PATH)
+    conn.row_factory = sqlite3.Row
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+
+def init_analytics_db():
+    """Initialize the analytics database schema if it doesn't exist."""
+    db_dir = Path(ANALYTICS_DB_PATH).parent
+    db_dir.mkdir(parents=True, exist_ok=True)
+    with sqlite3.connect(ANALYTICS_DB_PATH) as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS page_views (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                page_type TEXT NOT NULL,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                visitor_hash TEXT
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_pv_timestamp ON page_views(timestamp)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_pv_page_type ON page_views(page_type)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_pv_visitor ON page_views(visitor_hash)")
+        conn.commit()
+
+
+try:
+    init_analytics_db()
+except Exception as e:
+    logger.warning(f"Failed to initialize analytics DB: {e}")
 
 
 # Denver timezone for consistent date handling
@@ -208,6 +268,8 @@ def index():
     """Home page - team communications and information."""
     record_page_view('home')
     
+    today = datetime.now(MOUNTAIN_TZ).date()
+
     # Load calendar events
     calendar_events = []
     # Check webapp/config first, then fall back to main config directory
@@ -228,7 +290,6 @@ def index():
                 all_events = calendar_data if isinstance(calendar_data, list) else []
         
         # Filter for upcoming events only (today or future)
-        today = datetime.now(MOUNTAIN_TZ).date()
         for event in all_events:
             if event.get('date'):
                 try:
@@ -242,8 +303,33 @@ def index():
             else:
                 # No date available, include it
                 calendar_events.append(event)
-    
-    return render_template('index.html', calendar_events=calendar_events, location_map=location_map)
+
+    # Load past meets for the current year from meets_{year}.json
+    current_year = today.year
+    past_meets = []
+    meets_search_paths = [
+        Path(__file__).parent / 'config' / f'meets_{current_year}.json',
+        Path(__file__).parent.parent / 'config' / f'meets_{current_year}.json',
+        Path(__file__).parent.parent / 'data' / 'sources' / 'current' / str(current_year) / f'meets_{current_year}.json',
+    ]
+    for meets_path in meets_search_paths:
+        if meets_path.exists():
+            with open(meets_path, 'r') as f:
+                meets_data = json.load(f)
+            for meet in meets_data.get('meets', []):
+                if meet.get('date'):
+                    try:
+                        meet_date = datetime.strptime(meet['date'], '%Y-%m-%d').date()
+                        if meet_date < today:
+                            past_meets.append(meet)
+                    except ValueError:
+                        pass
+            break
+    # Sort most recent first
+    past_meets.sort(key=lambda m: m.get('date', ''), reverse=True)
+
+    return render_template('index.html', calendar_events=calendar_events, location_map=location_map,
+                           past_meets=past_meets)
 
 
 @app.route('/calendar')
@@ -1261,15 +1347,21 @@ def analytics_summary(secret):
     """Get analytics summary data."""
     if secret != ANALYTICS_SECRET:
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     days = request.args.get('days', 30, type=int)
     start_date = (datetime.now(MOUNTAIN_TZ) - timedelta(days=days)).strftime('%Y-%m-%d')
-    
-    # Mountain Time offset from UTC (handles DST)
     mt_offset = datetime.now(MOUNTAIN_TZ).utcoffset().total_seconds() / 3600
-    
-    with get_db_connection() as conn:
-        # Total views by page type
+
+    with get_analytics_db_connection() as conn:
+        total_views = conn.execute("""
+            SELECT COUNT(*) FROM page_views WHERE DATE(timestamp) >= ?
+        """, (start_date,)).fetchone()[0]
+
+        # Unique visitor-days: distinct visitor_hash per day (hash already encodes date)
+        unique_visitor_days = conn.execute("""
+            SELECT COUNT(DISTINCT visitor_hash) FROM page_views WHERE DATE(timestamp) >= ?
+        """, (start_date,)).fetchone()[0]
+
         totals = conn.execute("""
             SELECT page_type, COUNT(*) as count
             FROM page_views
@@ -1277,96 +1369,78 @@ def analytics_summary(secret):
             GROUP BY page_type
             ORDER BY count DESC
         """, (start_date,)).fetchall()
-        
-        # Views over time (daily)
-        daily = conn.execute("""
-            SELECT DATE(timestamp) as date, page_type, COUNT(*) as count
-            FROM page_views
-            WHERE DATE(timestamp) >= ?
-            GROUP BY DATE(timestamp), page_type
-            ORDER BY date
-        """, (start_date,)).fetchall()
-        
-        # Event page breakdown
-        events = conn.execute("""
-            SELECT page_detail, COUNT(*) as count
-            FROM page_views
-            WHERE page_type = 'event' AND DATE(timestamp) >= ?
-            GROUP BY page_detail
-            ORDER BY count DESC
-        """, (start_date,)).fetchall()
-        
-        # Team bests breakdown
-        team_bests_breakdown = conn.execute("""
-            SELECT page_detail, COUNT(*) as count
-            FROM page_views
-            WHERE page_type = 'team_bests' AND DATE(timestamp) >= ?
-            GROUP BY page_detail
-            ORDER BY count DESC
-        """, (start_date,)).fetchall()
-        
-        # Hourly distribution - adjust UTC hours to Mountain Time
-        hourly = conn.execute("""
+
+        hourly_raw = conn.execute("""
             SELECT CAST(strftime('%H', timestamp) AS INTEGER) as hour, COUNT(*) as count
             FROM page_views
             WHERE DATE(timestamp) >= ?
-            GROUP BY hour
-            ORDER BY hour
+            GROUP BY hour ORDER BY hour
         """, (start_date,)).fetchall()
-        
-        # Convert UTC hours to Mountain Time
         hourly_mt = {}
-        for row in hourly:
+        for row in hourly_raw:
             mt_hour = int((row['hour'] + mt_offset) % 24)
             hourly_mt[mt_hour] = hourly_mt.get(mt_hour, 0) + row['count']
         hourly_adjusted = [{'hour': h, 'count': c} for h, c in sorted(hourly_mt.items())]
-        
-        # Total views
-        total_views = conn.execute("""
-            SELECT COUNT(*) FROM page_views WHERE DATE(timestamp) >= ?
-        """, (start_date,)).fetchone()[0]
-    
+
+        dow_raw = conn.execute("""
+            SELECT CAST(strftime('%w', timestamp) AS INTEGER) as dow, COUNT(*) as count
+            FROM page_views
+            WHERE DATE(timestamp) >= ?
+            GROUP BY dow ORDER BY dow
+        """, (start_date,)).fetchall()
+
     return jsonify({
         'period_days': days,
         'start_date': start_date,
         'total_views': total_views,
+        'unique_visitor_days': unique_visitor_days,
         'by_page_type': [{'page_type': r['page_type'], 'count': r['count']} for r in totals],
-        'daily': [{'date': r['date'], 'page_type': r['page_type'], 'count': r['count']} for r in daily],
-        'events': [{'event': r['page_detail'], 'count': r['count']} for r in events],
-        'team_bests': [{'detail': r['page_detail'], 'count': r['count']} for r in team_bests_breakdown],
-        'hourly': hourly_adjusted
+        'hourly': hourly_adjusted,
+        'dow': [{'dow': r['dow'], 'count': r['count']} for r in dow_raw],
     })
 
 
 @app.route('/api/analytics/<secret>/trend')
 def analytics_trend(secret):
-    """Get analytics trend data for charting."""
+    """Get analytics trend data (daily views + unique visitors)."""
     if secret != ANALYTICS_SECRET:
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     days = request.args.get('days', 30, type=int)
     start_date = (datetime.now(MOUNTAIN_TZ) - timedelta(days=days)).strftime('%Y-%m-%d')
-    
-    with get_db_connection() as conn:
-        # Get daily totals for each page type
-        data = conn.execute("""
-            SELECT DATE(timestamp) as date, page_type, COUNT(*) as count
-            FROM page_views
-            WHERE DATE(timestamp) >= ?
-            GROUP BY DATE(timestamp), page_type
-            ORDER BY date
+
+    with get_analytics_db_connection() as conn:
+        views_rows = conn.execute("""
+            SELECT DATE(timestamp) as date, COUNT(*) as count
+            FROM page_views WHERE DATE(timestamp) >= ?
+            GROUP BY DATE(timestamp) ORDER BY date
         """, (start_date,)).fetchall()
-    
-    # Organize by page type for charting
-    result = {}
-    for row in data:
-        page_type = row['page_type']
-        if page_type not in result:
-            result[page_type] = {'dates': [], 'counts': []}
-        result[page_type]['dates'].append(row['date'])
-        result[page_type]['counts'].append(row['count'])
-    
-    return jsonify(result)
+
+        unique_rows = conn.execute("""
+            SELECT DATE(timestamp) as date, COUNT(DISTINCT visitor_hash) as count
+            FROM page_views WHERE DATE(timestamp) >= ?
+            GROUP BY DATE(timestamp) ORDER BY date
+        """, (start_date,)).fetchall()
+
+        by_type_rows = conn.execute("""
+            SELECT DATE(timestamp) as date, page_type, COUNT(*) as count
+            FROM page_views WHERE DATE(timestamp) >= ?
+            GROUP BY DATE(timestamp), page_type ORDER BY date
+        """, (start_date,)).fetchall()
+
+    by_type = {}
+    for row in by_type_rows:
+        pt = row['page_type']
+        if pt not in by_type:
+            by_type[pt] = {'dates': [], 'counts': []}
+        by_type[pt]['dates'].append(row['date'])
+        by_type[pt]['counts'].append(row['count'])
+
+    return jsonify({
+        'total': {'dates': [r['date'] for r in views_rows], 'counts': [r['count'] for r in views_rows]},
+        'unique': {'dates': [r['date'] for r in unique_rows], 'counts': [r['count'] for r in unique_rows]},
+        'by_type': by_type,
+    })
 
 
 @app.errorhandler(404)

@@ -7,8 +7,8 @@
 <div class="container-fluid py-4">
     <div class="row mb-4">
         <div class="col">
-            <h1 class="mb-3"><i class="bi bi-graph-up"></i> Site Analytics</h1>
-            <p class="text-muted">Privacy-preserving page view analytics (bots filtered)</p>
+            <h1 class="mb-1"><i class="bi bi-graph-up"></i> Site Analytics</h1>
+            <p class="text-muted small">Top-level page traffic &middot; Bots filtered &middot; Unique visitors via daily IP hashing (privacy-preserving)</p>
         </div>
     </div>
 
@@ -41,114 +41,95 @@
         <div class="col-md-3">
             <div class="card h-100">
                 <div class="card-body text-center">
-                    <h3 id="athlete-views" class="display-4 text-success">-</h3>
-                    <p class="text-muted mb-0">Athlete Pages</p>
+                    <h3 id="unique-visitors" class="display-4 text-success">-</h3>
+                    <p class="text-muted mb-0">Unique Visitor-Days</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card h-100">
                 <div class="card-body text-center">
-                    <h3 id="event-views" class="display-4 text-info">-</h3>
-                    <p class="text-muted mb-0">Event Pages</p>
+                    <h3 id="daily-avg" class="display-4 text-info">-</h3>
+                    <p class="text-muted mb-0">Avg Views / Day</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card h-100">
                 <div class="card-body text-center">
-                    <h3 id="team-views" class="display-4 text-warning">-</h3>
-                    <p class="text-muted mb-0">Team Bests</p>
+                    <h3 id="peak-day-count" class="display-4 text-warning">-</h3>
+                    <p class="text-muted mb-0" id="peak-day-label">Peak Day</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Charts Row 1 -->
+    <!-- Daily Traffic Chart (full width) -->
     <div class="row mb-4">
-        <div class="col-lg-8">
-            <div class="card h-100">
+        <div class="col-12">
+            <div class="card">
                 <div class="card-header">
-                    <i class="bi bi-graph-up"></i> Page Views Over Time
+                    <i class="bi bi-graph-up"></i> Daily Traffic &mdash; Views &amp; Unique Visitors
                 </div>
                 <div class="card-body">
                     <div id="trend-chart" style="height: 350px;"></div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <i class="bi bi-pie-chart"></i> Views by Page Type
-                </div>
-                <div class="card-body">
-                    <div id="pie-chart" style="height: 350px;"></div>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- Charts Row 2 -->
+    <!-- Views by Page + Hour of Day -->
     <div class="row mb-4">
         <div class="col-lg-6">
             <div class="card h-100">
                 <div class="card-header">
-                    <i class="bi bi-trophy"></i> Top Events Viewed
+                    <i class="bi bi-bar-chart-horizontal"></i> Views by Page
                 </div>
                 <div class="card-body">
-                    <div id="events-chart" style="height: 350px;"></div>
+                    <div id="page-type-chart" style="height: 320px;"></div>
                 </div>
             </div>
         </div>
         <div class="col-lg-6">
             <div class="card h-100">
                 <div class="card-header">
-                    <i class="bi bi-clock"></i> Views by Hour of Day
+                    <i class="bi bi-clock"></i> Views by Hour (Mountain Time)
                 </div>
                 <div class="card-body">
-                    <div id="hourly-chart" style="height: 350px;"></div>
+                    <div id="hourly-chart" style="height: 320px;"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Detailed Tables -->
-    <div class="row">
+    <!-- Day of Week + Breakdown Table -->
+    <div class="row mb-4">
         <div class="col-lg-6">
-            <div class="card">
+            <div class="card h-100">
                 <div class="card-header">
-                    <i class="bi bi-list-ol"></i> Event Page Views
+                    <i class="bi bi-calendar-week"></i> Views by Day of Week
                 </div>
                 <div class="card-body">
-                    <table class="table table-striped table-sm">
-                        <thead>
-                            <tr>
-                                <th>Event</th>
-                                <th class="text-end">Views</th>
-                            </tr>
-                        </thead>
-                        <tbody id="events-table">
-                            <tr><td colspan="2" class="text-center text-muted">Loading...</td></tr>
-                        </tbody>
-                    </table>
+                    <div id="dow-chart" style="height: 280px;"></div>
                 </div>
             </div>
         </div>
         <div class="col-lg-6">
-            <div class="card">
+            <div class="card h-100">
                 <div class="card-header">
-                    <i class="bi bi-list-ol"></i> Team Bests Filters Used
+                    <i class="bi bi-list-ol"></i> Page Breakdown
                 </div>
                 <div class="card-body">
                     <table class="table table-striped table-sm">
                         <thead>
                             <tr>
-                                <th>Filter (Season_Gender)</th>
+                                <th>Page</th>
                                 <th class="text-end">Views</th>
+                                <th class="text-end">% of Total</th>
                             </tr>
                         </thead>
-                        <tbody id="team-bests-table">
-                            <tr><td colspan="2" class="text-center text-muted">Loading...</td></tr>
+                        <tbody id="page-type-table">
+                            <tr><td colspan="3" class="text-center text-muted">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -163,213 +144,218 @@ let currentDays = 7;
 
 const pageTypeColors = {
     'home': '#4B286D',
-    'athlete': '#28a745',
-    'athletes_list': '#20c997',
-    'event': '#17a2b8',
-    'events_list': '#6f42c1',
-    'team_bests': '#ffc107'
+    'calendar': '#fd7e14',
+    'stats': '#6f42c1',
+    'athletes_list': '#28a745',
+    'athletes_list_2026': '#20c997',
+    'events_list': '#17a2b8',
+    'team_bests': '#ffc107',
+    'season_bests_2026': '#dc3545',
+    'season_bests_2025': '#e83e8c',
 };
 
 const pageTypeLabels = {
     'home': 'Home',
-    'athlete': 'Athlete Pages',
+    'calendar': 'Calendar',
+    'stats': 'Stats',
     'athletes_list': 'Athletes List',
-    'event': 'Event Pages',
+    'athletes_list_2026': 'Athletes 2026',
     'events_list': 'Events List',
-    'team_bests': 'Team Bests'
+    'team_bests': 'Team Bests',
+    'season_bests_2026': 'Season Bests 2026',
+    'season_bests_2025': 'Season Bests 2025',
 };
+
+const dowLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function loadAnalytics(days) {
     currentDays = days;
-    
-    // Update active button
     document.querySelectorAll('.time-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (parseInt(btn.dataset.days) === days) {
-            btn.classList.add('active');
-        }
+        btn.classList.toggle('active', parseInt(btn.dataset.days) === days);
     });
-    
+
     // Load summary data
     fetch(`/api/analytics/${SECRET}/summary?days=${days}`)
         .then(res => res.json())
         .then(data => {
-            // Update date range
-            document.getElementById('date-range').textContent = 
-                `From ${data.start_date} to today`;
-            
-            // Update summary cards
-            document.getElementById('total-views').textContent = 
-                data.total_views.toLocaleString();
-            
-            const byType = {};
-            data.by_page_type.forEach(d => byType[d.page_type] = d.count);
-            
-            document.getElementById('athlete-views').textContent = 
-                (byType['athlete'] || 0).toLocaleString();
-            document.getElementById('event-views').textContent = 
-                ((byType['event'] || 0) + (byType['events_list'] || 0)).toLocaleString();
-            document.getElementById('team-views').textContent = 
-                (byType['team_bests'] || 0).toLocaleString();
-            
-            // Draw pie chart
-            drawPieChart(data.by_page_type);
-            
-            // Draw events bar chart
-            drawEventsChart(data.events.slice(0, 10));
-            
-            // Draw hourly chart
+            document.getElementById('date-range').textContent = `From ${data.start_date} to today`;
+            document.getElementById('total-views').textContent = data.total_views.toLocaleString();
+            document.getElementById('unique-visitors').textContent = data.unique_visitor_days.toLocaleString();
+            document.getElementById('daily-avg').textContent = (data.total_views / days).toFixed(1);
+
+            drawPageTypeChart(data.by_page_type);
             drawHourlyChart(data.hourly);
-            
-            // Populate tables
-            populateEventsTable(data.events);
-            populateTeamBestsTable(data.team_bests);
-        });
-    
+            drawDowChart(data.dow);
+            populatePageTypeTable(data.by_page_type, data.total_views);
+        })
+        .catch(err => console.error('Summary fetch error:', err));
+
     // Load trend data
     fetch(`/api/analytics/${SECRET}/trend?days=${days}`)
         .then(res => res.json())
         .then(data => {
             drawTrendChart(data);
-        });
+
+            // Compute peak day from trend totals
+            const totals = data.total;
+            if (totals.dates && totals.dates.length > 0) {
+                let maxIdx = 0;
+                for (let i = 1; i < totals.counts.length; i++) {
+                    if (totals.counts[i] > totals.counts[maxIdx]) maxIdx = i;
+                }
+                document.getElementById('peak-day-count').textContent = totals.counts[maxIdx].toLocaleString();
+                document.getElementById('peak-day-label').textContent = `Peak Day (${totals.dates[maxIdx]})`;
+            } else {
+                document.getElementById('peak-day-count').textContent = '0';
+                document.getElementById('peak-day-label').textContent = 'Peak Day';
+            }
+        })
+        .catch(err => console.error('Trend fetch error:', err));
 }
 
 function drawTrendChart(data) {
     const traces = [];
-    
-    for (const [pageType, values] of Object.entries(data)) {
+
+    if (data.total && data.total.dates.length > 0) {
         traces.push({
-            x: values.dates,
-            y: values.counts,
-            name: pageTypeLabels[pageType] || pageType,
+            x: data.total.dates,
+            y: data.total.counts,
+            name: 'Total Views',
             type: 'scatter',
             mode: 'lines+markers',
-            line: { color: pageTypeColors[pageType] || '#888', width: 2 },
-            marker: { size: 4 }
+            line: { color: '#4B286D', width: 2 },
+            marker: { size: 5 }
         });
     }
-    
+
+    if (data.unique && data.unique.dates.length > 0) {
+        traces.push({
+            x: data.unique.dates,
+            y: data.unique.counts,
+            name: 'Unique Visitors',
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: { color: '#28a745', width: 2, dash: 'dot' },
+            marker: { size: 5 }
+        });
+    }
+
+    if (traces.length === 0) {
+        document.getElementById('trend-chart').innerHTML =
+            '<p class="text-center text-muted mt-5">No data for this period</p>';
+        return;
+    }
+
     const layout = {
         showlegend: true,
         legend: { orientation: 'h', y: -0.2 },
         margin: { t: 20, r: 20, b: 60, l: 50 },
         xaxis: { title: 'Date' },
-        yaxis: { title: 'Views' },
+        yaxis: { title: 'Count', rangemode: 'tozero' },
         hovermode: 'x unified'
     };
-    
+
     Plotly.newPlot('trend-chart', traces, layout, { responsive: true });
 }
 
-function drawPieChart(data) {
-    const trace = {
-        labels: data.map(d => pageTypeLabels[d.page_type] || d.page_type),
-        values: data.map(d => d.count),
-        type: 'pie',
-        marker: {
-            colors: data.map(d => pageTypeColors[d.page_type] || '#888')
-        },
-        textinfo: 'label+percent',
-        hoverinfo: 'label+value+percent'
-    };
-    
-    const layout = {
-        margin: { t: 20, r: 20, b: 20, l: 20 },
-        showlegend: false
-    };
-    
-    Plotly.newPlot('pie-chart', [trace], layout, { responsive: true });
-}
-
-function drawEventsChart(data) {
-    if (data.length === 0) {
-        document.getElementById('events-chart').innerHTML = 
-            '<p class="text-center text-muted mt-5">No event data available</p>';
+function drawPageTypeChart(data) {
+    if (!data || data.length === 0) {
+        document.getElementById('page-type-chart').innerHTML =
+            '<p class="text-center text-muted mt-5">No data for this period</p>';
         return;
     }
-    
+
+    const sorted = [...data].sort((a, b) => a.count - b.count);
     const trace = {
-        y: data.map(d => d.event).reverse(),
-        x: data.map(d => d.count).reverse(),
+        y: sorted.map(d => pageTypeLabels[d.page_type] || d.page_type),
+        x: sorted.map(d => d.count),
         type: 'bar',
         orientation: 'h',
-        marker: { color: '#17a2b8' }
+        marker: { color: sorted.map(d => pageTypeColors[d.page_type] || '#888') },
+        text: sorted.map(d => d.count.toLocaleString()),
+        textposition: 'outside',
     };
-    
+
     const layout = {
-        margin: { t: 20, r: 20, b: 40, l: 120 },
-        xaxis: { title: 'Views' },
+        margin: { t: 10, r: 60, b: 40, l: 140 },
+        xaxis: { title: 'Views', rangemode: 'tozero' },
         yaxis: { automargin: true }
     };
-    
-    Plotly.newPlot('events-chart', [trace], layout, { responsive: true });
+
+    Plotly.newPlot('page-type-chart', [trace], layout, { responsive: true });
 }
 
 function drawHourlyChart(data) {
-    // Create full 24-hour array
-    const hours = Array.from({length: 24}, (_, i) => i);
+    const hours = Array.from({ length: 24 }, (_, i) => i);
     const counts = hours.map(h => {
         const found = data.find(d => d.hour === h);
         return found ? found.count : 0;
     });
-    
+
     const trace = {
         x: hours.map(h => `${h.toString().padStart(2, '0')}:00`),
         y: counts,
         type: 'bar',
-        marker: { color: '#4B286D' }
+        marker: { color: '#17a2b8' }
     };
-    
+
     const layout = {
-        margin: { t: 20, r: 20, b: 60, l: 50 },
-        xaxis: { 
-            title: 'Hour (Mountain Time)',
-            tickangle: -45
-        },
-        yaxis: { title: 'Views' }
+        margin: { t: 10, r: 20, b: 60, l: 50 },
+        xaxis: { title: 'Hour (MT)', tickangle: -45 },
+        yaxis: { title: 'Views', rangemode: 'tozero' }
     };
-    
+
     Plotly.newPlot('hourly-chart', [trace], layout, { responsive: true });
 }
 
-function populateEventsTable(data) {
-    const tbody = document.getElementById('events-table');
-    if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">No data</td></tr>';
-        return;
-    }
-    
-    tbody.innerHTML = data.map(d => `
-        <tr>
-            <td>${d.event}</td>
-            <td class="text-end">${d.count.toLocaleString()}</td>
-        </tr>
-    `).join('');
+function drawDowChart(data) {
+    const counts = [0, 1, 2, 3, 4, 5, 6].map(d => {
+        const found = data.find(r => r.dow === d);
+        return found ? found.count : 0;
+    });
+
+    const trace = {
+        x: dowLabels,
+        y: counts,
+        type: 'bar',
+        marker: {
+            color: counts.map((_, i) => (i === 0 || i === 6) ? '#ffc107' : '#4B286D')
+        }
+    };
+
+    const layout = {
+        margin: { t: 10, r: 20, b: 40, l: 50 },
+        xaxis: { title: 'Day of Week' },
+        yaxis: { title: 'Views', rangemode: 'tozero' }
+    };
+
+    Plotly.newPlot('dow-chart', [trace], layout, { responsive: true });
 }
 
-function populateTeamBestsTable(data) {
-    const tbody = document.getElementById('team-bests-table');
-    if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">No data</td></tr>';
+function populatePageTypeTable(data, total) {
+    const tbody = document.getElementById('page-type-table');
+    if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No data</td></tr>';
         return;
     }
-    
-    tbody.innerHTML = data.map(d => `
-        <tr>
-            <td>${d.detail || '(no filter)'}</td>
+
+    const sorted = [...data].sort((a, b) => b.count - a.count);
+    tbody.innerHTML = sorted.map(d => {
+        const pct = total > 0 ? ((d.count / total) * 100).toFixed(1) : '0.0';
+        return `<tr>
+            <td>${pageTypeLabels[d.page_type] || d.page_type}</td>
             <td class="text-end">${d.count.toLocaleString()}</td>
-        </tr>
-    `).join('');
+            <td class="text-end">${pct}%</td>
+        </tr>`;
+    }).join('');
 }
 
-// Event listeners for time buttons
 document.querySelectorAll('.time-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         loadAnalytics(parseInt(this.dataset.days));
     });
 });
 
-// Initial load
 document.addEventListener('DOMContentLoaded', function() {
     loadAnalytics(7);
 });

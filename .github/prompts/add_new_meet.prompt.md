@@ -12,6 +12,19 @@ You should have:
 
 ## Process
 
+### Step 0: Check If the Meet Already Exists
+
+Before asking the user for meet details, read `config/meets_2026.json` (or the relevant year's file) and check whether the meet is already listed. If it is, you already have the name, date, level, and URL — use them directly and skip asking the user for those fields.
+
+```python
+import json
+with open("config/meets_2026.json") as f:
+    meets = json.load(f)["meets"]
+# Check if any entry matches the meet the user mentioned
+```
+
+Only ask for missing information that isn't already in the config.
+
 ### Step 1: Analyze the Input
 
 Determine whether the user gave a **URL** or a **local file**:

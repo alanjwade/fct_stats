@@ -29,6 +29,31 @@
 .home-page-bg .alert {
     background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
 }
+
+/* Compact upcoming events table */
+.events-table th {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.events-table td {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+.events-table small {
+    line-height: 1.2;
+}
+
+.events-table br {
+    content: " ";
+}
+
+.events-table br:after {
+    content: " ";
+}
 </style>
 {% endblock %}
 
@@ -78,8 +103,50 @@
     </div>
 
     <div class="row">
-        <!-- Upcoming Schedule -->
+        <!-- Meet Schedule -->
         <div class="col-lg-6 mb-4">
+            <!-- Past Events (collapsed) -->
+            <div class="card mb-3">
+                <div class="card-header p-0">
+                    <button class="btn btn-link w-100 text-start px-3 py-2 text-decoration-none collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#pastMeetsCollapse"
+                            aria-expanded="false"
+                            aria-controls="pastMeetsCollapse"
+                            style="color: inherit;">
+                        <i class="bi bi-chevron-right me-1" id="pastMeetsChevron"></i>
+                        <i class="bi bi-flag-fill text-secondary"></i> Past Events
+                        {% if past_meets %}<span class="badge bg-secondary ms-1">{{ past_meets|length }}</span>{% endif %}
+                    </button>
+                </div>
+                <div class="collapse" id="pastMeetsCollapse">
+                    <div class="card-body p-0">
+                        {% if past_meets %}
+                        <ul class="list-group list-group-flush">
+                            {% for meet in past_meets %}
+                            <li class="list-group-item py-2">
+                                <span class="text-muted me-2" style="font-size:0.8em;">
+                                    {{ meet.date[5:7] }}/{{ meet.date[8:10] }}/{{ meet.date[:4] }}
+                                </span>
+                                {% if meet.url %}
+                                <a href="{{ meet.url }}" target="_blank" rel="noopener noreferrer">{{ meet.name }}</a>
+                                {% else %}
+                                {{ meet.name }}
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="text-muted text-center mb-0 py-3">
+                            <i class="bi bi-calendar-x"></i> No past meets yet this season
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Events -->
             <div class="card">
                 <div class="card-header">
                     <i class="bi bi-calendar-event"></i> Upcoming Events
@@ -87,7 +154,7 @@
                 <div class="card-body">
                     {% if calendar_events %}
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-hover mb-0 events-table">
                             <thead>
                                 <tr>
                                     <th>Date</th>
@@ -96,7 +163,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for event in calendar_events[:10] %}
+                                {% for event in calendar_events[:9] %}
                                 <tr>
                                     <td>
                                         {% if event.date %}
@@ -112,7 +179,7 @@
                                         {% if event.location %}
                                         <small class="text-muted d-md-none">
                                             {% if location_map and event.location in location_map and location_map[event.location] %}
-                                            <a href="{{ location_map[event.location] }}" target="_blank" class="text-decoration-none text-muted">{{ event.location }}</a>
+                                            <a href="{{ location_map[event.location] }}" target="_blank" class="text-decoration-none text-muted" title="Click for maps"><i class="bi bi-geo-alt-fill"></i> {{ event.location }}</a>
                                             {% else %}
                                             {{ event.location }}
                                             {% endif %}
@@ -128,7 +195,7 @@
                                         {% if event.location %}
                                         <br><small class="text-muted">
                                             {% if location_map and event.location in location_map and location_map[event.location] %}
-                                            <a href="{{ location_map[event.location] }}" target="_blank" class="text-decoration-none text-muted">{{ event.location }}</a>
+                                            <a href="{{ location_map[event.location] }}" target="_blank" class="text-decoration-none text-muted" title="Click for maps"><i class="bi bi-geo-alt-fill"></i> {{ event.location }}</a>
                                             {% else %}
                                             {{ event.location }}
                                             {% endif %}
@@ -138,7 +205,7 @@
                                         {% if event.location %}
                                         <small class="text-muted">
                                             {% if location_map and event.location in location_map and location_map[event.location] %}
-                                            <a href="{{ location_map[event.location] }}" target="_blank" class="text-decoration-none text-muted">{{ event.location }}</a>
+                                            <a href="{{ location_map[event.location] }}" target="_blank" class="text-decoration-none text-muted" title="Click for maps"><i class="bi bi-geo-alt-fill"></i> {{ event.location }}</a>
                                             {% else %}
                                             {{ event.location }}
                                             {% endif %}
@@ -153,6 +220,79 @@
                             </tbody>
                         </table>
                     </div>
+                    {% if calendar_events|length > 9 %}
+                    <div class="collapse" id="moreEventsCollapse">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 events-table">
+                                <tbody>
+                                    {% for event in calendar_events[9:] %}
+                                    <tr>
+                                        <td>
+                                            {% if event.date %}
+                                            <small class="text-muted">{{ event.date.split('/')[0] }}/{{ event.date.split('/')[1] }}</small><br>
+                                            <strong>{{ event.day_name[:3] }}</strong>
+                                            {% else %}
+                                            <small class="text-muted">{{ event.day_name[:3] }}</small><br>
+                                            <strong>{{ event.day }}</strong>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div><strong>{{ event.title }}</strong></div>
+                                            {% if event.location %}
+                                            <small class="text-muted d-md-none">
+                                                {% if location_map and event.location in location_map and location_map[event.location] %}
+                                                <a href="{{ location_map[event.location] }}" target="_blank" class="text-decoration-none text-muted" title="Click for maps"><i class="bi bi-geo-alt-fill"></i> {{ event.location }}</a>
+                                                {% else %}
+                                                {{ event.location }}
+                                                {% endif %}
+                                            </small>
+                                            {% endif %}
+                                            {% if event.time and event.time != 'N/A' %}
+                                            <small class="text-muted d-md-none">{{ event.time }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            {% if event.time and event.time != 'N/A' %}
+                                            <small>{{ event.time }}</small>
+                                            {% if event.location %}
+                                            <br><small class="text-muted">
+                                                {% if location_map and event.location in location_map and location_map[event.location] %}
+                                                <a href="{{ location_map[event.location] }}" target="_blank" class="text-decoration-none text-muted" title="Click for maps"><i class="bi bi-geo-alt-fill"></i> {{ event.location }}</a>
+                                                {% else %}
+                                                {{ event.location }}
+                                                {% endif %}
+                                            </small>
+                                            {% endif %}
+                                            {% else %}
+                                            {% if event.location %}
+                                            <small class="text-muted">
+                                                {% if location_map and event.location in location_map and location_map[event.location] %}
+                                                <a href="{{ location_map[event.location] }}" target="_blank" class="text-decoration-none text-muted" title="Click for maps"><i class="bi bi-geo-alt-fill"></i> {{ event.location }}</a>
+                                                {% else %}
+                                                {{ event.location }}
+                                                {% endif %}
+                                            </small>
+                                            {% else %}
+                                            <small class="text-muted">-</small>
+                                            {% endif %}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-center">
+                        <button class="btn btn-sm btn-outline-secondary"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#moreEventsCollapse"
+                                id="showMoreEventsBtn">
+                            Show {{ calendar_events|length - 9 }} more events
+                        </button>
+                    </div>
+                    {% endif %}
                     {% else %}
                     <p class="text-muted text-center mb-0">
                         <i class="bi bi-calendar-x"></i> No upcoming events scheduled
@@ -164,7 +304,6 @@
                 </div>
             </div>
         </div>
-
         <!-- Coaching Staff -->
         <div class="col-lg-6 mb-4">
             <div class="card">
@@ -274,4 +413,36 @@
     </div>
 </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Toggle chevron direction for past events collapse
+(function () {
+    var pastCollapse = document.getElementById('pastMeetsCollapse');
+    if (pastCollapse) {
+        pastCollapse.addEventListener('show.bs.collapse', function () {
+            var chevron = document.getElementById('pastMeetsChevron');
+            if (chevron) { chevron.classList.replace('bi-chevron-right', 'bi-chevron-down'); }
+        });
+        pastCollapse.addEventListener('hide.bs.collapse', function () {
+            var chevron = document.getElementById('pastMeetsChevron');
+            if (chevron) { chevron.classList.replace('bi-chevron-down', 'bi-chevron-right'); }
+        });
+    }
+
+    // Toggle "Show more / Show less" button text for upcoming events
+    var moreCollapse = document.getElementById('moreEventsCollapse');
+    var moreBtn = document.getElementById('showMoreEventsBtn');
+    if (moreCollapse && moreBtn) {
+        var originalText = moreBtn.textContent.trim();
+        moreCollapse.addEventListener('show.bs.collapse', function () {
+            moreBtn.textContent = 'Show fewer events';
+        });
+        moreCollapse.addEventListener('hide.bs.collapse', function () {
+            moreBtn.textContent = originalText;
+        });
+    }
+}());
+</script>
 {% endblock %}

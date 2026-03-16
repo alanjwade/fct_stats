@@ -18,7 +18,7 @@ docker-compose -f docker/docker-compose.yml down
 
 echo ""
 echo "Rebuilding and starting services..."
-docker-compose -f docker/docker-compose.yml up -d --build
+docker-compose -f docker/docker-compose.yml up -d --build --force-recreate
 
 echo ""
 echo "✓ Services restarted"

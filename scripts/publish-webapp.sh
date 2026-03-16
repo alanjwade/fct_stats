@@ -26,7 +26,6 @@ rsync -av --delete \
   --exclude='.gitignore' \
   --exclude='*.log' \
   --exclude='*.md' \
-  --exclude='*.py' \
   --exclude='scraper/' \
   --exclude='database/' \
   --exclude='scripts/' \
@@ -35,6 +34,12 @@ rsync -av --delete \
   --exclude='nginx/' \
   --exclude='docker/certbot/' \
   --exclude='data/' \
+  --exclude='check_cells.py' \
+  --exclude='debug_*.py' \
+  --exclude='find_*.py' \
+  --exclude='quick_debug.py' \
+  --exclude='show_*.py' \
+  --exclude='test_*.py' \
   "$SOURCE_DIR/" "$TARGET_DIR/"
 
 echo ""

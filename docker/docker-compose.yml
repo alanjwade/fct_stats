@@ -11,8 +11,13 @@ services:
     volumes:
       # Mount database from host (updated via scraper on dev machine)
       - ../data:/app/data:ro
+      # Analytics DB lives in a named volume at a separate path (not under read-only /app/data)
+      - analytics_data:/app/analytics
+      # Mount config from host so meets/calendar updates don't require a rebuild
+      - ../config:/app/config:ro
     environment:
       - DATABASE_PATH=/app/data/generated/db/fct_stats.db
+      - ANALYTICS_DB_PATH=/app/analytics/analytics.db
       - CONFIG_PATH=/app/config
       - VIRTUAL_HOST=track.fchsrunning.org
     networks:
@@ -21,3 +26,7 @@ services:
 networks:
   proxy-network:
     external: true
+
+volumes:
+  analytics_data:
+    # Persists analytics DB across container rebuilds and publishes
