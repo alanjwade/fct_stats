@@ -8,6 +8,7 @@ from the centralized parsed_meets directory structure.
 
 import json
 import logging
+import re
 import sys
 from pathlib import Path
 
@@ -16,8 +17,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from scraper.database import get_database
 from scraper.event_matcher import get_event_matcher
+from scraper.meet_names import normalize_meet_name
 
 logger = logging.getLogger(__name__)
+
+def _strip_nickname(name: str) -> str:
+    """Remove parenthetical nicknames, e.g. '(Denny)' from a name part."""
+    return re.sub(r'\s*\([^)]*\)', '', name).strip()
 
 
 def load_meet_config():
@@ -81,13 +87,14 @@ def import_meet_file(db, event_matcher, meet_file: Path, meet_config: dict) -> t
             event_id = db.get_or_create_event(canonical_event, event_info)
             
             # Get meet info - use record's meet name if different from file meet
-            record_meet = record.get('meet', meet_name)
+            record_meet = normalize_meet_name(record.get('meet', meet_name))
             record_config = meet_config.get(record_meet, {})
             record_year = record.get('year') or year
             
-            # Use actual dates when available, don't generate defaults
-            # This allows meet_date to be None for historical records where only year is known
-            record_date = record.get('date') or record_config.get('date') or meet_date
+            # Prefer the config date (manually curated, authoritative) over the
+            # embedded record date, which can be wrong if the source data was mis-dated.
+            # Fall back to record date only when the config has no entry for this meet.
+            record_date = record_config.get('date') or meet_date or record.get('date')
             
             record_level = record.get('level') or record_config.get('level') or default_level
             
@@ -165,8 +172,8 @@ def import_meet_file(db, event_matcher, meet_file: Path, meet_config: dict) -> t
                     skipped += 1
             else:
                 # Individual event (or relay without member names)
-                first_name = record.get('athlete_first', '')
-                last_name = record.get('athlete_last', '')
+                first_name = _strip_nickname(record.get('athlete_first', ''))
+                last_name = _strip_nickname(record.get('athlete_last', ''))
                 
                 # Handle full name if first/last not split
                 if not first_name and not last_name:

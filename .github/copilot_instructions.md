@@ -304,6 +304,7 @@ db.clear_all()  # Clears all data
 - **Don't duplicate results**: Check UNIQUE constraints before insert
 - **Don't skip date config**: Maintain `meets_2025.json` for accuracy
 - **Don't mix data sources**: Keep historical vs performance separate
+- **Don't run `publish-and-restart.sh` unless explicitly asked**: The user controls when to deploy. Never run `./scripts/publish-and-restart.sh` (or any of the `publish-*.sh` / `homelab-*.sh` scripts) as part of a fix or investigation unless the user specifically requests it.
 
 ### Database Queries
 

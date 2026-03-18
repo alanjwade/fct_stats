@@ -136,20 +136,32 @@ class Database:
         """
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            
-            cursor.execute("""
-                SELECT id FROM meets WHERE name = ? AND meet_date = ?
-            """, (name, meet_date))
-            
+
+            # Use IS for NULL-safe date comparison (SQLite NULL != NULL with =)
+            if meet_date is None:
+                # When caller has no date, prefer any existing meet with same
+                # name+season (dated or not) so we don't create duplicates when
+                # import_all_records (which resolves calendar dates) has already
+                # inserted the meet before import_from_parsed_meets (which hasn't).
+                cursor.execute("""
+                    SELECT id FROM meets WHERE name = ? AND (season = ? OR season IS NULL)
+                    ORDER BY (meet_date IS NOT NULL) DESC, id ASC
+                    LIMIT 1
+                """, (name, season))
+            else:
+                cursor.execute("""
+                    SELECT id FROM meets WHERE name = ? AND meet_date = ?
+                """, (name, meet_date))
+
             row = cursor.fetchone()
             if row:
                 return row['id']
-            
+
             cursor.execute("""
                 INSERT INTO meets (name, meet_date, venue, location, season)
                 VALUES (?, ?, ?, ?, ?)
             """, (name, meet_date, venue, location, season))
-            
+
             return cursor.lastrowid
 
     def add_result(

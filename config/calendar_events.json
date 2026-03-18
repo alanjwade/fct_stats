@@ -230,7 +230,7 @@
     "day_name": "Saturday",
     "title": "Runners Roost Invite",
     "time": "8:30 AM",
-    "location": "French Field",
+    "location": "PSD Stadium",
     "level": "Varsity"
   },
   {
@@ -249,24 +249,6 @@
     "title": "Roosevelt Power Invite",
     "time": "12:00 PM",
     "location": "Roosevelt HS",
-    "level": "Varsity"
-  },
-  {
-    "date": "03/27/2026",
-    "day": "27",
-    "day_name": "Friday",
-    "title": "Jack Christiansen Invite",
-    "time": "3:00 PM",
-    "location": "CSU",
-    "level": "Varsity"
-  },
-  {
-    "date": "03/28/2026",
-    "day": "28",
-    "day_name": "Saturday",
-    "title": "Jack Christiansen Invite",
-    "time": "10:00 AM",
-    "location": "CSU",
     "level": "Varsity"
   },
   {

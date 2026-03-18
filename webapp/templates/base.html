@@ -492,7 +492,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'athletes_list' %}active{% endif %}" href="{{ url_for('athletes_list') }}">
+                        <a class="nav-link {% if request.endpoint == 'athletes_list' %}active{% endif %}" href="{{ url_for('athletes_list', year=2025) }}">
                             <i class="bi bi-people"></i> 2025 Athletes
                         </a>
                     </li>

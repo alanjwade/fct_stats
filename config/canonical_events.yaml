@@ -45,7 +45,7 @@ events:
 
   # Hurdles - Gender Specific
   - name: "110m Hurdles"
-    aliases: ["110mH", "110H", "110 Hurdles", "110m H", "110 Meter Hurdles", "110m Hurdles 39\""]
+    aliases: ["110mH", "110H", "110HH", "110 Hurdles", "110m H", "110 Meter Hurdles", "110m Hurdles 39\""]
     distance_meters: 110
     category: "hurdles"
     gender_specific: "M"
@@ -69,28 +69,28 @@ events:
 
   # Relays
   - name: "4x100m Relay"
-    aliases: ["4x100", "4x100m", "400m Relay", "4 x 100", "4x100 Relay", "4x100m R", "4x100 Meter Relay"]
+    aliases: ["4x100", "4x100m", "400m Relay", "4 x 100", "4x100 Relay", "4 x 100 Relay", "4x100m R", "4x100 Meter Relay"]
     category: "relay"
     timed: true
     lower_is_better: true
     is_relay: true
 
   - name: "4x200m Relay"
-    aliases: ["4x200", "4x200m", "800m Relay", "4 x 200", "4x200 Relay", "4x200m R", "4x200 Meter Relay"]
+    aliases: ["4x200", "4x200m", "800m Relay", "4 x 200", "4x200 Relay", "4 x 200 Relay", "4x200m R", "4x200 Meter Relay"]
     category: "relay"
     timed: true
     lower_is_better: true
     is_relay: true
 
   - name: "4x400m Relay"
-    aliases: ["4x400", "4x400m", "1600m Relay", "4 x 400", "4x400 Relay", "4x400m R", "4x400 Meter Relay"]
+    aliases: ["4x400", "4x400m", "1600m Relay", "4 x 400", "4x400 Relay", "4 x 400 Relay", "4x400m R", "4x400 Meter Relay"]
     category: "relay"
     timed: true
     lower_is_better: true
     is_relay: true
 
   - name: "4x800m Relay"
-    aliases: ["4x800", "4x800m", "3200m Relay", "4 x 800", "4x800 Relay", "4x800m R", "4x800 Meter Relay"]
+    aliases: ["4x800", "4x800m", "3200m Relay", "4 x 800", "4x800 Relay", "4 x 800 Relay", "4x800m R", "4x800 Meter Relay"]
     category: "relay"
     timed: true
     lower_is_better: true

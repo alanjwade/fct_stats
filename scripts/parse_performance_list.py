@@ -13,30 +13,38 @@ from datetime import datetime
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from scraper.event_matcher import get_event_matcher
+from scraper.meet_names import normalize_meet_name
 
 
 def get_row_cells(row):
     """Extract cells from a row, handling repeated cells and returning dict with column indices.
-    
+
     Returns a dict mapping column_index -> cell object.
-    Properly handles numbercolumnsrepeated to track actual Excel column positions.
+    Iterates childNodes directly so that covered-table-cell elements (produced by
+    row-spanning merged cells in rows above) are counted — advancing the column index —
+    even though they carry no data.  Without this, every column after a covered cell is
+    indexed one (or more) positions too low relative to the actual spreadsheet columns.
     """
-    cells = row.getElementsByType(table.TableCell)
     cell_dict = {}
     current_col_index = 0
-    
-    for cell in cells:
-        # Check if cell is repeated
-        repeat_count = cell.getAttribute('numbercolumnsrepeated')
+
+    for child in row.childNodes:
+        if not hasattr(child, 'qname'):
+            continue
+        localname = child.qname[1]
+        if localname not in ('table-cell', 'covered-table-cell'):
+            continue
+
+        repeat_count = child.getAttribute('numbercolumnsrepeated')
         repeat = int(repeat_count) if repeat_count else 1
-        
-        # This cell occupies columns from current_col_index to current_col_index + repeat - 1
-        for offset in range(repeat):
-            col_index = current_col_index + offset
-            cell_dict[col_index] = cell
-        
+
+        if localname == 'table-cell':
+            for offset in range(repeat):
+                cell_dict[current_col_index + offset] = child
+
+        # For covered-table-cell: advance the counter only (no data to store)
         current_col_index += repeat
-    
+
     return cell_dict
 
 
@@ -60,7 +68,13 @@ def parse_name(name_str):
     
     # Remove any extra whitespace
     name_str = ' '.join(name_str.split())
-    
+
+    # Strip parenthetical nicknames, e.g. "(Denny)" in "Jacob (Denny) Richter"
+    # or "Richter (Denny)" — keep only the non-parenthetical words as the name.
+    import re as _re
+    name_str = _re.sub(r'\s*\([^)]*\)', '', name_str).strip()
+    name_str = ' '.join(name_str.split())  # re-normalise whitespace
+
     # Handle "Last, First" format
     if ',' in name_str:
         parts = name_str.split(',')
@@ -374,7 +388,7 @@ def parse_sheet(sheet, event_matcher, gender, meet_dates):
                             if col_idx in header_cells:
                                 meet_name = get_cell_text(header_cells[col_idx])
                                 if meet_name and meet_name.strip() and meet_name.strip() not in ['PR', '2024 SB', 'SB', 'Season Best']:
-                                    meet_columns[col_idx] = meet_name.strip()
+                                    meet_columns[col_idx] = normalize_meet_name(meet_name.strip())
                     
                     print(f"  Found event: {current_event} with {len(meet_columns)} meets")
                     continue
@@ -402,6 +416,12 @@ def parse_sheet(sheet, event_matcher, gender, meet_dates):
             if not first_name and not last_name:
                 # Not a valid athlete row
                 continue
+
+            # For relay events, use the same format as 2026:
+            # first_name="Fort Collins", last_name="4x100m Relay A Team"
+            if current_event and 'Relay' in current_event:
+                first_name = 'Fort Collins'
+                last_name = f"{current_event} {athlete_name}"
             
             # Parse column B (all-time PR), C (2024 SB), D (2025 SB)
             # Note: The indices are 0-based, so A=0, B=1, C=2, D=3
@@ -479,7 +499,7 @@ def main():
     print(f"Loaded {len(meet_info)} meets from config/meets_2025.json")
     
     # Find the ODS file
-    ods_path = Path(__file__).parent.parent / 'data' / 'sources' / 'current' / '2025' / '2025 Track & Field Performance List.xlsx.ods'
+    ods_path = Path(__file__).parent.parent / 'data' / 'sources' / 'current' / '2025' / '2025 Track & Field Performance List 3.xlsx.ods'
     
     if not ods_path.exists():
         print(f"Error: ODS file not found at {ods_path}")

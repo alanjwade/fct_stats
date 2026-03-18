@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from scraper.database import get_database
 from scraper.event_matcher import get_event_matcher
+from scraper.meet_names import normalize_meet_name
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,9 @@ def load_calendar_events():
         return []
     
     with open(calendar_path, 'r') as f:
-        return json.load(f)
+        data = json.load(f)
+    # calendar_events.json is {"locationMap": {...}, "events": [...]}
+    return data.get('events', data) if isinstance(data, dict) else data
 
 
 def load_meet_dates():
@@ -55,14 +58,24 @@ def match_meet_to_date(meet_name, year, calendar_events, meet_dates):
         if date:
             return date
     
-    # Second, try to find in calendar events (for 2025/2026 meets)
-    # Only match if there's a significant overlap in the title
+    # Second, try to find in calendar events (for current season meets only)
+    # Only match if there's a significant overlap in the title AND the year matches
     for event in calendar_events:
         title = event.get('title', '').lower()
         # Skip generic entries like "Winter Break"
         if title in ['winter break', 'preseason training', 'all-day']:
             continue
-        
+
+        # Only match calendar events for the correct year to avoid assigning
+        # future/past dates to historical records (e.g. "Fort Collins 2004"
+        # matching the 2026 calendar entry for "Fort Collins JV Scrimmage")
+        try:
+            event_year = datetime.strptime(event['date'], '%m/%d/%Y').year
+            if year and event_year != int(year):
+                continue
+        except Exception:
+            pass
+
         # Check if meet name contains significant words from the event title
         meet_lower = meet_name.lower()
         # Extract meaningful words (3+ chars) from both
@@ -164,7 +177,7 @@ def import_records(db, event_matcher, records, record_type, calendar_events, mee
             event_id = db.get_or_create_event(canonical_event, event_info)
             
             # Create a virtual meet for this record
-            meet_name = record['meet']
+            meet_name = normalize_meet_name(record['meet'])
             meet_date = match_meet_to_date(meet_name, record.get('year'), calendar_events, meet_dates)
             
             # Get level from record or from meet_dates config

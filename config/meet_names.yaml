@@ -1,0 +1,36 @@
+# Meet Name Configuration
+#
+# This file controls how raw meet names from data sources are cleaned up
+# and which meets are excluded from all-time records.
+#
+# ── name_mapping ──
+# Maps raw meet names (from ODS / historical records) to a canonical name.
+# Only names that need correction should be listed here.
+# Any meet name NOT listed will be used as-is.
+#
+# ── excluded_from_records ──
+# List of canonical meet names to exclude from all-time record displays.
+# These meets still appear in athlete stats / meet lists, just not
+# in the "Event Records" (PR list) pages.
+
+name_mapping:
+  # --- ODS typos ---
+  "FCHS JV Scrimmgae": "FCHS JV Scrimmage"
+  "Thurder Ridge Invite": "Thunder Ridge Invite"
+
+  # --- ODS wind annotations (strip the wind info) ---
+  "Pomona Invite / Arcadia Invite (w 3.3)": "Pomona Invite / Arcadia Invite"
+  "Randi Yaussi Meet (w+2.3)": "Randi Yaussi Meet"
+
+  # --- ODS alternate names ---
+  "FCHS Scrimmage": "FCHS JV Scrimmage"
+  "Randall Hess Roosevelt Invite": "Randall Hess Invite"
+  "CSU City Meet": "CSU City Champs"
+
+  # --- Historical records ---
+  "HOKA St. Vrain 2025": "St. Vrain Hoka / Teddy's Last Chance"
+
+excluded_from_records:
+  - "New Balance National Indoor"
+  - "Pomona Invite"
+  - "Pomona Invite / Arcadia Invite"
