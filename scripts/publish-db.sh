@@ -3,8 +3,8 @@
 
 set -e
 
-SOURCE_DB="/home/alan/Documents/code/fct_stats/data/generated/db/fct_stats.db"
-TARGET_DIR="$HOME/homelab/fct_stats/data/generated/db"
+SOURCE_DB="/home/alan/Documents/code/fct_stats/data/db/fct_stats.db"
+TARGET_DIR="$HOME/homelab/fct_stats/data/db"
 TARGET_DB="$TARGET_DIR/fct_stats.db"
 BACKUP_DIR="$HOME/homelab/fct_stats/backups"
 

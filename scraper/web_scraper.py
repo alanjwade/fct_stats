@@ -2,7 +2,7 @@
 Playwright-based web scraper for fetching meet results from MileSplit.
 
 Fetches a results page and extracts all event tables into a structured JSON
-format, which is cached at data/sources/current/pages/<year>/<slug>.json
+format, which is cached at data/sources/<year>/pages/<slug>.json
 so subsequent runs skip the network fetch.
 """
 
@@ -62,7 +62,7 @@ _EXTRACT_JS = """
 
 def get_pages_dir(year: int, data_dir: Path) -> Path:
     """Return (and create) the cache directory for a given year."""
-    pages_dir = data_dir / 'sources' / 'current' / 'pages' / str(year)
+    pages_dir = data_dir / 'sources' / str(year) / 'pages'
     pages_dir.mkdir(parents=True, exist_ok=True)
     return pages_dir
 
@@ -139,7 +139,7 @@ async def _fetch_page(url: str) -> dict:
 def scrape_url(url: str, year: int, data_dir: Path, force: bool = False) -> Path:
     """
     Fetch *url* (or return the cached result) and write a JSON file to
-    data/sources/current/pages/<year>/<slug>.json.
+    data/sources/<year>/pages/<slug>.json.
 
     Args:
         url:      Full results URL.

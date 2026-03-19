@@ -16,7 +16,7 @@ services:
       # Mount config from host so meets/calendar updates don't require a rebuild
       - ../config:/app/config:ro
     environment:
-      - DATABASE_PATH=/app/data/generated/db/fct_stats.db
+      - DATABASE_PATH=/app/data/db/fct_stats.db
       - ANALYTICS_DB_PATH=/app/analytics/analytics.db
       - CONFIG_PATH=/app/config
       - VIRTUAL_HOST=track.fchsrunning.org

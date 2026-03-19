@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # Configuration
-DATABASE_PATH = os.environ.get('DATABASE_PATH', str(Path(__file__).parent.parent / 'data' / 'generated' / 'db' / 'fct_stats.db'))
+DATABASE_PATH = os.environ.get('DATABASE_PATH', str(Path(__file__).parent.parent / 'data' / 'db' / 'fct_stats.db'))
 
 # Secret key for hidden analytics page (change this in production!)
 ANALYTICS_SECRET = os.environ.get('ANALYTICS_SECRET', 'lambkin-purple-stats-2025')

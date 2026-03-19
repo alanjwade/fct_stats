@@ -14,7 +14,7 @@ class Database:
 
     def __init__(self, db_path: str = None):
         if db_path is None:
-            db_path = Path(__file__).parent.parent / 'data' / 'generated' / 'db' / 'fct_stats.db'
+            db_path = Path(__file__).parent.parent / 'data' / 'db' / 'fct_stats.db'
         self.db_path = Path(db_path)
         self._ensure_schema()
 

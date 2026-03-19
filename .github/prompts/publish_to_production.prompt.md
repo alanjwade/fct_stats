@@ -20,12 +20,12 @@ The FCT Stats application runs on a homelab server using Docker containers. Ther
 To publish everything and restart the production server in one go:
 
 ```bash
-./scripts/publish-all.sh && cd ~/homelab/fct_stats && mkdir -p data/generated/db && mv data/fct_stats.db data/generated/db/fct_stats.db 2>/dev/null || true && docker-compose -f docker/docker-compose.yml up -d --build
+./scripts/publish-all.sh && cd ~/homelab/fct_stats && mkdir -p data/db && mv data/fct_stats.db data/db/fct_stats.db 2>/dev/null || true && docker-compose -f docker/docker-compose.yml up -d --build
 ```
 
 Or create an alias in your shell:
 ```bash
-alias publish-prod='./scripts/publish-all.sh && cd ~/homelab/fct_stats && mkdir -p data/generated/db && mv data/fct_stats.db data/generated/db/fct_stats.db 2>/dev/null || true && docker-compose -f docker/docker-compose.yml up -d --build'
+alias publish-prod='./scripts/publish-all.sh && cd ~/homelab/fct_stats && mkdir -p data/db && mv data/fct_stats.db data/db/fct_stats.db 2>/dev/null || true && docker-compose -f docker/docker-compose.yml up -d --build'
 ```
 
 Then just run: `publish-prod`
@@ -44,14 +44,14 @@ Use this when you've made changes to both code and data.
 **What it does:**
 1. Syncs webapp code to `~/homelab/fct_stats/` (excluding development files)
 2. Backs up existing database to `~/homelab/fct_stats/backups/`
-3. Copies new database from `data/generated/db/fct_stats.db` to homelab
+3. Copies new database from `data/db/fct_stats.db` to homelab
 4. Shows database statistics
 
 **Then restart the server:**
 ```bash
 cd ~/homelab/fct_stats
-mkdir -p data/generated/db
-mv data/fct_stats.db data/generated/db/fct_stats.db 2>/dev/null || true
+mkdir -p data/db
+mv data/fct_stats.db data/db/fct_stats.db 2>/dev/null || true
 docker-compose -f docker/docker-compose.yml up -d --build
 ```
 
@@ -69,7 +69,7 @@ Use this when you've made code/template/styling changes but no database changes.
 
 **What it does:**
 - Syncs webapp files using rsync
-- Excludes: venv, __pycache__, .git, data/generated/db/, data/sources/current/pages/, data/sources/current/meets/
+- Excludes: venv, __pycache__, .git, data/db/, data/sources/<year>/pages/, data/sources/
 
 **Then restart the webapp container:**
 ```bash
@@ -91,7 +91,7 @@ Use this when you've added new meet results or updated data but code is unchange
 
 **What it does:**
 1. Creates backup: `~/homelab/fct_stats/backups/fct_stats_YYYYMMDD_HHMMSS.db`
-2. Copies `data/generated/db/fct_stats.db` to `~/homelab/fct_stats/data/generated/db/`
+2. Copies `data/db/fct_stats.db` to `~/homelab/fct_stats/data/db/`
 3. Shows statistics (athletes, events, meets, results counts)
 
 **Then restart the webapp container:**
@@ -209,9 +209,9 @@ The rsync excludes:
 - `__pycache__/` - Python bytecode
 - `*.pyc` - Compiled Python files
 - `.git/` - Git repository
-- `data/generated/db/` - Database (published separately)
-- `data/sources/current/pages/` - Raw meet pages (not needed in production)
-- `data/sources/current/meets/` - YAML meet files (not needed in production)
+- `data/db/` - Database (published separately)
+- `data/sources/<year>/pages/` - Raw meet pages (not needed in production)
+- `data/sources/` - YAML meet files (not needed in production)
 - `.vscode/` - Editor config
 - `*.log` - Log files
 
@@ -221,7 +221,7 @@ The rsync excludes:
 - **URL**: https://track.fchsrunning.org
 - **Container Name**: `fct_stats_webapp`
 - **Network**: `proxy-network` (shared with nginx proxy)
-- **Database**: Mounted read-only from `../data/generated/db/fct_stats.db`
+- **Database**: Mounted read-only from `../data/db/fct_stats.db`
 
 ## Troubleshooting
 
@@ -247,23 +247,23 @@ The rsync excludes:
 
 1. **Verify database is in correct location:**
    ```bash
-   ls -lh ~/homelab/fct_stats/data/generated/db/fct_stats.db
+   ls -lh ~/homelab/fct_stats/data/db/fct_stats.db
    ```
    
    If the database is at `~/homelab/fct_stats/data/fct_stats.db`, move it:
    ```bash
-   mkdir -p ~/homelab/fct_stats/data/generated/db
-   mv ~/homelab/fct_stats/data/fct_stats.db ~/homelab/fct_stats/data/generated/db/fct_stats.db
+   mkdir -p ~/homelab/fct_stats/data/db
+   mv ~/homelab/fct_stats/data/fct_stats.db ~/homelab/fct_stats/data/db/fct_stats.db
    ```
 
 2. **Check database permissions:**
    ```bash
-   chmod 644 ~/homelab/fct_stats/data/generated/db/fct_stats.db
+   chmod 644 ~/homelab/fct_stats/data/db/fct_stats.db
    ```
 
 3. **Verify database is valid:**
    ```bash
-   sqlite3 ~/homelab/fct_stats/data/generated/db/fct_stats.db "SELECT COUNT(*) FROM athletes;"
+   sqlite3 ~/homelab/fct_stats/data/db/fct_stats.db "SELECT COUNT(*) FROM athletes;"
    ```
 
 4. **Restart the container:**
@@ -295,7 +295,7 @@ The rsync excludes:
 
 ```bash
 # QUICK START: Publish everything and restart (recommended)
-./scripts/publish-all.sh && cd ~/homelab/fct_stats && mkdir -p data/generated/db && mv data/fct_stats.db data/generated/db/fct_stats.db 2>/dev/null || true && docker-compose -f docker/docker-compose.yml up -d --build
+./scripts/publish-all.sh && cd ~/homelab/fct_stats && mkdir -p data/db && mv data/fct_stats.db data/db/fct_stats.db 2>/dev/null || true && docker-compose -f docker/docker-compose.yml up -d --build
 
 # Or use the dedicated script
 ./scripts/homelab-restart.sh

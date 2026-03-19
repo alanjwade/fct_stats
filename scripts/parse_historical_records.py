@@ -399,7 +399,7 @@ def main():
         all_results.append(result)
     
     # Save to JSON in common format
-    output_path = Path(__file__).parent.parent / 'data' / 'generated' / 'parsed' / 'historical_records.json'
+    output_path = Path(__file__).parent.parent / 'data' / 'snapshots' / 'historic' / 'historical_records.json'
     with open(output_path, 'w') as f:
         json.dump(all_results, f, indent=2)
     

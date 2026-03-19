@@ -23,7 +23,7 @@ def import_historical_records(db_path: str = None):
     logger.info("Importing historical school records...")
     
     # Load JSON file
-    json_path = Path(__file__).parent.parent / 'data' / 'generated' / 'parsed' / 'historical_records.json'
+    json_path = Path(__file__).parent.parent / 'data' / 'snapshots' / 'historic' / 'historical_records.json'
     if not json_path.exists():
         logger.warning(f"Historical records file not found: {json_path}")
         logger.info("Run scripts/parse_historical_records.py first to generate it")

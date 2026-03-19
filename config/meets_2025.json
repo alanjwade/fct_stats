@@ -7,12 +7,12 @@
     },
     {
       "name": "CSU City Champs",
-      "date": "2025-03-15",
+      "date": "2025-03-28",
       "level": "varsity"
     },
     {
       "name": "CSU City Meet",
-      "date": "2025-03-15",
+      "date": "2025-03-28",
       "level": "varsity"
     },
     {
@@ -107,6 +107,11 @@
     },
     {
       "name": "St. Vrain Hoka / Teddy's Last Chance",
+      "date": "2025-05-09",
+      "level": "varsity"
+    },
+    {
+      "name": "HOKA St. Vrain 2025",
       "date": "2025-05-09",
       "level": "varsity"
     },

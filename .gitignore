@@ -64,11 +64,16 @@ Thumbs.db
 logs/
 .local/
 
-# Data organization: keep sources but ignore generated files
-/data/generated/
+# Data organization
+# Ignore: data/sources/ (raw sources, too large)
+# Ignore: data/snapshots/ (all, rebuilt from sources as needed)
+# Ignore: data/db/ (database), data/analytics/ (app generated)
 /data/sources/
+/data/snapshots/
+/data/db/
+/data/analytics/
 
-# Database
+# Database (local copies, not committed)
 *.db
 *.sqlite
 *.sqlite3

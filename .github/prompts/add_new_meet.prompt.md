@@ -48,7 +48,7 @@ Please analyze the source and determine:
 ### Step 1a: If the Input is a URL — Web Scraping
 
 Pass the URL directly to `parse_new_meet.py`. The script will:
-1. Check for a cached scrape at `data/sources/current/pages/<year>/<meet-slug>.json`
+1. Check for a cached scrape at `data/sources/<year>/pages/<meet-slug>.json`
 2. If no cache exists, launch Playwright/Chromium headlessly, render the page, extract all result tables, and save the JSON cache.
 3. Parse the cached JSON with the `milesplit_web` parser.
 
@@ -64,7 +64,7 @@ The page is only fetched **once**; subsequent runs load from the cache. To force
 python scripts/parse_new_meet.py "https://..." --meet "..." --date ... --rescrape
 ```
 
-**Also add the URL to `data/sources/current/<year>/meets_<year>.json`** so it's recorded with the meet:
+**Also add the URL to `config/meets_<year>.json`** so it's recorded with the meet:
 ```json
 {
   "name": "Meet Name",
@@ -183,7 +183,7 @@ class NewFormatParser(BaseParser):
 
 Once parsing succeeds, the script saves to:
 ```
-data/generated/parsed/meets/YYYY/meet_name.json
+data/snapshots/YYYY/meets/meet_name.json
 ```
 
 Example structure:
@@ -215,7 +215,7 @@ Example structure:
 
 ### Step 6: Update Configuration
 
-Add the meet to `data/sources/current/<year>/meets_<year>.json`.
+Add the meet to `config/meets_<year>.json`.
 Include the `url` field if the source was a web page:
 ```json
 {
@@ -360,7 +360,7 @@ AI: Let me analyze that file...
     - Boys: 100m (3), 200m (4), 400m (2), ...
     - Girls: 100m (2), 200m (3), ...
     
-    Validation passed! Saving to data/generated/parsed/meets/2025/spring_classic.json
+    Validation passed! Saving to data/snapshots/2025/meets/spring_classic.json
     
     Next: Add meet to config/meets_2025.json and run import.
 ```
@@ -375,4 +375,4 @@ AI: Let me analyze that file...
 | `scripts/import_from_parsed_meets.py` | Import parsed JSON to database |
 | `scraper/parsers/*.py` | Parser implementations |
 | `config/meets_2025.json` | Meet dates and levels |
-| `data/generated/parsed/meets/` | Central parsed results storage |
+| `data/snapshots/` | Central parsed results storage |

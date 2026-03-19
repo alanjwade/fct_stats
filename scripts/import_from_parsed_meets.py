@@ -28,7 +28,7 @@ def _strip_nickname(name: str) -> str:
 
 def load_meet_config():
     """Load meet dates and levels from config file."""
-    meets_config_path = Path(__file__).parent.parent / 'data' / 'sources' / 'current' / '2025' / 'meets_2025.json'
+    meets_config_path = Path(__file__).parent.parent / 'config' / 'meets_2025.json'
     meet_info = {}
     
     if meets_config_path.exists():
@@ -234,7 +234,7 @@ def import_all_parsed_meets(db_path: str = None, clear_db: bool = True):
     event_matcher = get_event_matcher()
     meet_config = load_meet_config()
     
-    parsed_dir = Path(__file__).parent.parent / 'data' / 'generated' / 'parsed' / 'meets'
+    parsed_dir = Path(__file__).parent.parent / 'data' / 'snapshots'
     
     if not parsed_dir.exists():
         logger.error(f"Parsed meets directory not found: {parsed_dir}")
@@ -251,8 +251,8 @@ def import_all_parsed_meets(db_path: str = None, clear_db: bool = True):
     total_skipped = 0
     files_processed = 0
     
-    # Process all JSON files in parsed_meets and subdirectories
-    for json_file in sorted(parsed_dir.rglob('*.json')):
+    # Process all JSON files in snapshots/<year>/meets/ subdirectories
+    for json_file in sorted(parsed_dir.glob('*/meets/*.json')):
         relative_path = json_file.relative_to(parsed_dir)
         logger.info(f"Importing {relative_path}...")
         

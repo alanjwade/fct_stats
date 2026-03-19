@@ -58,7 +58,7 @@ fct_stats/
 
 ### Database Schema
 
-SQLite database (`data/generated/db/fct_stats.db`) with tables:
+SQLite database (`data/db/fct_stats.db`) with tables:
 
 - **athletes**: Athlete information (name, gender, graduation year)
 - **events**: Canonical event definitions (100m, Long Jump, etc.)
@@ -73,14 +73,14 @@ SQLite database (`data/generated/db/fct_stats.db`) with tables:
 ```
 Raw Data Sources
     ↓
-[parse_performance_list.py] ← ODS: data/sources/current/2025/*.ods
+[parse_performance_list.py] ← ODS: data/sources/2025/*.ods
 [parse_historical_records.py] ← Markdown: data/sources/historic/*.md
     ↓
-JSON Files (data/generated/parsed/)
+JSON Snapshots (data/snapshots/)
     ↓
-[import_all_records.py] ← meets config: data/sources/current/2025/meets_2025.json
+[import_all_records.py] ← meets config: config/meets_2025.json
     ↓
-SQLite Database (data/generated/db/fct_stats.db)
+SQLite Database (data/db/fct_stats.db)
     ↓
 [Flask Webapp] → HTML Views
 ```
@@ -135,13 +135,13 @@ Structure:
 
 #### `parse_performance_list.py`
 
-Parses ODS spreadsheet (`data/sources/current/2025/2025 Track & Field Performance List.xlsx.ods`):
+Parses ODS spreadsheet (`data/sources/2025/2025 Track & Field Performance List 3.xlsx.ods`):
 
 - 6 sheets: Girls Track, Girls Field, Girls Relays, Boys Track, Boys Field, Boys Relays
 - Event headers in column A, meets starting in column D
 - Skips columns: `['PR', '2024 SB', 'SB', 'Season Best']`
-- Loads dates/levels from `data/sources/current/2025/meets_2025.json`
-- Outputs: `data/generated/parsed/parsed_performance_list.json`
+- Loads dates/levels from `config/meets_2025.json`
+- Outputs: `data/snapshots/2025/parsed_performance_list.json`
 
 **Critical**: Uses dict-based cell mapping to handle merged cells correctly.
 
@@ -152,7 +152,7 @@ Parses markdown historical records files:
 - Handles variable whitespace/tabs in markdown tables
 - Parses relay team members (comma-separated names)
 - Outputs same JSON format as performance list
-- Outputs: `data/generated/parsed/historical_records.json`
+- Outputs: `data/snapshots/historic/historical_records.json`
 
 #### `import_all_records.py`
 
@@ -516,7 +516,7 @@ Potential areas for expansion:
 
 ## Contact & Maintenance
 
-- **Database location**: `data/generated/db/fct_stats.db`
+- **Database location**: `data/db/fct_stats.db`
 - **Backup strategy**: Git tracks all JSON source files
 - **Update frequency**: After each meet during season
 - **Owner contact**: alan.j.wade@gmail.com
@@ -542,7 +542,7 @@ cd webapp && python3 app.py
 docker-compose -f docker/docker-compose.dev.yml up
 
 # Check database
-sqlite3 data/generated/db/fct_stats.db "SELECT COUNT(*) FROM results;"
+sqlite3 data/db/fct_stats.db "SELECT COUNT(*) FROM results;"
 ```
 
 ### Key Files to Check First

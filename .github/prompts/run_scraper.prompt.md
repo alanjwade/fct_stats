@@ -134,13 +134,13 @@ find data/meets -name "*.yaml" -o -name "*.yml" 2>/dev/null | head -20
 # Import school records from data/sources/historic/*.md
 ./.venv/bin/python scripts/import_historical_records.py
 
-# Import all parsed meet JSON files from data/generated/parsed/meets/
+# Import all parsed meet JSON files from data/snapshots/
 ./.venv/bin/python scripts/import_from_parsed_meets.py
 ```
 
 This covers:
 - Historical school records (`data/sources/historic/FCHS *.md`)
-- All parsed 2025 meet JSON files (`data/generated/parsed/meets/2025/*.json`)
+- All parsed 2025 meet JSON files (`data/snapshots/2025/*.json`)
 
 ### When to use this fallback
 - No YAML meet configs exist (pages haven't been downloaded/configured yet)
@@ -224,7 +224,7 @@ Use this when no YAML meet configs exist but parsed JSON meet files are availabl
 
 3. **Verify:**
    ```bash
-   ./.venv/bin/python -c "import sqlite3; conn = sqlite3.connect('data/generated/db/fct_stats.db'); print('Results:', conn.execute('SELECT COUNT(*) FROM results').fetchone()[0])"
+   ./.venv/bin/python -c "import sqlite3; conn = sqlite3.connect('data/db/fct_stats.db'); print('Results:', conn.execute('SELECT COUNT(*) FROM results').fetchone()[0])"
    ```
 
 ## Understanding YAML Meet Files
@@ -418,7 +418,7 @@ scraper/venv/bin/pip freeze > scraper/requirements.txt
 - [ ] School matcher patterns include all needed schools
 
 **If using parsed JSON pipeline (no YAML files):**
-- [ ] Parsed JSON files exist in `data/generated/parsed/meets/`
+- [ ] Parsed JSON files exist in `data/snapshots/`
 - [ ] Historical records markdown files exist in `data/sources/historic/`
 - [ ] Use: `./.venv/bin/python scripts/import_historical_records.py`
 - [ ] Use: `./.venv/bin/python scripts/import_from_parsed_meets.py`

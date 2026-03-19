@@ -35,8 +35,8 @@ def slugify(name: str) -> str:
 
 def consolidate_performance_list():
     """Split parsed_performance_list.json into individual meet files."""
-    perf_path = Path(__file__).parent.parent / 'data' / 'generated' / 'parsed' / 'parsed_performance_list.json'
-    output_dir = Path(__file__).parent.parent / 'data' / 'generated' / 'parsed' / 'meets' / '2025'
+    perf_path = Path(__file__).parent.parent / 'data' / 'snapshots' / '2025' / 'parsed_performance_list.json'
+    output_dir = Path(__file__).parent.parent / 'data' / 'snapshots' / '2025' / 'meets'
     output_dir.mkdir(parents=True, exist_ok=True)
     
     if not perf_path.exists():
@@ -85,8 +85,8 @@ def consolidate_performance_list():
 
 def copy_historical_records():
     """Copy historical records to parsed_meets directory."""
-    hist_path = Path(__file__).parent.parent / 'data' / 'generated' / 'parsed' / 'historical_records.json'
-    output_dir = Path(__file__).parent.parent / 'data' / 'generated' / 'parsed' / 'meets'
+    hist_path = Path(__file__).parent.parent / 'data' / 'snapshots' / 'historic' / 'historical_records.json'
+    output_dir = Path(__file__).parent.parent / 'data' / 'snapshots'
     
     if not hist_path.exists():
         print(f"Historical records not found: {hist_path}")

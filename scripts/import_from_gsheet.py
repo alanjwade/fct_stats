@@ -8,19 +8,19 @@ Usage:
         --url "https://docs.google.com/spreadsheets/d/1avGZOoj0we3cyuMSTWbBQGdJ-i7XGmZa"
 
     # Import from already-saved JSON (faster, no network):
-    python scripts/import_from_gsheet.py --input data/generated/parsed/gsheet_2026.json
+    python scripts/import_from_gsheet.py --input data/snapshots/2026/gsheet_2026.json
 
     # Dry run (no DB writes):
-    python scripts/import_from_gsheet.py --input data/generated/parsed/gsheet_2026.json --dry-run
+    python scripts/import_from_gsheet.py --input data/snapshots/2026/gsheet_2026.json --dry-run
 
     # Re-fetch, save, then import:
     python scripts/import_from_gsheet.py --fetch --url "..." \
-        --save data/generated/parsed/gsheet_2026.json
+        --save data/snapshots/2026/gsheet_2026.json
 
 This script is the SOURCE OF TRUTH for 2026 season data.
 Do NOT also run import_from_parsed_meets.py for 2026, as that data is now
 superseded by the Google Sheet. The scraped source files in
-  data/sources/current/pages/2026/
+  data/sources/2026/pages/
 are kept on disk for reference but are NOT imported.
 """
 
@@ -389,7 +389,7 @@ def main():
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument(
         "--input", metavar="FILE",
-        help="Path to already-saved gsheet JSON (e.g. data/generated/parsed/gsheet_2026.json)"
+        help="Path to already-saved gsheet JSON (e.g. data/snapshots/2026/gsheet_2026.json)"
     )
     source.add_argument(
         "--fetch", action="store_true",

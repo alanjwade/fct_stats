@@ -10,7 +10,7 @@ Usage:
     python scripts/explore_gsheet.py --id SHEET_ID --dump
 
     # Parse and output JSON:
-    python scripts/explore_gsheet.py --url "..." --output data/generated/parsed/gsheet_results.json
+    python scripts/explore_gsheet.py --url "..." --output data/snapshots/2026/gsheet_results.json
 
 Flags:
     --dump          Print raw cell dump for each sheet (great for debugging structure)

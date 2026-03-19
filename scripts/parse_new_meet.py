@@ -5,12 +5,12 @@ Parse a new meet results file (or URL) and save to the parsed_meets directory.
 This script:
 1. Accepts either a local file path OR a URL as its first argument
 2. If a URL is given, uses the Playwright web scraper to fetch and cache the
-   page under data/sources/current/pages/<year>/<slug>.json — subsequent runs
+   page under data/sources/<year>/pages/<slug>.json — subsequent runs
    will load from the cache without hitting the network.
 3. Detects which parser can handle the input
 4. Extracts all results for Fort Collins athletes
 5. Validates the results (reasonable count, expected events)
-6. Saves to data/generated/parsed/meets/YYYY/meet_name.json
+6. Saves to data/snapshots/YYYY/meets/meet_name.json
 
 Usage:
     # Local file
@@ -353,7 +353,7 @@ def main():
     if args.output:
         output_path = Path(args.output)
     else:
-        output_dir = data_dir / 'generated' / 'parsed' / 'meets' / str(year)
+        output_dir = data_dir / 'snapshots' / str(year) / 'meets'
         output_dir.mkdir(parents=True, exist_ok=True)
         slug = slugify(args.meet)
         output_path = output_dir / f"{slug}.json"
