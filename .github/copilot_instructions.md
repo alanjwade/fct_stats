@@ -228,7 +228,87 @@ db.clear_all()  # Clears all data
 
 ---
 
+## Python Executable
+
+Always use `.venv/bin/python3` to run scripts (not `python` or `python3` bare).
+The system Python does not have the project dependencies installed.
+
+```bash
+.venv/bin/python3 scripts/import_from_gsheet.py ...
+```
+
+---
+
+## 2026 Season Data Workflow (Google Sheets)
+
+**The 2026 season uses Google Sheets as the source of truth — NOT ODS files.**
+
+- Spreadsheet URL: `https://docs.google.com/spreadsheets/d/1avGZOoj0we3cyuMSTWbBQGdJ-i7XGmZa`
+- Snapshot saved to: `data/snapshots/2026/gsheet_2026.json`
+- Import script: `scripts/import_from_gsheet.py`
+- Do **NOT** run `import_all_records.py` for 2026 data — it is 2025-only.
+
+### After a Meet Is Entered in the Spreadsheet
+
+```bash
+# Fetch, save snapshot, and import into DB in one command:
+.venv/bin/python3 scripts/import_from_gsheet.py \
+    --fetch \
+    --url "https://docs.google.com/spreadsheets/d/1avGZOoj0we3cyuMSTWbBQGdJ-i7XGmZa" \
+    --save data/snapshots/2026/gsheet_2026.json
+
+# Publish and restart production:
+./scripts/publish-db.sh
+./scripts/homelab-restart.sh
+```
+
+### Meet Name Recognition — `MEET_INFO` dict
+
+Every meet column header from the spreadsheet must match a key in the `MEET_INFO`
+dict at the top of `scripts/import_from_gsheet.py`. If a meet name is unrecognized,
+the script logs `WARNING: Unknown meet name: 'XYZ'` and imports results with no date.
+
+When adding a new meet to the spreadsheet, also add it to `MEET_INFO`:
+```python
+"Exact Sheet Column Name": {
+    "canonical": "Canonical Meet Name",  # omit if same as key
+    "date": "2026-MM-DD",
+    "level": "varsity",                  # or "jv"
+},
+```
+
+Add a canonical alias entry too if the sheet might use alternate spellings.
+
+### GID Warnings (safe to ignore)
+
+The fetch step may print:
+```
+WARNING: Could not determine GID for '2026 Girls Field'. Falling back to gviz...
+```
+These are harmless — the data is still fetched correctly.
+
+### Import from existing snapshot (faster, no network)
+
+```bash
+.venv/bin/python3 scripts/import_from_gsheet.py \
+    --input data/snapshots/2026/gsheet_2026.json
+```
+
+### Calendar / Upcoming Events
+
+The webapp filters upcoming events dynamically by today's date. No edits to
+`config/calendar_events.json` are needed when a meet passes — it disappears
+from the "upcoming" section automatically.
+
+---
+
 ## Common Workflows
+
+### Adding New 2026 Meet Data
+
+See **2026 Season Data Workflow** above.
+
+The quick reference prompt is at `.github/prompts/update_after_meet.prompt.md`.
 
 ### Adding New 2025 Meet Data
 
@@ -246,8 +326,8 @@ db.clear_all()  # Clears all data
 
 3. **Re-parse and import**:
    ```bash
-   python3 scripts/parse_performance_list.py
-   python3 scripts/import_all_records.py
+   .venv/bin/python3 scripts/parse_performance_list.py
+   .venv/bin/python3 scripts/import_all_records.py
    ```
 
 ### Adding Historical Records
@@ -431,6 +511,29 @@ ANALYTICS_SECRET=secret-key           # Analytics page access
 
 ## Common Issues & Solutions
 
+### Issue: 2026 meet results imported with no date / wrong date
+
+**Cause**: Meet column header in the spreadsheet isn't in `MEET_INFO` dict in
+`scripts/import_from_gsheet.py`, or the canonical alias is missing.
+
+**Solution**:
+1. Re-run import with `--debug` and look for `WARNING: Unknown meet name:`
+   ```bash
+   .venv/bin/python3 scripts/import_from_gsheet.py \
+       --input data/snapshots/2026/gsheet_2026.json --debug 2>&1 | grep -i unknown
+   ```
+2. Add the exact sheet column name to `MEET_INFO` (see **2026 Season Data Workflow** above)
+3. Re-import from the saved snapshot
+
+### Issue: 2026 `Added: 0` after a meet was entered
+
+**Cause**: Results are already in the database (from a previous import) or the
+meet name isn't in `MEET_INFO`.
+
+**Solution**: Run with `--debug` and inspect `Unknown meet name` warnings (see above).
+If the meet was previously imported under a different/wrong name, you may need to
+delete those rows from the DB and re-import after fixing `MEET_INFO`.
+
 ### Issue: Meet dates showing as 2025-03-15 (default)
 
 **Cause**: Meet name not in `meets_2025.json` or different name used
@@ -528,15 +631,19 @@ Potential areas for expansion:
 ### Common Commands
 
 ```bash
-# Parse new data
-python3 scripts/parse_performance_list.py
-python3 scripts/parse_historical_records.py
+# 2026: Fetch Google Sheet and import
+.venv/bin/python3 scripts/import_from_gsheet.py \
+    --fetch \
+    --url "https://docs.google.com/spreadsheets/d/1avGZOoj0we3cyuMSTWbBQGdJ-i7XGmZa" \
+    --save data/snapshots/2026/gsheet_2026.json
 
-# Import to database
-python3 scripts/import_all_records.py
+# 2025: Parse source data and import
+.venv/bin/python3 scripts/parse_performance_list.py
+.venv/bin/python3 scripts/parse_historical_records.py
+.venv/bin/python3 scripts/import_all_records.py
 
 # Run webapp locally
-cd webapp && python3 app.py
+cd webapp && .venv/bin/python3 app.py
 
 # Docker development
 docker-compose -f docker/docker-compose.dev.yml up
@@ -547,9 +654,11 @@ sqlite3 data/db/fct_stats.db "SELECT COUNT(*) FROM results;"
 
 ### Key Files to Check First
 
-- `config/meets_2025.json` - Meet dates and levels
+- `scripts/import_from_gsheet.py` - 2026 import logic + `MEET_INFO` dict (meet names/dates)
+- `data/snapshots/2026/gsheet_2026.json` - Last-fetched Google Sheet snapshot
+- `config/meets_2025.json` - 2025 meet dates and levels
 - `config/canonical_events.yaml` - Event definitions
-- `scripts/import_all_records.py` - Main import logic
+- `scripts/import_all_records.py` - 2025 main import logic
 - `webapp/app.py` - Web routes and queries
 - `scraper/database.py` - Database write operations
 
