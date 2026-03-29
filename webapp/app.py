@@ -754,8 +754,9 @@ def athlete_stats(athlete_id):
                 event_ids_by_name[result['event_name']] = result['event_id']
         
         # Sort years descending, and results within each year by date descending
+        # Handle None dates by sorting them to the end
         for year in results_by_year:
-            results_by_year[year].sort(key=lambda r: r['meet_date'], reverse=True)
+            results_by_year[year].sort(key=lambda r: (r['meet_date'] is None, r['meet_date'] or ''), reverse=True)
         sorted_years = sorted(results_by_year.keys(), reverse=True)
         
         # Convert event sets to sorted lists and create event info with IDs

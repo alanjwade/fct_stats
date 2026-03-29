@@ -85,7 +85,13 @@ MEET_INFO: dict[str, dict] = {
         "level": "varsity",
     },
     "PSD JV Invite #1": {
-        "date": None,
+        "canonical": "Rocky JV Meet",
+        "date": "2026-03-25",
+        "level": "jv",
+    },
+    "PSD JV Invite #1 (FA)": {
+        "canonical": "Rocky JV Meet",
+        "date": "2026-03-25",
         "level": "jv",
     },
     "Roosevelt Power Invite": {

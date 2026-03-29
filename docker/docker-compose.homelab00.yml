@@ -1,0 +1,26 @@
+# FCT Stats - homelab00 Test Deployment
+# Production mode (gunicorn), port exposed directly without nginx proxy
+
+services:
+  webapp:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.webapp
+    container_name: fct_stats_webapp
+    restart: unless-stopped
+    volumes:
+      # Mount database from host (updated via deploy script)
+      - ../data:/app/data:ro
+      # Analytics DB lives in a named volume (persists across rebuilds)
+      - analytics_data:/app/analytics
+      # Mount config from host so meets/calendar updates don't require a rebuild
+      - ../config:/app/config:ro
+    environment:
+      - DATABASE_PATH=/app/data/db/fct_stats.db
+      - ANALYTICS_DB_PATH=/app/analytics/analytics.db
+      - CONFIG_PATH=/app/config
+    ports:
+      - "8081:5000"
+
+volumes:
+  analytics_data:
