@@ -130,6 +130,38 @@
     text-align: right;
 }
 
+.athlete-level {
+    display: inline-block;
+    margin-left: 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+}
+
+.athlete-level.varsity {
+    background-color: #4B286D;
+    color: white;
+}
+
+.athlete-level.jv {
+    background-color: #6c757d;
+    color: white;
+}
+
+.athlete-meet {
+    display: none;
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 0.2rem;
+}
+
+@media (min-width: 768px) {
+    .athlete-meet {
+        display: block;
+    }
+}
+
 .show-more-btn {
     width: 100%;
     margin-top: 1rem;
@@ -341,10 +373,27 @@ function renderResults(gender, eventName) {
             athleteHtml = athleteName;
         }
         
+        // Build level badge if available
+        let levelBadge = '';
+        if (result.level && (result.level === 'varsity' || result.level === 'jv')) {
+            const levelClass = result.level === 'varsity' ? 'varsity' : 'jv';
+            const levelText = result.level === 'varsity' ? 'V' : 'JV';
+            levelBadge = `<span class="athlete-level ${levelClass}">${levelText}</span>`;
+        }
+        
+        // Build meet info if available
+        let meetInfo = '';
+        if (result.meet_name) {
+            meetInfo = `<div class="athlete-meet">${result.meet_name}</div>`;
+        }
+        
         html += `
             <li class="athlete-item${isExtra ? ' extra-result' : ''}">
                 <span class="athlete-rank">#${index + 1}</span>
-                <span class="athlete-name">${athleteHtml}</span>
+                <span class="athlete-name">
+                    ${athleteHtml}${levelBadge}
+                    ${meetInfo}
+                </span>
                 <span class="athlete-mark">${mark}</span>
             </li>
         `;

@@ -173,11 +173,12 @@ def parse_time(s: str) -> float | None:
     s = s.strip()
     if not s or s in ('-', 'NT', 'DNS', 'DNF', 'DQ', 'SCR', 'NH', 'ND', 'NM'):
         return None
-    m = re.match(r'^(\d+):(\d{2})\.(\d+)$', s)
+    # Handles both M:SS.XX and M:SS (whole seconds, no decimal)
+    m = re.match(r'^(\d+):(\d{2})(?:\.(\d+))?$', s)
     if m:
         mins = int(m.group(1))
         secs = int(m.group(2))
-        frac = m.group(3)
+        frac = m.group(3) or '0'
         return mins * 60 + secs + float('0.' + frac)
     try:
         return float(s)
@@ -198,8 +199,8 @@ def parse_feet_inches(s: str) -> float | None:
     s = s.strip()
     if not s or s in ('-', 'NT', 'DNS', 'DNF', 'DQ', 'SCR', 'NH', 'ND', 'NM'):
         return None
-    # Feet-inches: N'M or N'M.XX
-    m = re.match(r"^(\d+)'([\d.]+)$", s)
+    # Feet-inches: N'M or N'M.XX or N'M" or N'M.XX"
+    m = re.match(r"^(\d+)'([\d.]+)\"?$", s)
     if m:
         feet = int(m.group(1))
         inches = float(m.group(2))

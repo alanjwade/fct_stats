@@ -1,13 +1,16 @@
 #!/bin/bash
-# Publish FCT Stats webapp and database to homelab, then restart services
+# Publish FCT Stats webapp and database to homelab00, then restart services
 
 set -e
 
 SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$(dirname "$SCRIPTS_DIR")"
+
+REMOTE_USER="homelab"
+REMOTE_HOST="homelab00"
+REMOTE_DIR="/home/homelab/homelab00-config/websites/volumes/sites/fct_web"
 
 echo "=========================================="
-echo "FCT Stats: Publish & Restart"
+echo "FCT Stats: Publish & Restart (homelab00)"
 echo "=========================================="
 echo ""
 
@@ -20,31 +23,23 @@ echo ""
 echo "=========================================="
 echo ""
 
-# Step 1: Publish webapp
-echo "Step 1: Publishing webapp..."
+# Step 1: Publish to homelab00
+echo "Step 1: Publishing to homelab00..."
 echo ""
-bash "$SCRIPTS_DIR/publish-webapp.sh"
+bash "$SCRIPTS_DIR/publish-homelab00.sh"
 
 echo ""
 echo "=========================================="
 echo ""
 
-# Step 2: Publish database
-echo "Step 2: Publishing database..."
+# Step 2: Restart Docker on homelab00 (rebuild fct_web in the websites compose project)
+echo "Step 2: Restarting Docker services on homelab00..."
 echo ""
-bash "$SCRIPTS_DIR/publish-db.sh"
+ssh "$REMOTE_USER@$REMOTE_HOST" \
+  "cd /home/homelab/homelab00-config/websites && docker compose up -d --build --force-recreate fct_web"
 
 echo ""
 echo "=========================================="
-echo ""
-
-# Step 3: Restart services
-echo "Step 3: Restarting Docker services..."
-echo ""
-bash "$SCRIPTS_DIR/homelab-restart.sh"
-
-echo ""
-echo "=========================================="
-echo "✓ All done! Webapp and database published,"
-echo "  and services restarted."
+echo "✓ All done! Published to homelab00 and"
+echo "  services restarted."
 echo "=========================================="

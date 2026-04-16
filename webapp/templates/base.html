@@ -220,7 +220,115 @@
             opacity: 0.7;
             font-weight: 500;
         }
-        
+
+        /* Combined PB / SB card */
+        .pb-sb-card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .pb-sb-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .pb-sb-card .card-event-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            text-align: center;
+            padding: 0.35rem 0.75rem;
+            background: rgba(0, 0, 0, 0.18);
+            color: #fff;
+        }
+
+        /* Gold — Personal Best */
+        .pb-sb-card .pb-section {
+            background: linear-gradient(135deg, var(--fc-gold) 0%, var(--fc-gold-light) 100%);
+            color: #000;
+            padding: 0.65rem 0.75rem 0.75rem;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Purple — Season Best */
+        .pb-sb-card .sb-section {
+            background: linear-gradient(135deg, var(--fc-purple) 0%, var(--fc-purple-light) 100%);
+            color: #fff;
+            padding: 0.65rem 0.75rem 0.75rem;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .pb-sb-card .section-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.75;
+            margin-bottom: 0.15rem;
+        }
+
+        .pb-sb-card .section-mark {
+            font-size: 1.6rem;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .pb-sb-card .section-meta {
+            font-size: 0.65rem;
+            opacity: 0.7;
+            margin-top: 0.2rem;
+        }
+
+        /* When PB = SB: single gold card */
+        .pb-sb-card .combined-section {
+            background: linear-gradient(135deg, var(--fc-gold) 0%, var(--fc-gold-light) 100%);
+            color: #000;
+            padding: 0.65rem 0.75rem 0.75rem;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .pb-sb-card .combined-mark {
+            font-size: 1.6rem;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .pb-sb-card .combined-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            background: rgba(0, 0, 0, 0.15);
+            color: #000;
+            border-radius: 20px;
+            padding: 0.1rem 0.6rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .pb-sb-card .combined-meta {
+            font-size: 0.65rem;
+            opacity: 0.7;
+            margin-top: 0.2rem;
+        }
+
         .stat-card {
             background: white;
             border-left: 4px solid var(--fc-purple);
@@ -363,6 +471,14 @@
             }
             
             .pr-card .pr-time {
+                font-size: 1.75rem;
+            }
+
+            .pb-sb-card .section-mark {
+                font-size: 1.4rem;
+            }
+
+            .pb-sb-card.pb-is-sb .combined-mark {
                 font-size: 1.75rem;
             }
             

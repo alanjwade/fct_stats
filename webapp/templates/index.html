@@ -81,26 +81,37 @@
     <!-- Photo strip -->
     <div class="row g-2 mb-4">
         <div class="col-6 col-md-3">
-            <img src="{{ url_for('static', filename='images/fct1.jpg') }}"
-                 alt="Team photo"
-                 class="img-fluid rounded shadow-sm photo-strip-img">
+            <img id="photo-strip-0" src="" alt="Team photo" class="img-fluid rounded shadow-sm photo-strip-img">
         </div>
         <div class="col-6 col-md-3">
-            <img src="{{ url_for('static', filename='images/relay.png') }}"
-                 alt="Relay"
-                 class="img-fluid rounded shadow-sm photo-strip-img">
+            <img id="photo-strip-1" src="" alt="Team photo" class="img-fluid rounded shadow-sm photo-strip-img">
         </div>
         <div class="col-6 col-md-3">
-            <img src="{{ url_for('static', filename='images/discus.png') }}"
-                 alt="Discus"
-                 class="img-fluid rounded shadow-sm photo-strip-img">
+            <img id="photo-strip-2" src="" alt="Team photo" class="img-fluid rounded shadow-sm photo-strip-img">
         </div>
         <div class="col-6 col-md-3">
-            <img src="{{ url_for('static', filename='images/cadel.png') }}"
-                 alt="Athlete"
-                 class="img-fluid rounded shadow-sm photo-strip-img">
+            <img id="photo-strip-3" src="" alt="Team photo" class="img-fluid rounded shadow-sm photo-strip-img">
         </div>
     </div>
+    <script>
+    (function () {
+        var photos = [
+            "{{ url_for('static', filename='images/fct1.jpg') }}",
+            "{{ url_for('static', filename='images/relay.png') }}",
+            "{{ url_for('static', filename='images/discus.png') }}",
+            "{{ url_for('static', filename='images/cadel.png') }}",
+            "{{ url_for('static', filename='images/track_aerial.png') }}"
+        ];
+        // Fisher-Yates shuffle
+        for (var i = photos.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var tmp = photos[i]; photos[i] = photos[j]; photos[j] = tmp;
+        }
+        for (var k = 0; k < 4; k++) {
+            document.getElementById('photo-strip-' + k).src = photos[k];
+        }
+    })();
+    </script>
 
     <div class="row">
         <!-- Meet Schedule -->

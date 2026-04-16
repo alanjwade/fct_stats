@@ -33,24 +33,63 @@
         </div>
     </div>
     
-    <!-- Season Bests Cards -->
-    {% if prs %}
-    <h3 class="mb-3"><i class="bi bi-star-fill text-gold"></i> Season Bests</h3>
+    <!-- PB / SB Cards -->
+    {% if pb_sb_cards %}
+    <h3 class="mb-3"><i class="bi bi-star-fill text-gold"></i> Season &amp; Career Bests</h3>
     <div class="row mb-4">
-        {% for pr in prs %}
+        {% for card in pb_sb_cards %}
         <div class="col-6 col-md-4 col-lg-3 mb-3">
-            <div class="pr-card">
-                <div class="event-name">{{ pr.event_name }}</div>
-                <div class="pr-time">
-                    {% if pr.timed %}
-                        {{ pr.mark|format_time }}
-                    {% else %}
-                        {{ pr.mark|format_mark(False, pr.event_name) }}
-                    {% endif %}
+            {% if card.is_same %}
+            {# PB = SB: single gold card #}
+            <div class="pb-sb-card pb-is-sb">
+                <div class="card-event-label">{{ card.event_name }}</div>
+                <div class="combined-section">
+                    <div class="combined-badge">PB / SB</div>
+                    <div class="combined-mark">
+                        {% if card.timed %}
+                            {{ card.pb.mark|format_time }}
+                        {% else %}
+                            {{ card.pb.mark|format_mark(False, card.event_name) }}
+                        {% endif %}
+                    </div>
+                    <div class="combined-meta d-none d-sm-block">{{ card.pb.meet_date }} @ {{ card.pb.meet_name }}</div>
+                    <div class="combined-meta d-sm-none">{{ card.pb.meet_date }}</div>
                 </div>
-                <div class="pr-date d-none d-sm-block">{{ pr.meet_date }} @ {{ pr.meet_name }}</div>
-                <div class="pr-date d-sm-none">{{ pr.meet_date }}</div>
             </div>
+            {% else %}
+            {# PB ≠ SB: two-tone card #}
+            <div class="pb-sb-card">
+                <div class="card-event-label">{{ card.event_name }}</div>
+                {% if card.pb %}
+                <div class="pb-section">
+                    <div class="section-label">Personal Best</div>
+                    <div class="section-mark">
+                        {% if card.timed %}
+                            {{ card.pb.mark|format_time }}
+                        {% else %}
+                            {{ card.pb.mark|format_mark(False, card.event_name) }}
+                        {% endif %}
+                    </div>
+                    <div class="section-meta d-none d-sm-block">{{ card.pb.meet_date }} @ {{ card.pb.meet_name }}</div>
+                    <div class="section-meta d-sm-none">{{ card.pb.meet_date }}</div>
+                </div>
+                {% endif %}
+                {% if card.sb %}
+                <div class="sb-section">
+                    <div class="section-label">Season Best</div>
+                    <div class="section-mark">
+                        {% if card.timed %}
+                            {{ card.sb.mark|format_time }}
+                        {% else %}
+                            {{ card.sb.mark|format_mark(False, card.event_name) }}
+                        {% endif %}
+                    </div>
+                    <div class="section-meta d-none d-sm-block">{{ card.sb.meet_date }} @ {{ card.sb.meet_name }}</div>
+                    <div class="section-meta d-sm-none">{{ card.sb.meet_date }}</div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
         {% endfor %}
     </div>

@@ -706,6 +706,53 @@ def athlete_stats(athlete_id):
             )
             ORDER BY e.name
         """, (athlete_id, current_season, current_season, current_season, current_season)).fetchall()
+
+        # Get career PRs (all-time best) for this athlete
+        career_pbs_raw = conn.execute("""
+            SELECT 
+                e.id as event_id,
+                e.name as event_name,
+                e.timed,
+                e.lower_is_better,
+                r.mark,
+                r.mark_display,
+                m.meet_date,
+                m.name as meet_name
+            FROM results r
+            JOIN events e ON r.event_id = e.id
+            JOIN meets m ON r.meet_id = m.id
+            WHERE r.athlete_id = ?
+            AND r.mark = (
+                SELECT CASE 
+                    WHEN e.lower_is_better THEN MIN(r2.mark)
+                    ELSE MAX(r2.mark)
+                END
+                FROM results r2
+                WHERE r2.athlete_id = r.athlete_id
+                AND r2.event_id = r.event_id
+            )
+            GROUP BY e.id
+            ORDER BY e.name
+        """, (athlete_id,)).fetchall()
+
+        # Build combined PB/SB cards (one per event)
+        pb_map = {row['event_name']: dict(row) for row in career_pbs_raw}
+        sb_map = {row['event_name']: dict(row) for row in prs}
+        all_events = sorted(set(list(pb_map.keys()) + list(sb_map.keys())))
+        pb_sb_cards = []
+        for event_name in all_events:
+            pb = pb_map.get(event_name)
+            sb = sb_map.get(event_name)
+            is_same = bool(pb and sb and abs(pb['mark'] - sb['mark']) < 0.001)
+            pb_sb_cards.append({
+                'event_name': event_name,
+                'timed': (pb or sb)['timed'],
+                'lower_is_better': (pb or sb)['lower_is_better'],
+                'event_id': (pb or sb)['event_id'],
+                'pb': pb,
+                'sb': sb,
+                'is_same': is_same,
+            })
         
         # Get all results grouped by event
         results_by_event = {}
@@ -775,6 +822,7 @@ def athlete_stats(athlete_id):
     return render_template('athlete_stats.html',
         athlete=athlete,
         prs=prs,
+        pb_sb_cards=pb_sb_cards,
         results_by_event=results_by_event,
         results=results,
         results_by_year=results_by_year,
@@ -907,6 +955,7 @@ def _get_season_bests_data(year):
                     a.first_name || ' ' || a.last_name as athlete_name,
                     r.mark,
                     r.mark_display,
+                    r.level,
                     m.name as meet_name,
                     m.meet_date,
                     ROW_NUMBER() OVER (
