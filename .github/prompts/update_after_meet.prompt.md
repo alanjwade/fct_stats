@@ -1,7 +1,6 @@
 ---
 agent: agent
 description: Run this prompt after a meet has been entered into the Google Sheet to re-import results, update the database, and publish to production.
-model: Claude Sonnet 4.5
 ---
 
 # Update Results After a Meet
@@ -195,9 +194,10 @@ have the same dimensions (which is rarely a problem in practice).
 When ready to push changes live, run:
 
 ```bash
-./scripts/publish-db.sh
-./scripts/homelab-restart.sh
+./scripts/publish-homelab00.sh
 ```
+
+This syncs all files and the database to homelab00 and restarts the Docker service.
 
 Then verify at **https://track.fchsrunning.org**.
 
@@ -210,3 +210,4 @@ Then verify at **https://track.fchsrunning.org**.
 | Fetch sheet + import | `.venv/bin/python3 scripts/import_from_gsheet.py --fetch --url "https://docs.google.com/spreadsheets/d/1avGZOoj0we3cyuMSTWbBQGdJ-i7XGmZa" --save data/snapshots/2026/gsheet_2026.json` |
 | Import from saved snapshot | `.venv/bin/python3 scripts/import_from_gsheet.py --input data/snapshots/2026/gsheet_2026.json` |
 | Dry run (no DB writes) | add `--dry-run` to either import command |
+| Publish + restart | `./scripts/publish-homelab00.sh` |

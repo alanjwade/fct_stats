@@ -16,6 +16,7 @@
     "Stutler Bowl": "https://maps.app.goo.gl/dFV8wZkdomb6jejE7",
     "Longmont HS": "https://maps.app.goo.gl/4nw6PEXKrZL9kk36A",
     "Berthoud HS": "https://maps.app.goo.gl/Cg3cDhnAECQv7LJW9",
+    "Windsor HS": "https://maps.app.goo.gl/tjyaGt5UTfhQunJX6",
     "TBD": ""
   },
   "events": [
@@ -327,44 +328,26 @@
     "date": "04/18/2026",
     "day": "18",
     "day_name": "Saturday",
-    "title": "Cherry Creek Invite",
-    "time": "9:00 AM",
-    "location": "Stutler Bowl",
-    "level": "Varsity"
-  },
-  {
-    "date": "04/18/2026",
-    "day": "18",
-    "day_name": "Saturday",
     "title": "Randall Hess Invite",
     "time": "9:30 AM",
     "location": "Roosevelt HS",
     "level": "Varsity"
   },
   {
-    "date": "04/22/2026",
-    "day": "22",
-    "day_name": "Wednesday",
+    "date": "04/23/2026",
+    "day": "23",
+    "day_name": "Thursday",
     "title": "JV Northern League Champs",
-    "time": "TBD",
-    "location": "TBD",
+    "time": "2:00 PM",
+    "location": "Windsor HS",
     "level": "JV"
   },
   {
-    "date": "04/24/2026",
-    "day": "24",
-    "day_name": "Friday",
-    "title": "Longmont Invite",
-    "time": "12:00 PM",
-    "location": "Longmont HS",
-    "level": "Varsity"
-  },
-  {
-    "date": "04/25/2026",
-    "day": "25",
-    "day_name": "Saturday",
+    "date": "04/23/2026",
+    "day": "23",
+    "day_name": "Thursday",
     "title": "Stutler Twilight Invite",
-    "time": "4:00 PM",
+    "time": "2:00 PM",
     "location": "Stutler Bowl",
     "level": "Varsity"
   },

@@ -42,6 +42,14 @@ SEASON = "2026"
 GENDER_MAP = {"girls": "F", "boys": "M"}
 
 # ──────────────────────────────────────────────────────────────
+# Athlete name aliases: (first, last) → (canonical_first, canonical_last)
+# Use when coaches enter a nickname instead of the athlete's full name.
+# ──────────────────────────────────────────────────────────────
+NAME_ALIASES: dict[tuple[str, str], tuple[str, str]] = {
+    ("Addy", "Timock"): ("Addyson", "Timock"),
+}
+
+# ──────────────────────────────────────────────────────────────
 # Meet name → (canonical_name, date, level)
 # "canonical_name" is how it will appear in the DB meets table.
 # Add entries here as new meets are completed.
@@ -94,6 +102,24 @@ MEET_INFO: dict[str, dict] = {
         "date": "2026-03-25",
         "level": "jv",
     },
+    "PSD JV Invite #2": {
+        "date": "2026-04-01",
+        "level": "jv",
+    },
+    "PSD JV Invite #2 (FA)": {
+        "canonical": "PSD JV Invite #2",
+        "date": "2026-04-01",
+        "level": "jv",
+    },
+    "PSD JV Invite #3": {
+        "date": "2026-04-15",
+        "level": "jv",
+    },
+    "PSD JV Invite #3 (FA)": {
+        "canonical": "PSD JV Invite #3",
+        "date": "2026-04-15",
+        "level": "jv",
+    },
     "Roosevelt Power Invite": {
         "date": "2026-03-27",
         "level": "varsity",
@@ -103,7 +129,17 @@ MEET_INFO: dict[str, dict] = {
         "level": "varsity",
     },
     "Randi Yaussi Meet": {
-        "date": None,
+        "date": "2026-04-08",
+        "level": "varsity",
+    },
+    "Randy Yaussi Meet": {
+        "canonical": "Randi Yaussi Meet",
+        "date": "2026-04-08",
+        "level": "varsity",
+    },
+    "Rand Yaussi PSD Meet": {
+        "canonical": "Randi Yaussi Meet",
+        "date": "2026-04-08",
         "level": "varsity",
     },
     "Thunder Ridge": {
@@ -112,7 +148,11 @@ MEET_INFO: dict[str, dict] = {
         "level": "varsity",
     },
     "Cherry Creek Invite": {
-        "date": None,
+        "date": "2026-04-18",
+        "level": "varsity",
+    },
+    "Randall Hess Invite": {
+        "date": "2026-04-18",
         "level": "varsity",
     },
     "Longmont Invite": {
@@ -127,8 +167,13 @@ MEET_INFO: dict[str, dict] = {
         "date": None,
         "level": "varsity",
     },
+    "Pomona Invite": {
+        "date": "2026-04-11",
+        "level": "varsity",
+    },
     "Pomona Invite / Arcadia Invite": {
-        "date": None,
+        "canonical": "Pomona Invite",
+        "date": "2026-04-11",
         "level": "varsity",
     },
     "State Championships": {
@@ -299,6 +344,11 @@ def import_sheet(db, event_matcher, sheet: dict, dry_run: bool = False) -> dict:
                     counts["errors"] += 1
                     continue
 
+            # Normalize name aliases (e.g. nicknames entered by coaches)
+            first_name, last_name = NAME_ALIASES.get(
+                (first_name, last_name), (first_name, last_name)
+            )
+
             if not dry_run:
                 athlete_id = db.get_or_create_athlete(
                     first_name=first_name,
@@ -307,51 +357,61 @@ def import_sheet(db, event_matcher, sheet: dict, dry_run: bool = False) -> dict:
                     graduation_year=None,
                 )
 
-            # One result per meet
+            # One result per meet (or two if mark is "prelim/final" slash format)
             for raw_meet_name, mark_display in meet_results.items():
                 # Skip computed/reference columns that leaked in as meets
                 # e.g. "2024 SB", "2025 SB" — these are prior-year SB columns,
                 # not actual competitions.
                 if re.match(r'^20\d\d\s*SB$', raw_meet_name.strip(), re.IGNORECASE):
                     continue
-                numeric_mark, display = parse_mark(mark_display, is_timed)
-                if numeric_mark is None:
-                    counts["no_mark"] += 1
-                    logger.debug(f"  Unparseable mark {mark_display!r} for "
-                                 f"{name} / {canonical_event} / {raw_meet_name}")
-                    continue
+
+                # Expand slash marks: "12.33/12.41" means two results (e.g. prelim + final)
+                if isinstance(mark_display, str) and '/' in mark_display:
+                    slash_parts = [p.strip() for p in mark_display.split('/')]
+                    slash_parsed = [parse_mark(p, is_timed) for p in slash_parts]
+                    mark_list = slash_parts if all(n is not None for n, _ in slash_parsed) else [mark_display]
+                else:
+                    mark_list = [mark_display]
 
                 canonical_meet, meet_date, level = resolve_meet(raw_meet_name)
 
-                if dry_run:
-                    counts["added"] += 1
-                    logger.debug(
-                        f"  [DRY] {name} | {canonical_event} | {canonical_meet} "
-                        f"| {display} ({numeric_mark})"
+                for mark_str in mark_list:
+                    numeric_mark, display = parse_mark(mark_str, is_timed)
+                    if numeric_mark is None:
+                        counts["no_mark"] += 1
+                        logger.debug(f"  Unparseable mark {mark_str!r} for "
+                                     f"{name} / {canonical_event} / {raw_meet_name}")
+                        continue
+
+                    if dry_run:
+                        counts["added"] += 1
+                        logger.debug(
+                            f"  [DRY] {name} | {canonical_event} | {canonical_meet} "
+                            f"| {display} ({numeric_mark})"
+                        )
+                        continue
+
+                    meet_id = db.get_or_create_meet(
+                        name=canonical_meet,
+                        meet_date=meet_date,
+                        venue=canonical_meet,
+                        location=canonical_meet,
+                        season=SEASON,
                     )
-                    continue
 
-                meet_id = db.get_or_create_meet(
-                    name=canonical_meet,
-                    meet_date=meet_date,
-                    venue=canonical_meet,
-                    location=canonical_meet,
-                    season=SEASON,
-                )
+                    result_id = db.add_result(
+                        athlete_id=athlete_id,
+                        event_id=event_id,
+                        meet_id=meet_id,
+                        mark=numeric_mark,
+                        mark_display=display,
+                        level=level,
+                    )
 
-                result_id = db.add_result(
-                    athlete_id=athlete_id,
-                    event_id=event_id,
-                    meet_id=meet_id,
-                    mark=numeric_mark,
-                    mark_display=display,
-                    level=level,
-                )
-
-                if result_id:
-                    counts["added"] += 1
-                else:
-                    counts["skipped"] += 1
+                    if result_id:
+                        counts["added"] += 1
+                    else:
+                        counts["skipped"] += 1
 
     return counts
 
