@@ -50,6 +50,19 @@ NAME_ALIASES: dict[tuple[str, str], tuple[str, str]] = {
 }
 
 # ──────────────────────────────────────────────────────────────
+# Per-athlete meet overrides: (sheet_athlete_name, canonical_event, canonical_source_meet) → canonical_target_meet
+# Use when an athlete competed at a different venue than the rest of the team
+# but their result is recorded under the team's main meet column in the sheet.
+# ──────────────────────────────────────────────────────────────
+ATHLETE_MEET_OVERRIDES: dict[tuple[str, str, str], str] = {
+    # Cadel Ruthven, Will Johns, Sean Giles competed at Arcadia Invite (CA)
+    # on 2026-04-11 while the team was at Pomona Invite.
+    ("Cadel Ruthven", "1600m", "Pomona Invite"): "Arcadia Invite",
+    ("Will Johns",    "1600m", "Pomona Invite"): "Arcadia Invite",
+    ("Sean Giles",    "3200m", "Pomona Invite"): "Arcadia Invite",
+}
+
+# ──────────────────────────────────────────────────────────────
 # Meet name → (canonical_name, date, level)
 # "canonical_name" is how it will appear in the DB meets table.
 # Add entries here as new meets are completed.
@@ -160,7 +173,8 @@ MEET_INFO: dict[str, dict] = {
         "level": "varsity",
     },
     "Northern League Championships": {
-        "date": None,
+        "date": "2026-05-01",      # finals
+        "prelims_date": "2026-04-29",  # prelims
         "level": "varsity",
     },
     "St. Vrain Hoka / Teddy's Last Chance": {
@@ -168,12 +182,35 @@ MEET_INFO: dict[str, dict] = {
         "level": "varsity",
     },
     "Pomona Invite": {
-        "date": "2026-04-11",
+        "date": "2026-04-11",       # finals (Saturday)
+        "prelims_date": "2026-04-10",  # prelims (Friday)
         "level": "varsity",
     },
     "Pomona Invite / Arcadia Invite": {
         "canonical": "Pomona Invite",
         "date": "2026-04-11",
+        "level": "varsity",
+    },
+    "Arcadia Invite": {
+        "date": "2026-04-11",
+        "level": "varsity",
+    },
+    "JV Northern League Champs": {
+        "date": "2026-04-23",
+        "level": "jv",
+    },
+    "JV Championships": {
+        "canonical": "JV Northern League Champs",
+        "date": "2026-04-23",
+        "level": "jv",
+    },
+    "Stutler Twilight Invite": {
+        "date": "2026-04-23",
+        "level": "varsity",
+    },
+    "Stutler Bowl Invite": {
+        "canonical": "Stutler Twilight Invite",
+        "date": "2026-04-23",
         "level": "varsity",
     },
     "State Championships": {
@@ -365,17 +402,37 @@ def import_sheet(db, event_matcher, sheet: dict, dry_run: bool = False) -> dict:
                 if re.match(r'^20\d\d\s*SB$', raw_meet_name.strip(), re.IGNORECASE):
                     continue
 
-                # Expand slash marks: "12.33/12.41" means two results (e.g. prelim + final)
+                canonical_meet, meet_date, level = resolve_meet(raw_meet_name)
+
+                # Per-athlete venue override (e.g. athlete at Arcadia while team was at Pomona)
+                override_target = ATHLETE_MEET_OVERRIDES.get((name, canonical_event, canonical_meet))
+                if override_target:
+                    logger.info(f"  Override: {name} / {canonical_event} / {canonical_meet} → {override_target}")
+                    canonical_meet, meet_date, level = resolve_meet(override_target)
+
+                # Expand slash marks: "prelim/final" means two results.
+                # If the meet has a prelims_date, store each under a separate meet name.
+                # Otherwise both marks go to the same meet (second will be silently
+                # dropped by the UNIQUE constraint if the event has no prelims round).
                 if isinstance(mark_display, str) and '/' in mark_display:
                     slash_parts = [p.strip() for p in mark_display.split('/')]
                     slash_parsed = [parse_mark(p, is_timed) for p in slash_parts]
-                    mark_list = slash_parts if all(n is not None for n, _ in slash_parsed) else [mark_display]
+                    if all(n is not None for n, _ in slash_parsed):
+                        prelims_date = MEET_INFO.get(canonical_meet, {}).get("prelims_date")
+                        if prelims_date and len(slash_parts) == 2:
+                            # First mark → prelims meet; second mark → finals meet
+                            mark_meet_list = [
+                                (slash_parts[0], f"{canonical_meet} Prelims", prelims_date, level),
+                                (slash_parts[1], canonical_meet, meet_date, level),
+                            ]
+                        else:
+                            mark_meet_list = [(m, canonical_meet, meet_date, level) for m in slash_parts]
+                    else:
+                        mark_meet_list = [(mark_display, canonical_meet, meet_date, level)]
                 else:
-                    mark_list = [mark_display]
+                    mark_meet_list = [(mark_display, canonical_meet, meet_date, level)]
 
-                canonical_meet, meet_date, level = resolve_meet(raw_meet_name)
-
-                for mark_str in mark_list:
+                for mark_str, m_name, m_date, m_level in mark_meet_list:
                     numeric_mark, display = parse_mark(mark_str, is_timed)
                     if numeric_mark is None:
                         counts["no_mark"] += 1
@@ -386,16 +443,16 @@ def import_sheet(db, event_matcher, sheet: dict, dry_run: bool = False) -> dict:
                     if dry_run:
                         counts["added"] += 1
                         logger.debug(
-                            f"  [DRY] {name} | {canonical_event} | {canonical_meet} "
+                            f"  [DRY] {name} | {canonical_event} | {m_name} "
                             f"| {display} ({numeric_mark})"
                         )
                         continue
 
                     meet_id = db.get_or_create_meet(
-                        name=canonical_meet,
-                        meet_date=meet_date,
-                        venue=canonical_meet,
-                        location=canonical_meet,
+                        name=m_name,
+                        meet_date=m_date,
+                        venue=m_name,
+                        location=m_name,
                         season=SEASON,
                     )
 
@@ -405,7 +462,7 @@ def import_sheet(db, event_matcher, sheet: dict, dry_run: bool = False) -> dict:
                         meet_id=meet_id,
                         mark=numeric_mark,
                         mark_display=display,
-                        level=level,
+                        level=m_level,
                     )
 
                     if result_id:
