@@ -4,7 +4,7 @@
 
 set -e
 
-SOURCE_DIR="/home/alan/Documents/code/fct_stats"
+SOURCE_DIR="/home/alan/Projects/fct_stats"
 SOURCE_DB="$SOURCE_DIR/data/db/fct_stats.db"
 REMOTE_USER="homelab"
 REMOTE_HOST="homelab00"

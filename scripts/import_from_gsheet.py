@@ -178,7 +178,17 @@ MEET_INFO: dict[str, dict] = {
         "level": "varsity",
     },
     "St. Vrain Hoka / Teddy's Last Chance": {
-        "date": None,
+        "canonical": "Teddy's Last Chance",
+        "date": "2026-05-09",
+        "level": "varsity",
+    },
+    "HOKA St. Vrain or Teddy's Last Chance": {
+        "canonical": "Teddy's Last Chance",
+        "date": "2026-05-09",
+        "level": "varsity",
+    },
+    "Teddy's Last Chance": {
+        "date": "2026-05-09",
         "level": "varsity",
     },
     "Pomona Invite": {
