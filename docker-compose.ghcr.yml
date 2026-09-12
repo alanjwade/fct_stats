@@ -1,0 +1,25 @@
+# Standalone run of the published image (local testing / non-infra use).
+# The real deployment is owned by homelab-infra; this file only exists so this
+# repo can run its own published image without the infra repo.
+#
+#   docker compose -f docker-compose.ghcr.yml pull
+#   docker compose -f docker-compose.ghcr.yml up -d
+
+services:
+  webapp:
+    image: ghcr.io/alanjwade/fct-stats:latest
+    container_name: fct_stats_webapp
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data:ro
+      - analytics_data:/app/analytics
+    environment:
+      - DATABASE_PATH=/app/data/db/fct_stats.db
+      - ANALYTICS_DB_PATH=/app/analytics/analytics.db
+      - CONFIG_PATH=/app/config
+      - TZ=${TZ:-America/Denver}
+    ports:
+      - "5000:5000"
+
+volumes:
+  analytics_data:

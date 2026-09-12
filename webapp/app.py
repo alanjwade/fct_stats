@@ -274,6 +274,7 @@ def inject_year_filter():
     return {
         'available_years': get_ordered_years(),
         'current_year': request.args.get('year', default_year),
+        'app_version': os.environ.get('APP_VERSION', 'dev'),
     }
 
 
