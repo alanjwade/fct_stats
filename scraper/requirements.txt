@@ -1,5 +1,11 @@
-beautifulsoup4>=4.12.0
-PyYAML>=6.0
-rapidfuzz>=3.0.0
-lxml>=4.9.0
-playwright>=1.40.0
+# Data pipeline (scraper) dependencies.
+#
+# Exact pins: the scraper venvs (and docker/Dockerfile.scraper) install straight
+# from this file, so versions are pinned rather than floored for reproducibility.
+# Bump deliberately; keep the image's Python (3.11) in mind — rapidfuzz 3.14
+# requires >=3.11, so this file does not install on 3.10 or older.
+beautifulsoup4==4.15.0
+PyYAML==6.0.3
+rapidfuzz==3.14.6
+lxml==6.1.3
+playwright==1.64.1
