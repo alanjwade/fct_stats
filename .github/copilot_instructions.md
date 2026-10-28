@@ -53,7 +53,7 @@ fct_stats/
 │   ├── app.py                # Main Flask app
 │   ├── templates/            # Jinja2 templates
 │   └── static/               # CSS, JS, images
-└── docker/                    # Docker deployment configs
+└── docker/                    # Dev-only Docker configs (prod image is built by CI)
 ```
 
 ### Database Schema
@@ -257,9 +257,8 @@ The system Python does not have the project dependencies installed.
     --url "https://docs.google.com/spreadsheets/d/1avGZOoj0we3cyuMSTWbBQGdJ-i7XGmZa" \
     --save data/snapshots/2026/gsheet_2026.json
 
-# Publish and restart production:
-./scripts/publish-db.sh
-./scripts/homelab-restart.sh
+# Publish the new data (run from the homelab-infra checkout):
+cd ~/Projects/homelab-infra && ./scripts/update-db.sh fct-stats
 ```
 
 ### Meet Name Recognition — `MEET_INFO` dict
@@ -384,7 +383,7 @@ The quick reference prompt is at `.github/prompts/update_after_meet.prompt.md`.
 - **Don't duplicate results**: Check UNIQUE constraints before insert
 - **Don't skip date config**: Maintain `meets_2025.json` for accuracy
 - **Don't mix data sources**: Keep historical vs performance separate
-- **Don't run `publish-and-restart.sh` unless explicitly asked**: The user controls when to deploy. Never run `./scripts/publish-and-restart.sh` (or any of the `publish-*.sh` / `homelab-*.sh` scripts) as part of a fix or investigation unless the user specifically requests it.
+- **Don't deploy unless explicitly asked**: The user controls when to ship. Never run `./bump_release.sh` (it pushes a tag and triggers the image build), and never run `homelab-infra`'s `scripts/update-apps.sh` / `scripts/update-db.sh`, as part of a fix or investigation unless the user specifically requests it.
 
 ### Database Queries
 
@@ -475,29 +474,25 @@ with db.get_connection() as conn:
 
 ## Deployment
 
-### Docker Setup
+**This repo never deploys.** It builds and publishes a container image; the host,
+the compose file and the deploy step all live in `homelab-infra`
+(`hosts/homelab01/fct-stats/`; live at https://track.fchsrunning.org).
 
-Two environments:
+- **Release**: commit, then `./bump_release.sh` (`patch` by default; `minor` /
+  `major` accepted). It pushes the branch and an annotated `vX.Y.Z` tag, and
+  `.github/workflows/build-push.yml` publishes
+  `ghcr.io/alanjwade/fct-stats:<tag>` with `APP_VERSION=<tag>` baked in.
+- **Deploy**: from the `homelab-infra` checkout,
+  `./scripts/update-apps.sh fct-stats` bumps the pinned tag, commits/pushes,
+  sshs to `homelab01`, `git pull`, `docker compose pull` + `up -d`.
+- **Data**: the scraper-produced `data/db/fct_stats.db` ships with
+  `homelab-infra/scripts/update-db.sh fct-stats` (source/destination come from
+  the `data:` block in `hosts/homelab01/fct-stats/app.yml`).
 
-1. **Development** (`docker-compose.dev.yml`):
-   - Flask debug mode enabled
-   - Volume mounts for live editing
-   - Port 5000 exposed
+Local development only (`docker/docker-compose.dev.yml`, Flask debug on :5000):
 
-2. **Production** (`docker-compose.yml`):
-   - Nginx reverse proxy
-   - Gunicorn WSGI server
-   - Port 80/443
-
-**Commands**:
 ```bash
-# Development
-docker-compose -f docker/docker-compose.dev.yml up --build
-
-# Production
-./scripts/homelab-start.sh
-./scripts/homelab-stop.sh
-./scripts/homelab-restart.sh
+docker compose -f docker/docker-compose.dev.yml up --build
 ```
 
 ### Environment Variables

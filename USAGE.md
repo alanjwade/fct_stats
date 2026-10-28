@@ -7,7 +7,7 @@ Track statistics website for the Fort Collins High School track team.
 - **Scraper**: Python scripts that parse meet results from HTML pages and populate the SQLite database
 - **Database**: SQLite database (`data/generated/db/fct_stats.db`) storing athletes, meets, events, and results
 - **Webapp**: Flask web application displaying statistics and records
-- **Deployment**: Docker containers with nginx reverse proxy for production
+- **Deployment**: release-tracked container image (`ghcr.io/alanjwade/fct-stats`) built by CI and deployed by `homelab-infra` — see "Publishing" below
 
 ---
 
@@ -187,222 +187,91 @@ docker-compose -f docker-compose.dev.yml up --build
 
 ---
 
-### 3. Building for Production
+### 3. Building Images
 
-#### Build Docker Images
+The **production image is built by CI, not locally**: `.github/workflows/build-push.yml`
+builds `Dockerfile` and publishes `ghcr.io/alanjwade/fct-stats:<tag>` on every `v*`
+release tag. `docker/Dockerfile.webapp` and `docker/Dockerfile.scraper` are
+development-only.
 
 ```bash
-cd docker
+# The same image CI ships (production):
+docker build -t fct-stats:local .
 
-# Build both webapp and scraper images
-docker-compose build
-
-# Or build individually
-docker build -f Dockerfile.webapp -t fct_stats_webapp ..
-docker build -f Dockerfile.scraper -t fct_stats_scraper ..
+# Development images:
+docker build -f docker/Dockerfile.webapp -t fct-stats:webapp-dev .
+docker build -f docker/Dockerfile.scraper -t fct-stats:scraper-dev .
 ```
 
-#### Test Production Build Locally
+To run the *published* image without homelab-infra:
 
 ```bash
-cd docker
-docker-compose up
-```
-
-Access the site at `http://localhost:80`
-
----
-
-## Homelab Deployment
-
-### 4. Publishing to Homelab
-
-For running on your local homelab at `~/homelab/fct_stats`:
-
-#### Quick Publish (Webapp + Database)
-
-```bash
-# Publish everything to homelab
-./scripts/publish-all.sh
-
-# Start the services
-./scripts/homelab-start.sh
-```
-
-The site will be available at `http://localhost:80`
-
-#### Individual Publishing
-
-Publish just the webapp (code updates):
-```bash
-./scripts/publish-webapp.sh
-./scripts/homelab-restart.sh  # Rebuild and restart
-```
-
-Publish just the database (after scraping new data):
-```bash
-./scripts/publish-db.sh
-```
-
-#### Managing Homelab Services
-
-```bash
-# Start services
-./scripts/homelab-start.sh
-
-# Stop services
-./scripts/homelab-stop.sh
-
-# Restart with rebuild (after code changes)
-./scripts/homelab-restart.sh
-
-# View logs
-cd ~/homelab/fct_stats
-docker-compose -f docker/docker-compose.yml logs -f
-
-# View status
-docker-compose -f docker/docker-compose.yml ps
+docker compose -f docker-compose.ghcr.yml pull
+docker compose -f docker-compose.ghcr.yml up -d
 ```
 
 ---
 
-## Production Deployment
+## Publishing
 
-### 5. Publishing the Webapp
+This repo ships a container image; **deployment is owned by `homelab-infra`**
+(`hosts/homelab01/fct-stats/`). There is no publish script here — the commands
+below are the whole flow.
 
-#### Prerequisites
-- Docker and docker-compose installed on production server
-- SSL certificates (optional but recommended)
-- Domain name configured
+### 4. Publishing the Webapp (code, templates, config)
 
-#### Deployment Steps
+1. Commit your change — `bump_release.sh` requires a clean tree.
+2. Cut a release tag; CI builds and pushes the image:
 
-1. **Copy project to server**:
    ```bash
-   # On your local machine
-   rsync -av --exclude='venv' --exclude='__pycache__' \
-     /home/alan/Documents/code/fct_stats/ \
-     user@server:/opt/fct_stats/
+   ./bump_release.sh          # patch; also accepts: minor | major
    ```
 
-2. **Copy SSL certificates** (if using HTTPS):
+3. Deploy that tag from the `homelab-infra` checkout:
+
    ```bash
-   # On server
-   mkdir -p /opt/fct_stats/docker/ssl
-   # Copy your SSL cert and key files to this directory
+   cd ../homelab-infra
+   ./scripts/update-apps.sh --check        # optional: report only
+   ./scripts/update-apps.sh fct-stats      # bump pin, push, ssh homelab01, pull + up -d
    ```
 
-3. **Start the application**:
-   ```bash
-   # On server
-   cd /opt/fct_stats/docker
-   docker-compose up -d
-   ```
+`update-apps.sh` rewrites the pinned tag in
+`hosts/homelab01/fct-stats/docker-compose.yml`, commits + pushes that repo, then
+sshs to `homelab01` to `git pull` and `docker compose pull` / `up -d`. If CI has
+not published the tag yet it reports "up to date" — rerun it, or use
+`./scripts/update-apps.sh fct-stats --deploy-only` to redeploy the already-pinned
+tag without a version bump.
 
-4. **Verify deployment**:
-   ```bash
-   docker-compose ps
-   docker-compose logs -f webapp
-   ```
+### 5. Publishing the Database
 
-#### Update Deployment
-
-When you have new code changes:
+The SQLite db is generated here by the scraper and shipped by `homelab-infra`
+(the `data:` block in `hosts/homelab01/fct-stats/app.yml` names the local source
+and the remote destination):
 
 ```bash
-# On local machine - push changes to server
-rsync -av --exclude='venv' --exclude='__pycache__' \
-  /home/alan/Documents/code/fct_stats/ \
-  user@server:/opt/fct_stats/
-
-# On server - rebuild and restart
-cd /opt/fct_stats/docker
-docker-compose down
-docker-compose rm -f
-docker-compose build
-docker-compose up -d
+cd ../homelab-infra
+./scripts/update-db.sh fct-stats
 ```
 
-#### Managing the Service
+That snapshots the current remote db (timestamped `.bak`), uploads to a temp
+name, `mv`s it into place at `/opt/homelab/fct-stats/data/db/fct_stats.db`, then
+restarts the container (a long-lived gunicorn worker would otherwise keep
+reading the old inode).
+
+### 6. Verifying a Publish
 
 ```bash
-# Stop the service
-docker-compose down
-
-# View logs
-docker-compose logs -f
-
-# Restart specific service
-docker-compose restart webapp
-
-# View resource usage
-docker stats
+curl -I https://track.fchsrunning.org                # Cloudflare → caddy → fct-stats:5000
+ssh homelab01 'docker ps --filter name=fct-stats'    # image tag + uptime
+ssh homelab01 'docker logs --tail 50 fct-stats'
 ```
 
----
+### 7. Backups
 
-### 6. Publishing the Database
-
-The database is updated separately from the webapp deployment.
-
-#### Development → Production Database Sync
-
-1. **After scraping new meets on your local machine**:
-   ```bash
-   # Verify database locally
-   sqlite3 data/generated/db/fct_stats.db "SELECT COUNT(*) FROM results;"
-   ```
-
-2. **Copy database to production server**:
-   ```bash
-   # Stop webapp temporarily to avoid locks
-   ssh user@server "cd /opt/fct_stats/docker && docker-compose stop webapp"
-   
-   # Copy database
-   scp data/fct_stats.db user@server:/opt/fct_stats/data/
-   
-   # Restart webapp
-   ssh user@server "cd /opt/fct_stats/docker && docker-compose start webapp"
-   ```
-
-3. **Alternative: Direct scraping on server**:
-   ```bash
-   # On server
-   cd /opt/fct_stats
-   docker-compose -f docker/docker-compose.yml run --rm scraper \
-     python -m scraper.scraper data/meets/2025/meet_config.yaml
-   ```
-
-#### Database Backups
-
-Create regular backups:
-
-```bash
-# On server
-mkdir -p /opt/fct_stats/backups
-sqlite3 /opt/fct_stats/data/fct_stats.db ".backup '/opt/fct_stats/backups/fct_stats_$(date +%Y%m%d).db'"
-
-# Automated backup (add to crontab)
-0 2 * * * sqlite3 /opt/fct_stats/data/fct_stats.db ".backup '/opt/fct_stats/backups/fct_stats_$(date +\%Y\%m\%d).db'"
-```
-
-#### Database Maintenance
-
-```bash
-# Verify database integrity
-sqlite3 data/generated/db/fct_stats.db "PRAGMA integrity_check;"
-
-# Optimize database
-sqlite3 data/generated/db/fct_stats.db "VACUUM;"
-
-# View database stats
-sqlite3 data/generated/db/fct_stats.db << EOF
-SELECT 'Athletes:', COUNT(*) FROM athletes;
-SELECT 'Events:', COUNT(*) FROM events;
-SELECT 'Meets:', COUNT(*) FROM meets;
-SELECT 'Results:', COUNT(*) FROM results;
-EOF
-```
+Handled by `homelab-infra`'s backup runners from
+`hosts/homelab01/fct-stats/backup.yml` (`local` + `offsite` tiers cover
+`/opt/homelab/fct-stats/data` and `.../analytics`) — there is no per-service
+backup script here.
 
 ---
 
@@ -540,10 +409,10 @@ fct_stats/
 │           └── parsed_performance_list.json
 ├── database/
 │   └── schema.sql      # Database schema
-├── docker/             # Docker configuration
-│   ├── docker-compose.yml
+├── docker/             # Development-only Docker configs
+│   ├── docker-compose.dev.yml
 │   ├── Dockerfile.webapp
-│   └── nginx.conf
+│   └── Dockerfile.scraper
 ├── scraper/            # Data scraping scripts
 │   ├── scraper.py
 │   ├── database.py

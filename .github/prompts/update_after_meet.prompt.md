@@ -191,13 +191,16 @@ have the same dimensions (which is rarely a problem in practice).
 
 ## Publishing to Production (Optional)
 
-When ready to push changes live, run:
+There is no publish script in this repo. When ready to push changes live:
 
-```bash
-./scripts/publish-homelab00.sh
-```
-
-This syncs all files and the database to homelab00 and restarts the Docker service.
+- **Data only** (the usual after-a-meet case) — ship the regenerated database
+  from the `homelab-infra` checkout:
+  ```bash
+  cd ~/Projects/homelab-infra && ./scripts/update-db.sh fct-stats
+  ```
+- **Code/config changes** — commit here, then `./bump_release.sh` (pushes a tag;
+  CI publishes the image), then `./scripts/update-apps.sh fct-stats` in
+  `homelab-infra`.
 
 Then verify at **https://track.fchsrunning.org**.
 
@@ -210,4 +213,4 @@ Then verify at **https://track.fchsrunning.org**.
 | Fetch sheet + import | `.venv/bin/python3 scripts/import_from_gsheet.py --fetch --url "https://docs.google.com/spreadsheets/d/1avGZOoj0we3cyuMSTWbBQGdJ-i7XGmZa" --save data/snapshots/2026/gsheet_2026.json` |
 | Import from saved snapshot | `.venv/bin/python3 scripts/import_from_gsheet.py --input data/snapshots/2026/gsheet_2026.json` |
 | Dry run (no DB writes) | add `--dry-run` to either import command |
-| Publish + restart | `./scripts/publish-homelab00.sh` |
+| Publish data (`homelab-infra`) | `./scripts/update-db.sh fct-stats` |
